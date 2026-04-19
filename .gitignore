@@ -37,3 +37,9 @@ Thumbs.db
 # Prisma
 packages/api/prisma/*.db
 packages/api/prisma/migrations/
+
+# Claude Code internal state
+.claude/
+
+# Testcase screenshots workspace(fixture 原始 JSON 已在 packages/engine/__tests__/fixtures)
+testcase/
