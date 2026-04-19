@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 30, 30, 30;
+  --background-rgb: 250, 247, 240;
+}
+
+html, body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+}
+
+.bazi-cell {
+  @apply border border-bazi-gold/30 p-3 text-center bg-bazi-paper;
+}
+.bazi-stem {
+  @apply text-2xl font-bold text-bazi-red font-kai;
+}
+.bazi-branch {
+  @apply text-2xl font-bold text-bazi-ink font-kai;
+}

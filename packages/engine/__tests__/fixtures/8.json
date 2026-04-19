@@ -1,0 +1,60 @@
+{
+  "id": "case-1990-02-05-1200-female",
+  "source": "问真八字",
+  "sourceUrl": "",
+  "verifiedBy": ["问真八字"],
+  "input": {
+    "year": 1990,
+    "month": 2,
+    "day": 5,
+    "hour": 12,
+    "minute": 0,
+    "gender": "female"
+  },
+  "expected": {
+    "fourPillars": {
+      "year":  { "stem": "庚", "branch": "午", "nayin": "路旁土", "hiddenStems": ["丁", "己"] },
+      "month": { "stem": "戊", "branch": "寅", "nayin": "城头土", "hiddenStems": ["甲", "丙", "戊"] },
+      "day":   { "stem": "辛", "branch": "丑", "nayin": "壁上土", "hiddenStems": ["己", "癸", "辛"] },
+      "hour":  { "stem": "甲", "branch": "午", "nayin": "沙中金", "hiddenStems": ["丁", "己"] }
+    },
+    "tenGods": {
+      "yearStem":  "劫财",
+      "monthStem": "正印",
+      "hourStem":  "正财",
+      "yearBranchHidden":  ["七杀", "偏印"],
+      "monthBranchHidden": ["正财", "正官", "正印"],
+      "dayBranchHidden":   ["偏印", "食神", "比肩"],
+      "hourBranchHidden":  ["七杀", "偏印"]
+    },
+    "wuxingCount": { "金": 2, "木": 2, "水": 0, "火": 2, "土": 2 },
+    "dayMasterStrength": "weak",
+    "pattern": "正财格",
+    "dayun": {
+      "startAge": 1,
+      "startYear": 1990,
+      "direction": "逆行",
+      "list": [
+        { "index": 1, "startAge": 1,  "ganZhi": "丁丑" },
+        { "index": 2, "startAge": 11, "ganZhi": "丙子" },
+        { "index": 3, "startAge": 21, "ganZhi": "乙亥" },
+        { "index": 4, "startAge": 31, "ganZhi": "甲戌" },
+        { "index": 5, "startAge": 41, "ganZhi": "癸酉" },
+        { "index": 6, "startAge": 51, "ganZhi": "壬申" },
+        { "index": 7, "startAge": 61, "ganZhi": "辛未" },
+        { "index": 8, "startAge": 71, "ganZhi": "庚午" },
+        { "index": 9, "startAge": 81, "ganZhi": "己巳" }
+      ]
+    },
+    "shensha": {
+      "年支": ["福星贵人", "天乙贵人", "桃花"],
+      "月支": ["太极贵人", "天乙贵人", "德秀贵人", "飞刃", "劫煞"],
+      "日支": ["天乙贵人", "月德合", "天医", "血刃"],
+      "时支": ["福星贵人", "天乙贵人", "将星", "桃花"]
+    },
+    "mingGong":  { "stem": "乙", "branch": "酉" },
+    "taiYuan":   { "stem": "己", "branch": "巳" },
+    "chengGu":   { "weight": "4两1钱" },
+    "relations": ["寅午半合", "丑午相害", "午午自刑", "丑寅暗合"]
+  }
+}

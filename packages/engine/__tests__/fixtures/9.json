@@ -1,0 +1,60 @@
+{
+  "id": "case-2023-08-08-0300-male",
+  "source": "问真八字",
+  "sourceUrl": "",
+  "verifiedBy": ["问真八字"],
+  "input": {
+    "year": 2023,
+    "month": 8,
+    "day": 8,
+    "hour": 3,
+    "minute": 0,
+    "gender": "male"
+  },
+  "expected": {
+    "fourPillars": {
+      "year":  { "stem": "癸", "branch": "卯", "nayin": "金箔金", "hiddenStems": ["乙"] },
+      "month": { "stem": "庚", "branch": "申", "nayin": "石榴木", "hiddenStems": ["庚", "壬", "戊"] },
+      "day":   { "stem": "戊", "branch": "戌", "nayin": "平地木", "hiddenStems": ["戊", "辛", "丁"] },
+      "hour":  { "stem": "甲", "branch": "寅", "nayin": "大溪水", "hiddenStems": ["甲", "丙", "戊"] }
+    },
+    "tenGods": {
+      "yearStem":  "正财",
+      "monthStem": "食神",
+      "hourStem":  "七杀",
+      "yearBranchHidden":  ["正官"],
+      "monthBranchHidden": ["食神", "偏财", "比肩"],
+      "dayBranchHidden":   ["比肩", "伤官", "正印"],
+      "hourBranchHidden":  ["七杀", "偏印", "比肩"]
+    },
+    "wuxingCount": { "金": 2, "木": 3, "水": 1, "火": 0, "土": 2 },
+    "dayMasterStrength": "weak",
+    "pattern": "食神格",
+    "dayun": {
+      "startAge": 1,
+      "startYear": 2023,
+      "direction": "逆行",
+      "list": [
+        { "index": 1, "startAge": 1,  "ganZhi": "己未" },
+        { "index": 2, "startAge": 11, "ganZhi": "戊午" },
+        { "index": 3, "startAge": 21, "ganZhi": "丁巳" },
+        { "index": 4, "startAge": 31, "ganZhi": "丙辰" },
+        { "index": 5, "startAge": 41, "ganZhi": "乙卯" },
+        { "index": 6, "startAge": 51, "ganZhi": "甲寅" },
+        { "index": 7, "startAge": 61, "ganZhi": "癸丑" },
+        { "index": 8, "startAge": 71, "ganZhi": "壬子" },
+        { "index": 9, "startAge": 81, "ganZhi": "辛亥" }
+      ]
+    },
+    "shensha": {
+      "年支": ["天乙贵人", "文昌贵人", "天厨贵人", "福星贵人", "天德贵人", "德秀贵人", "桃花"],
+      "月支": ["太极贵人", "国印贵人", "文昌贵人", "天厨贵人", "福星贵人", "劫煞", "元辰", "驿马", "词馆"],
+      "日支": ["十恶大败", "太极贵人", "德秀贵人", "魁罡日", "八专日", "天德合"],
+      "时支": ["德秀贵人", "童子煞", "金舆", "亡神"]
+    },
+    "mingGong":  { "stem": "己", "branch": "未" },
+    "taiYuan":   { "stem": "辛", "branch": "亥" },
+    "chengGu":   { "weight": "4两4钱" },
+    "relations": ["寅申相冲", "卯戌相合","卯申暗合","申寅相刑"]
+  }
+}

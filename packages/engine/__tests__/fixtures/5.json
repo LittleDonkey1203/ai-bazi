@@ -1,0 +1,60 @@
+{
+  "id": "case-2000-01-01-2330-female",
+  "source": "问真八字",
+  "sourceUrl": "",
+  "verifiedBy": ["问真八字"],
+  "input": {
+    "year": 2000,
+    "month": 1,
+    "day": 1,
+    "hour": 23,
+    "minute": 30,
+    "gender": "female"
+  },
+  "expected": {
+    "fourPillars": {
+      "year":  { "stem": "己", "branch": "卯", "nayin": "城头土", "hiddenStems": ["乙"] },
+      "month": { "stem": "丙", "branch": "子", "nayin": "涧下水", "hiddenStems": ["癸"] },
+      "day":   { "stem": "戊", "branch": "午", "nayin": "天上火", "hiddenStems": ["丁", "己"] },
+      "hour":  { "stem": "甲", "branch": "子", "nayin": "海中金", "hiddenStems": ["癸"] }
+    },
+    "tenGods": {
+      "yearStem":  "劫财",
+      "monthStem": "偏印",
+      "hourStem":  "七杀",
+      "yearBranchHidden":  ["正官"],
+      "monthBranchHidden": ["正财"],
+      "dayBranchHidden":   ["正印", "劫财"],
+      "hourBranchHidden":  ["正财"]
+    },
+    "wuxingCount": { "金": 0, "木": 2, "水": 2, "火": 2, "土": 2 },
+    "dayMasterStrength": "weak",
+    "pattern": "正财格",
+    "dayun": {
+      "startAge": 3,
+      "startYear": 2001,
+      "direction": "顺行",
+      "list": [
+        { "index": 1, "startAge": 3,  "ganZhi": "丁丑" },
+        { "index": 2, "startAge": 13, "ganZhi": "戊寅" },
+        { "index": 3, "startAge": 23, "ganZhi": "己卯" },
+        { "index": 4, "startAge": 33, "ganZhi": "庚辰" },
+        { "index": 5, "startAge": 43, "ganZhi": "辛巳" },
+        { "index": 6, "startAge": 53, "ganZhi": "壬午" },
+        { "index": 7, "startAge": 63, "ganZhi": "癸未" },
+        { "index": 8, "startAge": 73, "ganZhi": "甲申" },
+        { "index": 9, "startAge": 83, "ganZhi": "乙酉" }
+      ]
+    },
+    "shensha": {
+      "年支": ["德秀贵人", "桃花"],
+      "月支": ["天乙贵人", "德秀贵人", "空亡", "飞刃", "桃花", "红鸾", "披麻"],
+      "日支": ["德秀贵人", "十灵日", "九丑日", "六秀日", "孤鸾煞", "勾绞煞", "羊刃", "天喜", "血刃"],
+      "时支": ["天乙贵人", "德秀贵人", "空亡", "飞刃", "桃花", "红鸾", "披麻"]
+    },
+    "mingGong":  { "stem": "己", "branch": "巳" },
+    "taiYuan":   { "stem": "丁", "branch": "卯" },
+    "chengGu":   { "weight": "5两9钱" },
+    "relations": ["子午相冲", "子卯相刑", "午卯相破"]
+  }
+}

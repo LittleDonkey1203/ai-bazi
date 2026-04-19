@@ -1,0 +1,60 @@
+{
+  "id": "case-1990-08-15-1430-male",
+  "source": "问真八字",
+  "sourceUrl": "",
+  "verifiedBy": ["问真八字"],
+  "input": {
+    "year": 1990,
+    "month": 8,
+    "day": 15,
+    "hour": 14,
+    "minute": 30,
+    "gender": "male"
+  },
+  "expected": {
+    "fourPillars": {
+      "year":  { "stem": "庚", "branch": "午", "nayin": "路旁土", "hiddenStems": ["丁", "己"] },
+      "month": { "stem": "甲", "branch": "申", "nayin": "泉中水", "hiddenStems": ["庚", "壬", "戊"] },
+      "day":   { "stem": "壬", "branch": "子", "nayin": "桑柘木", "hiddenStems": ["癸"] },
+      "hour":  { "stem": "丁", "branch": "未", "nayin": "天河水", "hiddenStems": ["己", "丁", "乙"] }
+    },
+    "tenGods": {
+      "yearStem":  "偏印",
+      "monthStem": "食神",
+      "hourStem":  "正财",
+      "yearBranchHidden":  ["正财", "正官"],
+      "monthBranchHidden": ["偏印", "比肩", "七杀"],
+      "dayBranchHidden":   ["劫财"],
+      "hourBranchHidden":  ["正官", "正财", "伤官"]
+    },
+    "wuxingCount": { "金": 2, "木": 1, "水": 2, "火": 2, "土": 1 },
+    "dayMasterStrength": "strong",
+    "pattern": "偏印格",
+    "dayun": {
+      "startAge": 9,
+      "startYear": 1998,
+      "direction": "顺行",
+      "list": [
+        { "index": 1, "startAge": 9,  "ganZhi": "乙酉" },
+        { "index": 2, "startAge": 19, "ganZhi": "丙戌" },
+        { "index": 3, "startAge": 29, "ganZhi": "丁亥" },
+        { "index": 4, "startAge": 39, "ganZhi": "戊子" },
+        { "index": 5, "startAge": 49, "ganZhi": "己丑" },
+        { "index": 6, "startAge": 59, "ganZhi": "庚寅" },
+        { "index": 7, "startAge": 69, "ganZhi": "辛卯" },
+        { "index": 8, "startAge": 79, "ganZhi": "壬辰" },
+        { "index": 9, "startAge": 89, "ganZhi": "癸巳" }
+      ]
+    },
+    "shensha": {
+      "年支":     ["福星贵人","飞刃"],
+      "月支":     ["太极贵人","德秀贵人","驿马","孤辰","丧门","学堂"],
+      "日支":     ["月德贵人","德秀贵人","九丑日","孤鸾煞","红艳煞","童子煞","羊刃","灾煞"],
+      "时支":     ["天乙贵人","国印贵人","月德合","天医"]
+    },
+    "mingGong":  { "stem": "戊", "branch": "寅" },
+    "taiYuan":   { "stem": "乙", "branch": "亥" },
+    "chengGu":   { "weight": "4两8钱" },
+    "relations": ["申子半合水", "午未六合", "子未相害", "子午冲"]
+  }
+}

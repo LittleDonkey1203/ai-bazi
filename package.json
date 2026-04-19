@@ -1,0 +1,22 @@
+{
+  "name": "bazi-ai",
+  "version": "0.0.1",
+  "private": true,
+  "packageManager": "pnpm@10.32.0",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "test:engine": "pnpm --filter @bazi/engine test",
+    "test:engine:watch": "pnpm --filter @bazi/engine test:watch",
+    "test:engine:coverage": "pnpm --filter @bazi/engine test:coverage",
+    "lint": "turbo run lint"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.0",
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

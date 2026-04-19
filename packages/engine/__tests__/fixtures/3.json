@@ -1,0 +1,60 @@
+{
+  "id": "case-2000-12-05-1800-male",
+  "source": "问真八字",
+  "sourceUrl": "",
+  "verifiedBy": ["问真八字"],
+  "input": {
+    "year": 2000,
+    "month": 12,
+    "day": 5,
+    "hour": 18,
+    "minute": 0,
+    "gender": "male"
+  },
+  "expected": {
+    "fourPillars": {
+      "year":  { "stem": "庚", "branch": "辰", "nayin": "白蜡金", "hiddenStems": ["戊", "乙", "癸"] },
+      "month": { "stem": "丁", "branch": "亥", "nayin": "屋上土", "hiddenStems": ["壬", "甲"] },
+      "day":   { "stem": "丁", "branch": "酉", "nayin": "山下火", "hiddenStems": ["辛"] },
+      "hour":  { "stem": "己", "branch": "酉", "nayin": "大驿土", "hiddenStems": ["辛"] }
+    },
+    "tenGods": {
+      "yearStem":  "正财",
+      "monthStem": "比肩",
+      "hourStem":  "食神",
+      "yearBranchHidden":  ["伤官", "偏印", "七杀"],
+      "monthBranchHidden": ["正官", "正印"],
+      "dayBranchHidden":   ["偏财"],
+      "hourBranchHidden":  ["偏财"]
+    },
+    "wuxingCount": { "金": 3, "木": 0, "水": 1, "火": 2, "土": 2 },
+    "dayMasterStrength": "weak",
+    "pattern": "从弱格",
+    "dayun": {
+      "startAge": 2,
+      "startYear": 2001,
+      "direction": "顺行",
+      "list": [
+        { "index": 1, "startAge": 2,  "ganZhi": "戊子" },
+        { "index": 2, "startAge": 12, "ganZhi": "己丑" },
+        { "index": 3, "startAge": 22, "ganZhi": "庚寅" },
+        { "index": 4, "startAge": 32, "ganZhi": "辛卯" },
+        { "index": 5, "startAge": 42, "ganZhi": "壬辰" },
+        { "index": 6, "startAge": 52, "ganZhi": "癸巳" },
+        { "index": 7, "startAge": 62, "ganZhi": "甲午" },
+        { "index": 8, "startAge": 72, "ganZhi": "乙未" },
+        { "index": 9, "startAge": 82, "ganZhi": "丙申" }
+      ]
+    },
+    "shensha": {
+      "年支": ["国印贵人", "天德合", "空亡"],
+      "月支": ["太极贵人", "文昌贵人", "天厨贵人", "天乙贵人", "福星贵人", "德秀贵人", "飞刃", "亡神", "红鸾", "元辰", "血刃", "驿马"],
+      "日支": ["天乙贵人", "太极贵人", "文昌贵人", "德秀贵人", "十灵日", "九丑日", "空亡", "桃花"],
+      "时支": ["天乙贵人", "太极贵人", "文昌贵人", "月德合", "空亡", "桃花", "将星"]
+    },
+    "mingGong":  { "stem": "乙", "branch": "酉" },
+    "taiYuan":   { "stem": "戊", "branch": "寅" },
+    "chengGu":   { "weight": "4两6钱" },
+    "relations": ["辰酉六合", "酉酉自刑"]
+  }
+}

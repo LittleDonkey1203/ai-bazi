@@ -1,0 +1,61 @@
+// Prisma schema — Phase 3 API 数据模型
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  passwordHash  String
+  displayName   String?
+  createdAt     DateTime       @default(now())
+  charts        SavedChart[]
+  conversations Conversation[]
+}
+
+model SavedChart {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  input     Json     // BaziInput
+  chart     Json     // BaziChart
+  label     String?  // 用户自定义的标签,如"我自己"、"爸爸"
+  createdAt DateTime @default(now())
+
+  conversations Conversation[]
+
+  @@index([userId])
+}
+
+model Conversation {
+  id        String    @id @default(cuid())
+  userId    String?
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chartId   String
+  chart     SavedChart @relation(fields: [chartId], references: [id], onDelete: Cascade)
+  title     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  messages Message[]
+
+  @@index([userId])
+  @@index([chartId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String       // 'user' | 'assistant' | 'system'
+  content        String       @db.Text
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId])
+}

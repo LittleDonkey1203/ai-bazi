@@ -1,0 +1,61 @@
+{
+  "id": "case-1978-11-11-0800-female",
+  "source": "问真八字",
+  "sourceUrl": "",
+  "verifiedBy": ["问真八字"],
+  "input": {
+    "year": 1978,
+    "month": 11,
+    "day": 11,
+    "hour": 8,
+    "minute": 0,
+    "gender": "female"
+  },
+  "expected": {
+    "fourPillars": {
+      "year":  { "stem": "戊", "branch": "午", "nayin": "天上火", "hiddenStems": ["丁", "己"] },
+      "month": { "stem": "癸", "branch": "亥", "nayin": "大海水", "hiddenStems": ["壬", "甲"] },
+      "day":   { "stem": "丁", "branch": "丑", "nayin": "涧下水", "hiddenStems": ["己", "癸", "辛"] },
+      "hour":  { "stem": "甲", "branch": "辰", "nayin": "覆灯火", "hiddenStems": ["戊", "乙", "癸"] }
+    },
+    "tenGods": {
+      "yearStem":  "伤官",
+      "monthStem": "七杀",
+      "hourStem":  "正印",
+      "yearBranchHidden":  ["比肩", "食神"],
+      "monthBranchHidden": ["正官", "正印"],
+      "dayBranchHidden":   ["食神", "七杀", "偏财"],
+      "hourBranchHidden":  ["伤官", "偏印", "七杀"]
+    },
+    "wuxingCount": { "金": 0, "木": 1, "水": 2, "火": 2, "土": 3 },
+    "dayMasterStrength": "weak",
+    "pattern": "正官格",
+    "dayun": {
+      "startAge": 2,
+      "startYear": 1979,
+      "direction": "逆行",
+      "list": [
+        { "index": 1, "startAge": 2,  "ganZhi": "壬戌" },
+        { "index": 2, "startAge": 12, "ganZhi": "辛酉" },
+        { "index": 3, "startAge": 22, "ganZhi": "庚申" },
+        { "index": 4, "startAge": 32, "ganZhi": "己未" },
+        { "index": 5, "startAge": 42, "ganZhi": "戊午" },
+        { "index": 6, "startAge": 52, "ganZhi": "丁巳" },
+        { "index": 7, "startAge": 62, "ganZhi": "丙辰" },
+        { "index": 8, "startAge": 72, "ganZhi": "乙卯" },
+        { "index": 9, "startAge": 82, "ganZhi": "甲寅" }
+      ]
+    },
+    "shensha": {
+      "年支": ["天厨贵人", "禄神", "桃花"],
+      "月支": ["天乙贵人", "福星贵人", "飞刃", "劫煞", "元辰", "血刃", "驿马"],
+      "日支": ["阴差阳错", "天乙贵人", "太极贵人", "国印贵人", "德秀贵人", "空亡"],
+      "时支": ["太极贵人", "月德贵人", "德秀贵人", "童子煞", "寡宿", "吊客"]
+    },
+    "mingGong":  { "stem": "甲", "branch": "寅" },
+    "taiYuan":   { "stem": "甲", "branch": "寅" },
+    "chengGu":   { "weight": "4两5钱" },
+    "relations": ["午亥暗合", "丑午相害", "辰丑相破"]
+  },
+  "notes": "1. 命宫、胎元、称骨在截图中未显示，置为 null；2. 阳年女命，大运逆行；3. 丁火生于亥月，正官当令，日主偏弱 (weak)；月干透出癸水七杀，初步取为七杀格；4. 截图显示日柱空亡申酉，年柱和月柱均空亡子丑，时柱空亡寅卯；5. 地支存在丑午相害、辰丑相破的关系；6. 原局缺金，五行金的数量为 0；7. 日柱丁丑为阴差阳错日。"
+}

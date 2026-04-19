@@ -1,0 +1,60 @@
+{
+  "id": "case-2023-04-15-0900-female",
+  "source": "问真八字",
+  "sourceUrl": "",
+  "verifiedBy": ["问真八字"],
+  "input": {
+    "year": 2023,
+    "month": 4,
+    "day": 15,
+    "hour": 9,
+    "minute": 0,
+    "gender": "female"
+  },
+  "expected": {
+    "fourPillars": {
+      "year":  { "stem": "癸", "branch": "卯", "nayin": "金箔金", "hiddenStems": ["乙"] },
+      "month": { "stem": "丙", "branch": "辰", "nayin": "沙中土", "hiddenStems": ["戊", "乙", "癸"] },
+      "day":   { "stem": "癸", "branch": "卯", "nayin": "金箔金", "hiddenStems": ["乙"] },
+      "hour":  { "stem": "丁", "branch": "巳", "nayin": "沙中土", "hiddenStems": ["丙", "庚", "戊"] }
+    },
+    "tenGods": {
+      "yearStem":  "比肩",
+      "monthStem": "正财",
+      "hourStem":  "偏财",
+      "yearBranchHidden":  ["食神"],
+      "monthBranchHidden": ["正官", "食神", "比肩"],
+      "dayBranchHidden":   ["食神"],
+      "hourBranchHidden":  ["正财", "正印", "正官"]
+    },
+    "wuxingCount": { "金": 0, "木": 2, "水": 2, "火": 3, "土": 1 },
+    "dayMasterStrength": "weak",
+    "pattern": "从弱格",
+    "dayun": {
+      "startAge": 8,
+      "startYear": 2030,
+      "direction": "顺行",
+      "list": [
+        { "index": 1, "startAge": 8,  "ganZhi": "丁巳" },
+        { "index": 2, "startAge": 18, "ganZhi": "戊午" },
+        { "index": 3, "startAge": 28, "ganZhi": "己未" },
+        { "index": 4, "startAge": 38, "ganZhi": "庚申" },
+        { "index": 5, "startAge": 48, "ganZhi": "辛酉" },
+        { "index": 6, "startAge": 58, "ganZhi": "壬戌" },
+        { "index": 7, "startAge": 68, "ganZhi": "癸亥" },
+        { "index": 8, "startAge": 78, "ganZhi": "甲子" },
+        { "index": 9, "startAge": 88, "ganZhi": "乙丑" }
+      ]
+    },
+    "shensha": {
+      "年支": ["天乙贵人", "文昌贵人", "天厨贵人", "福星贵人", "德秀贵人", "天医", "将星"],
+      "月支": ["德秀贵人", "空亡"],
+      "日支": ["天乙贵人", "文昌贵人", "天厨贵人", "福星贵人", "德秀贵人", "童子煞", "将星", "天医"],
+      "时支": ["天乙贵人", "太极贵人", "天德合", "月德合", "空亡", "飞刃", "驿马", "孤辰", "丧门", "学堂"]
+    },
+    "mingGong":  { "stem": "庚", "branch": "申" },
+    "taiYuan":   { "stem": "丁", "branch": "未" },
+    "chengGu":   { "weight": "5两" },
+    "relations": ["卯辰害"]
+  }
+}

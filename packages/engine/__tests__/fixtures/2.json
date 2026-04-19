@@ -1,0 +1,61 @@
+{
+  "id": "case-1985-06-20-1030-female",
+  "source": "问真八字",
+  "sourceUrl": "",
+  "verifiedBy": ["问真八字"],
+  "input": {
+    "year": 1985,
+    "month": 6,
+    "day": 20,
+    "hour": 10,
+    "minute": 30,
+    "gender": "female"
+  },
+  "expected": {
+    "fourPillars": {
+      "year":  { "stem": "乙", "branch": "丑", "nayin": "海中金", "hiddenStems": ["己", "癸", "辛"] },
+      "month": { "stem": "壬", "branch": "午", "nayin": "杨柳木", "hiddenStems": ["丁", "己"] },
+      "day":   { "stem": "庚", "branch": "寅", "nayin": "松柏木", "hiddenStems": ["甲", "丙", "戊"] },
+      "hour":  { "stem": "辛", "branch": "巳", "nayin": "白蜡金", "hiddenStems": ["丙", "庚", "戊"] }
+    },
+    "tenGods": {
+      "yearStem":  "正财",
+      "monthStem": "食神",
+      "hourStem":  "劫财",
+      "yearBranchHidden":  ["正印", "伤官", "劫财"],
+      "monthBranchHidden": ["正官", "正印"],
+      "dayBranchHidden":   ["偏财", "七杀", "偏印"],
+      "hourBranchHidden":  ["七杀", "比肩", "偏印"]
+    },
+    "wuxingCount": { "金": 2, "木": 2, "水": 1, "火": 2, "土": 1 },
+    "dayMasterStrength": "weak",
+    "pattern": "正官格",
+    "dayun": {
+      "startAge": 7,
+      "startYear": 1991,
+      "direction": "顺行",
+      "list": [
+        { "index": 1, "startAge": 7,  "ganZhi": "癸未" },
+        { "index": 2, "startAge": 17, "ganZhi": "甲申" },
+        { "index": 3, "startAge": 27, "ganZhi": "乙酉" },
+        { "index": 4, "startAge": 37, "ganZhi": "丙戌" },
+        { "index": 5, "startAge": 47, "ganZhi": "丁亥" },
+        { "index": 6, "startAge": 57, "ganZhi": "戊子" },
+        { "index": 7, "startAge": 67, "ganZhi": "己丑" },
+        { "index": 8, "startAge": 77, "ganZhi": "庚寅" },
+        { "index": 9, "startAge": 87, "ganZhi": "辛卯" }
+      ]
+    },
+    "shensha": {
+      "年支": ["福星贵人", "天乙贵人"],
+      "月支": ["太极贵人", "文昌贵人", "天厨贵人", "福星贵人", "桃花"],
+      "日支": [],
+      "时支": ["天罗地网", "月德合", "正学堂", "金舆", "天医", "劫煞"]
+    },
+    "mingGong":  { "stem": "壬", "branch": "午" },
+    "taiYuan":   { "stem": "癸", "branch": "酉" },
+    "chengGu":   { "weight": "3两8钱" },
+    "relations": ["丑午相害", "寅巳相刑", "寅午半合", "寅巳申三刑候补"],
+    "notes": "2026-04-19 修正:原 fixture 日柱 庚辰 不符万年历,重算为 庚寅。下游藏干/纳音/十神/五行/起运/日支神煞/关系 全部刷新。起运 10 岁 改为 7 岁(engine/lunar-javascript 口径)。"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "id": "case-1995-06-15-0030-male",
+  "source": "问真八字",
+  "sourceUrl": "",
+  "verifiedBy": ["问真八字"],
+  "input": {
+    "year": 1995,
+    "month": 6,
+    "day": 15,
+    "hour": 0,
+    "minute": 30,
+    "gender": "male"
+  },
+  "expected": {
+    "fourPillars": {
+      "year":  { "stem": "乙", "branch": "亥", "nayin": "山头火", "hiddenStems": ["壬", "甲"] },
+      "month": { "stem": "壬", "branch": "午", "nayin": "杨柳木", "hiddenStems": ["丁", "己"] },
+      "day":   { "stem": "丁", "branch": "丑", "nayin": "涧下水", "hiddenStems": ["己", "癸", "辛"] },
+      "hour":  { "stem": "庚", "branch": "子", "nayin": "壁上土", "hiddenStems": ["癸"] }
+    },
+    "tenGods": {
+      "yearStem":  "偏印",
+      "monthStem": "正官",
+      "hourStem":  "正财",
+      "yearBranchHidden":  ["正官", "正印"],
+      "monthBranchHidden": ["比肩", "食神"],
+      "dayBranchHidden":   ["食神", "七杀", "偏财"],
+      "hourBranchHidden":  ["七杀"]
+    },
+    "wuxingCount": { "金": 1, "木": 1, "水": 3, "火": 2, "土": 1 },
+    "dayMasterStrength": "strong",
+    "pattern": "建禄格",
+    "dayun": {
+      "startAge": 4,
+      "startYear": 1998,
+      "direction": "逆行",
+      "list": [
+        { "index": 1, "startAge": 4,  "ganZhi": "辛巳" },
+        { "index": 2, "startAge": 14, "ganZhi": "庚辰" },
+        { "index": 3, "startAge": 24, "ganZhi": "己卯" },
+        { "index": 4, "startAge": 34, "ganZhi": "戊寅" },
+        { "index": 5, "startAge": 44, "ganZhi": "丁丑" },
+        { "index": 6, "startAge": 54, "ganZhi": "丙子" },
+        { "index": 7, "startAge": 64, "ganZhi": "乙亥" },
+        { "index": 8, "startAge": 74, "ganZhi": "甲戌" },
+        { "index": 9, "startAge": 84, "ganZhi": "癸酉" }
+      ]
+    },
+    "shensha": {
+      "年支": ["国印贵人", "天乙贵人", "福星贵人", "天德贵人", "飞刃", "驿马"],
+      "月支": ["太极贵人", "文昌贵人", "天厨贵人", "禄神", "桃花"],
+      "日支": ["阴差阳错", "福星贵人", "德秀贵人", "丧门"],
+      "时支": ["天乙贵人", "太极贵人", "桃花"]
+    },
+    "mingGong":  { "stem": "丁", "branch": "亥" },
+    "taiYuan":   { "stem": "癸", "branch": "酉" },
+    "chengGu":   { "weight": "4两8钱" },
+    "relations": ["子午相冲","午亥暗合", "子丑相合", "丑午相害"]
+  }
+}
