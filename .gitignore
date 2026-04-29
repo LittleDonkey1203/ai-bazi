@@ -1,0 +1,12 @@
+.env
+.env.local
+.env.production
+*.log
+
+**/node_modules/
+**/dist/
+**/release/
+**/.tmp/
+**/.DS_Store
+
+.publish-temp/
