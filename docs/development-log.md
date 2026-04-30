@@ -2,6 +2,46 @@
 
 按时间倒序维护。后续新进展继续追加在顶部。
 
+## 2026-04-30
+
+### 去掉八字咨询 AI 的大师团队人设口吻
+- `chatMemory.ts`
+  - 八字咨询系统提示不再注入 `master.prompt` 和 `getGamePrompt(...)`
+  - 新增明确规则：禁止使用“大师人设”“古风口吻”或角色扮演式语气，统一按正常、直接、专业的命理分析口径输出
+  - 会话注入标题从“角色与规则”改为“系统规则”
+- 本轮不改页面结构、不改规则引擎，只去掉 AI 输出层的人设包装
+
+### 细化过三关直断的 V3 AI prompt
+- `advancedAnalysis.ts`
+  - 新增 `buildBlindThreePassActionFocusV3(...)`
+  - 新增 `buildBaziAiBridgeFocusV3(...)`
+- 本轮只调整 AI 提示词，不改本地规则引擎逻辑
+- V3 prompt 重点补强：
+  - AI 不是复述规则摘要，而是把本地规则当作命理师案头资料继续深推
+  - 流年验事必须综合喜用神、神煞、刑冲合害、宫位、十神、六亲线
+  - 如果规则只点到某个流年的单一面向，AI 可以继续按八字逻辑扩展到事业、学业、家宅、人际、财务、身体、证照、搬动等其他方面，但必须有依据
+  - 兄弟排行类断语中“若与现实不符，可能是什么原因”的解释不得擅自删减
+  - 六亲断语以本地强规则为骨架，再继续深入分析
+- `BaZiPage.tsx` 已切换为使用 V3 prompt 入口
+
+### 调整过三关直断的 AI 桥接优先级与会话上下文保留
+- `advancedAnalysis.ts`
+  - 扩充 `buildBlindThreePassAiReferencePayload(...)`，不再只给前 3 条六亲候选
+  - 特殊流年候选补入 `fortuneGanzhi / flowGanzhi / targetPillars / triggeredTenGods / matchedRelations / annualRelations / annualGods / supportiveGods / cautionGods / whyImportant`
+  - 六亲候选补入 `focusTenGods / focusPalaces / anchorStrategy / palaceRule / stateRule / highRiskEvidenceLines`
+  - `buildBlindThreePassActionFocusV2(...)` 和 `buildBaziAiBridgeFocusV2(...)` 改为强制要求 AI 合参：
+    - 喜用神引擎结果
+    - 特殊流年标签
+    - 当年刑冲合害
+    - 当年神煞
+    - 打中宫位、十神和六亲线
+  - 明确规定兄弟数量排行、头胎男女、同胎、多子少子等定式信息默认以本地规则为主，不得随意弱化
+- `chatMemory.ts`
+  - 取消对本地规则输出消息的上下文过滤，后续追问会继续带上这些消息
+  - 取消 `过三关直断` 对会话记忆摘要的绕过，恢复记忆摘要注入
+  - 重写系统提示规则，明确本地规则是强参考而不是可随意忽略的候选
+  - 保留本地规则消息进入最近上下文和记忆摘要，避免后续追问时丢失流年/六亲线索
+
 ## 2026-04-29
 
 ### 新增 GitHub 可交付的前后端启动文档

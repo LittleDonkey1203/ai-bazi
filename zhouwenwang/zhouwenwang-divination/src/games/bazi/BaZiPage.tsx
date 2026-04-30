@@ -47,8 +47,8 @@ import {
   type BaziPillarInput,
 } from './caseStorage';
 import {
-  buildBaziAiBridgeFocusV2,
-  buildBlindThreePassActionFocusV2,
+  buildBaziAiBridgeFocusV3,
+  buildBlindThreePassActionFocusV3,
 } from './advancedAnalysis';
 import {
   buildYongShenStageAnalysis,
@@ -1141,7 +1141,7 @@ const BaZiPage = () => {
       return '';
     }
 
-    return buildBaziAiBridgeFocusV2(chartData, focusQuestion);
+    return buildBaziAiBridgeFocusV3(chartData, focusQuestion);
   };
 
   const buildLocalYongShenMarkdown = (focusQuestion?: string) => {
@@ -1237,7 +1237,7 @@ const BaZiPage = () => {
       await getAnalysis({
         userMessage,
         focusQuestion,
-        activeFocus: buildBlindThreePassActionFocusV2(focusQuestion),
+        activeFocus: buildBlindThreePassActionFocusV3(focusQuestion),
       });
     } catch (error) {
       console.error('过三关直断 AI 分析失败:', error);

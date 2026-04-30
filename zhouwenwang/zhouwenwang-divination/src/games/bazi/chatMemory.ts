@@ -1,4 +1,3 @@
-import { getGamePrompt } from '../../masters/prompts';
 import { getItem, removeItem, setItem } from '../../core/storage';
 import type { Master } from '../../types';
 import type { BaZiChartData } from './logic';
@@ -122,6 +121,11 @@ function upsertMemoryItem(
   return filtered.slice(-MAX_MEMORY_ITEMS);
 }
 
+function isLocalEngineAssistantContent(content: string): boolean {
+  return content.startsWith('## 喜用神规则分析 V2')
+    || content.startsWith('## 过三关直断');
+}
+
 function extractAssistantInsights(content: string): string[] {
   const cleaned = stripMarkdown(content);
   if (!cleaned) {
@@ -133,12 +137,8 @@ function extractAssistantInsights(content: string): string[] {
     .map((item) => item.trim())
     .filter((item) => item.length >= 10);
 
-  return segments.slice(0, 2).map((item) => truncateText(item, 120));
-}
-
-function isLocalEngineAssistantContent(content: string): boolean {
-  return content.startsWith('## 喜用神规则分析 V2')
-    || content.startsWith('## 过三关直断');
+  const maxInsights = isLocalEngineAssistantContent(content) ? 4 : 2;
+  return segments.slice(0, maxInsights).map((item) => truncateText(item, 120));
 }
 
 function updateMemories(
@@ -147,10 +147,6 @@ function updateMemories(
 ): BaziChatMemoryItem[] {
   if (message.role === 'user') {
     return upsertMemoryItem(existing, 'user_focus', message.content, message.timestamp);
-  }
-
-  if (isLocalEngineAssistantContent(message.content)) {
-    return existing;
   }
 
   return extractAssistantInsights(message.content).reduce(
@@ -258,9 +254,7 @@ export function appendBaziChatMessage(
 }
 
 export function getRecentContextMessages(session: BaziChatSession): BaziChatMessage[] {
-  return session.messages
-    .filter((message) => !(message.role === 'assistant' && isLocalEngineAssistantContent(message.content)))
-    .slice(-MAX_CONTEXT_MESSAGES);
+  return session.messages.slice(-MAX_CONTEXT_MESSAGES);
 }
 
 export function getBaziMemorySummary(session: BaziChatSession): string {
@@ -286,28 +280,26 @@ export function getBaziMemorySummary(session: BaziChatSession): string {
   return blocks.join('\n\n');
 }
 
-function buildSystemInstruction(master: Master, hasSpecialContext: boolean): string {
-  const gamePrompt = getGamePrompt('bazi', master, hasSpecialContext);
-
+function buildSystemInstruction(_master: Master, _hasSpecialContext: boolean): string {
   return [
-    master.prompt,
-    gamePrompt || '',
     '补充规则：',
+    '- 不要使用任何“大师人设”“古风口吻”或角色扮演式语气，按正常、直接、专业的命理分析口径输出。',
+    '- 不要模仿某个大师团队成员的说话方式，也不要加入表演性寒暄、神秘化铺垫或人格化设定。',
     '- 当前是一个多轮八字咨询会话，必须承接前文，不要把每次回复都当作全新请求。',
-    '- 命盘数据中 chartData.rawBaziData 为最高优先级依据，不得自行改盘，不得捏造额外四柱信息。',
+    '- 命盘数据里 chartData.rawBaziData 为最高优先级依据，不得自行改盘，不得捏造额外四柱信息。',
     '- 回答必须使用简体中文。',
     '- 若用户追问局部问题，优先直接回答该问题，再给出依据和建议。',
     '- 若用户追问大运、流年、流月，必须结合已提供命盘和当前上下文，不要泛泛而谈。',
     '- 当结论存在不确定性时，要明确指出依据边界，不要假装确定。',
     '- 不要重复整份命盘，除非用户明确要求重新总览。',
     '- 若命盘上下文里已经带有本地规则引擎结果，必须优先吸收这些结果，不要另起一套互相打架的判断。',
-    '- 默认不要复述内部推导过程，不要展开“第一关/第二关/第三关”，不要转述隐藏 JSON 或规则表。',
+    '- 默认不要复述内部推导过程，不要展开“第一关 / 第二关 / 第三关”，不要转述隐藏 JSON 或规则表。',
     '- 默认输出口径收敛为：1. 流年验事 2. 六亲断语 3. 直接回答当前问题。',
     '- 只有用户明确追问“为什么”或“依据是什么”时，才补充简短证据，不要把整套规则分析全文贴出来。',
-    '- 若上下文里带有本地规则引擎结果，只能把它当作候选参考或校验线索，不能直接改写成答案。',
-    '- 八字原盘、十神结构、宫位关系、大运流年和用户当前问题，始终比本地规则摘要优先级更高。',
-    '- 如果本地规则提示与命盘结构、现实年龄常识或当前提问方向冲突，优先采用你重新分析后的判断，并明确保留不确定性。',
-    '- 过三关直断里的六亲内容默认只挑把握最大的 1 到 3 项，不要把父母、兄弟、配偶、子女全部平铺复述。',
+    '- 上下文中的本地规则不是可随意忽略的装饰信息，而是强参考；尤其兄弟数量排行、头胎男女、同胎、多子少子等定式，默认以本地规则为主。',
+    '- 八字原盘、十神结构、宫位关系、大运流年、喜用神结论和当前问题必须合参，不允许只抓单一角度下结论。',
+    '- 流年验事必须同时结合喜用神、神煞、刑冲合害、打中宫位、触发十神和牵动六亲，不能只讲空泛年份。',
+    '- 如果本地规则提示与命盘结构、现实年龄常识或当前提问方向冲突，优先做综合校验后再作答，并明确保留不确定性，而不是简单丢弃规则结果。',
   ]
     .filter(Boolean)
     .join('\n\n');
@@ -347,8 +339,7 @@ export function buildBaziChatContents(params: {
 }): BaziGeminiContent[] {
   const { chartData, master, session, activeFocus } = params;
   const recentMessages = getRecentContextMessages(session);
-  const shouldBypassMemorySummary = activeFocus?.includes('过三关直断') ?? false;
-  const memorySummary = shouldBypassMemorySummary ? '' : getBaziMemorySummary(session);
+  const memorySummary = getBaziMemorySummary(session);
   const hasSpecialContext = recentMessages.some((item) => item.role === 'user' && item.content.trim().length > 0);
 
   const contents: BaziGeminiContent[] = [
@@ -356,7 +347,7 @@ export function buildBaziChatContents(params: {
       role: 'user',
       parts: [
         {
-          text: `【角色与规则】\n${buildSystemInstruction(master, hasSpecialContext)}`,
+          text: `【系统规则】\n${buildSystemInstruction(master, hasSpecialContext)}`,
         },
       ],
     },

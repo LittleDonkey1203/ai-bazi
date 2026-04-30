@@ -39,31 +39,45 @@ function scoreLiuQinReference(profile: BlindThreePassAnalysis['liuqinProfiles'][
 }
 
 function buildBlindThreePassAiReferencePayload(blind: BlindThreePassAnalysis) {
-  const strongestSpecialYears = blind.specialYears.slice(0, 4).map((item) => ({
+  const strongestSpecialYears = blind.specialYears.slice(0, 6).map((item) => ({
     year: item.year,
     age: item.age,
     kind: item.kind,
     tone: item.tone,
     score: item.score,
+    fortuneGanzhi: item.fortuneGanzhi,
+    flowGanzhi: item.flowGanzhi,
+    targetPillars: item.targetPillars,
     linkedLiuQinLabels: item.linkedLiuQinLabels,
+    triggeredTenGods: item.triggeredTenGods,
+    matchedRelations: item.matchedRelations,
     annualRelations: item.annualRelations,
     annualGods: item.annualGods,
-    likelyEvents: item.likelyEvents.slice(0, 3),
+    supportiveGods: item.supportiveGods,
+    cautionGods: item.cautionGods,
+    whyImportant: item.whyImportant.slice(0, 4),
+    likelyEvents: item.likelyEvents.slice(0, 4),
   }));
 
   const priorityLiuQin = [...blind.liuqinProfiles]
     .map((profile) => ({
+      key: profile.key,
       label: profile.label,
       referenceScore: scoreLiuQinReference(profile),
       tendency: profile.tendency,
       bodyUseMode: profile.bodyUseMode,
-      directCuts: profile.directCuts.slice(0, 2),
-      relatedSpecialYears: profile.relatedSpecialYears.slice(0, 2),
-      chapterSignals: profile.chapterSignals.slice(0, 2),
-      highRiskDirectJudgments: profile.highRiskDirectJudgments.slice(0, 1),
+      focusTenGods: profile.focusTenGods,
+      focusPalaces: profile.focusPalaces,
+      anchorStrategy: profile.anchorStrategy,
+      palaceRule: profile.palaceRule,
+      stateRule: profile.stateRule,
+      directCuts: profile.directCuts.slice(0, 4),
+      relatedSpecialYears: profile.relatedSpecialYears.slice(0, 4),
+      chapterSignals: profile.chapterSignals.slice(0, 4),
+      highRiskDirectJudgments: profile.highRiskDirectJudgments.slice(0, 3),
+      highRiskEvidenceLines: profile.highRiskEvidenceLines.slice(0, 4),
     }))
-    .sort((a, b) => b.referenceScore - a.referenceScore)
-    .slice(0, 3);
+    .sort((a, b) => b.referenceScore - a.referenceScore);
 
   return {
     domain: blind.domain,
@@ -229,11 +243,13 @@ export function buildBaziAiBridgeFocus(chartData: BaZiChartData, question?: stri
 export function buildBlindThreePassActionFocusV2(question?: string): string {
   return [
     '本轮是“过三关直断”专用咨询，页面最终只展示 AI 成文结果，不展示本地规则展开过程。',
-    '必须先基于命盘原始数据、当前大运流年、用户问题自行完成判断，再参考本地规则结果做交叉验证。',
-    '本地规则结果只是候选参考，不是必须照抄的标准答案；如果与命盘结构、流年组合或现实常识冲突，以你重新判断后的结果为准。',
+    '先以命盘原始数据、大运流年和用户问题独立判断，但不得绕开本地喜用神引擎和过三关规则输出；两者必须合参，而不是二选一。',
+    '流年验事必须同时结合：1. 喜用神引擎的最终喜忌 2. 特殊流年标签 3. 当年的刑冲合害关系 4. 当年的神煞 5. 打中的宫位、十神和六亲线，不允许只凭一句泛泛年份结论。',
+    '若某个年份虽然结构强，但与现实年龄常识明显冲突，要改写成该年龄段更合理的家庭、学业、健康、人际或家宅事件，不能硬断不合常识的情节。',
+    '六亲断语必须全面参考本地规则输出，尤其是兄弟数量、兄弟排行、头胎男女、同胎、多子少子这类定式信息，默认以本地规则为主，不要随意弱化成模糊倾向。',
+    '父母、兄弟、配偶、子女不要求机械平均铺开，但凡本地规则已经给出明确而且稳定的口径，就要吸收进最终断语里，不得因为想简化输出而直接忽略。',
     '输出顺序固定为：1. 流年验事 2. 六亲断语 3. 直接回答当前问题。',
-    '流年验事只选最强的 2 到 4 个年份，直接说最可能发生过的具体事，不要铺陈规则链。',
-    '六亲断语只说把握最大的 1 到 3 项，宁缺毋滥，不要把父母、兄弟、配偶、子女全部平铺说一遍。',
+    '流年验事优先写最有把握、最有证据的 2 到 4 个年份；每个年份直接落到具体事件方向，但不要把完整规则链原样抄给用户。',
     '六亲断语直接下结论，必要时用一句短证据托住，不要再展示“定位规则 / 宫位规则 / 状态规则”等内部标题。',
     '涉及高风险绝对直断时，必须先带免责声明，再给结论。',
     question
@@ -249,16 +265,21 @@ export function buildBaziAiBridgeFocusV2(chartData: BaZiChartData, question?: st
 
   return [
     '以下内容是页面本地规则引擎生成的隐藏上下文，供 AI 回答时使用，不要把原始 JSON、全部规则过程或逐关分析整段复述给用户。',
-    '回答时必须先根据 chartData.rawBaziData、关系信息、大运流年和用户问题自行分析，再把本地规则结果当作参考校验，不要直接改写成本地规则摘要。',
+    '回答时必须先根据 chartData.rawBaziData、关系信息、大运流年和用户问题自行分析，但不得绕开本地规则；原盘判断、本地喜用神结论、本地过三关规则三者必须交叉校验。',
     question ? `当前问题：${question}` : '当前问题：命局总览',
     `喜用神规则结果：${JSON.stringify(buildYongShenAiPayload(yongShen), null, 2)}`,
     `过三关候选参考：${JSON.stringify(blindReference, null, 2)}`,
     `过三关规则明细（仅供必要时查阅）：${JSON.stringify(blind, null, 2)}`,
     `高风险直断免责声明：${blind.highRiskDisclaimer}`,
+    '使用优先级要求：',
+    '1. 原盘、大运流年、现实年龄常识是基础。',
+    '2. 喜用神引擎结果必须进入流年验事判断，明确区分哪些年份是在扶用神、泄用神、制忌神还是助忌神。',
+    '3. 特殊流年判断必须同时看流年神煞、全年刑冲合害、命中宫位、触发十神和牵动六亲。',
+    '4. 六亲部分必须充分吸收本地规则，尤其兄弟数量排行、头胎男女、同胎、子女多少等定式信息，原则上以规则为主，不要随意推翻。',
     '面向用户的输出要求：优先输出你重新分析后的最终判断、流年验事、六亲断语，以及对当前问题的直接回答。',
     '默认输出结构：',
-    '1. 流年验事：只挑最强的 2 到 4 个年份，每个年份直接说可能发生了什么，不要展开完整规则链。',
-    '2. 六亲断语：只挑把握最大的 1 到 3 项来讲，不要把所有六亲都说一遍，不要先解释规则，再给结论。',
+    '1. 流年验事：只挑最强的 2 到 4 个年份，每个年份直接说可能发生了什么，但每条判断都必须暗含喜用神、神煞、刑冲合害和六亲牵动的综合依据。',
+    '2. 六亲断语：围绕本地规则已明确的六亲线直断，尤其不能漏掉兄弟数量排行、头胎男女、同胎等规则主导项；不要先解释规则，再给结论。',
     '3. 当前问题回答：回到用户提问本身，直接回答。',
     '除非用户追问，不要展开完整规则过程，不要复述“第一关 / 第二关 / 第三关”的内部推导。若涉及高风险绝对直断，必须先带免责声明再给结论。',
   ].join('\n\n');
@@ -374,4 +395,64 @@ export function buildBlindThreePassLocalSummary(chartData: BaZiChartData, questi
       ? `- ${blind.highRiskDisclaimer}`
       : '',
   ].join('\n');
+}
+
+export function buildBlindThreePassActionFocusV3(question?: string): string {
+  return [
+    '本轮是“过三关直断”专用咨询。页面最终只展示 AI 成文结果，不展示本地规则展开过程，但你必须充分吸收这些规则结果后再继续深推，不可只做摘要复述。',
+    '你的身份默认就是资深命理师。你不是来照抄本地规则结论，而是要在命盘原始数据、大运流年、喜用神引擎结果、过三关本地规则结果和用户当前问题的基础上继续推论、继续论事。',
+    '喜用神结论必须真正参与推论。要明确哪些年份、哪些六亲、哪些事件是在扶用神、泄用神、制忌神、助忌神。',
+    '流年验事必须同时结合：1. 喜用神与忌神 2. 特殊流年标签 3. 当年的刑冲合害 4. 当年的神煞 5. 打中的宫位、十神、六亲线，不允许只凭一句泛泛年份结论。',
+    '本地规则给出的“可能应事”“直断句”“六亲定式”不是边界，只是你继续深入分析的基础。你可以在不违背原盘和规则主线的前提下，进一步推出更完整、更具体、更像真人经历的事件链。',
+    '如果某个流年的本地规则输出只集中在某一个方面，例如只提到感情、父母、财务或健康，你不能把这个年份机械限制在这一面。你需要继续按照八字逻辑，结合十神、宫位、喜忌、刑冲合害与岁运结构，推出这个年份还可能同步牵动的其他方面，例如事业、学业、家宅、人际、财务、身体、证照、搬动等。',
+    '但这种扩展必须有八字依据，不允许无根据发散。',
+    '若某个年份虽然结构强，但与现实年龄常识冲突，必须自动修正表达。例如儿童期优先落在家庭、健康、学业、搬迁、亲缘、惊吓、人际，不要硬断恋爱婚变。',
+    '六亲分析不能机械缩成几条空话。凡本地规则已经给出较强依据的内容，尤其兄弟数量、排行、头胎男女、同胎、多子少子、父母状态等，要充分吸收后再继续展开。',
+    '对于兄弟排行这类内容，如果本地规则已经给出“若与现实不符，可能是什么原因”，这些解释不要删减，不要擅自简化成一句模糊话。',
+    '允许你超出本地规则已写出的表面断语继续深推，但不允许脱离本地规则主轴乱发挥。',
+    '输出顺序固定为：1. 流年验事 2. 六亲断语 3. 直接回答当前问题。',
+    '流年验事优先写最有把握、最有证据的 2 到 4 个年份；每个年份直接落到具体事件方向，不要只停留在本地规则已经写出的单一事件面向，也不要把完整规则链原样抄给用户。',
+    '六亲断语以本地规则强结论为骨架，在此基础上继续深入分析，不要只停留在规则原句。谁的信息最强就重点写谁，但不要漏掉本地规则里已经很关键的六亲信息。',
+    '六亲断语直接下结论，必要时用一句短证据托住，不要再展示“定位规则 / 宫位规则 / 状态规则”等内部标题。',
+    '涉及高风险绝对直断时，必须先带免责声明，再给结论。',
+    question
+      ? `当前问题必须落回这里作答：${question}`
+      : '如果用户没有额外问题，就以“历史流年验事 + 六亲重点直断”为主。',
+  ].join('\n');
+}
+
+export function buildBaziAiBridgeFocusV3(chartData: BaZiChartData, question?: string): string {
+  const yongShen = analyzeYongShen(chartData);
+  const blind = analyzeBlindThreePass(chartData, question);
+  const blindReference = buildBlindThreePassAiReferencePayload(blind);
+
+  return [
+    '以下内容是页面本地规则引擎生成的隐藏上下文，供你回答时使用。不要把原始 JSON、全部规则过程、字段名或逐关分析原样复述给用户。',
+    '你要把这些材料当作“命理师案头资料”，不是当作现成答案照抄。你的任务是在这些资料基础上继续推论、继续深入分析。',
+    '回答时必须先根据 chartData.rawBaziData、关系信息、大运流年和用户问题自行分析，但不得绕开本地规则；原盘判断、本地喜用神结论、本地过三关规则三者必须交叉校验。',
+    question ? `当前问题：${question}` : '当前问题：命局总览',
+    `喜用神规则结果：${JSON.stringify(buildYongShenAiPayload(yongShen), null, 2)}`,
+    `过三关候选参考：${JSON.stringify(blindReference, null, 2)}`,
+    `过三关规则明细（仅供必要时查阅）：${JSON.stringify(blind, null, 2)}`,
+    `高风险直断免责声明：${blind.highRiskDisclaimer}`,
+    '当前分析材料包括：1. 八字原盘与 rawBaziData 2. 十神、宫位、关系信息 3. 大运流年 4. 喜用神规则结果 5. 过三关规则结果 6. 用户当前问题。',
+    '你的工作方式必须是：先读原盘、十神结构、宫位关系、大运流年；再把喜用神结果真正纳入判断，明确事件和六亲是顺用神还是逆用神；再把过三关规则结果当作强参考，尤其是六亲定式、特殊流年、兄弟排行数量、头胎男女、同胎、多子少子、父母状态等；在以上基础上继续深入推论，而不是停留在本地规则给出的表层断语。',
+    '使用优先级要求：',
+    '1. 原盘、大运流年、现实年龄常识是基础。',
+    '2. 喜用神引擎结果必须进入流年验事判断，明确区分哪些年份是在扶用神、泄用神、制忌神还是助忌神。',
+    '3. 特殊流年判断必须同时看流年神煞、全年刑冲合害、命中宫位、触发十神和牵动六亲。',
+    '4. 六亲部分必须充分吸收本地规则，尤其兄弟数量排行、头胎男女、同胎、子女多少等定式信息，原则上以规则为主，不要随意推翻。',
+    '5. 本地规则中的“应事”与“断语”只是基础参考，你可以继续往下分析，补出更完整的现实事件形态、人物关系和事情走向。',
+    '6. 如果某个流年的本地规则输出只落在一方面，例如只写感情、只写父母、只写财务，你仍应继续依照八字逻辑，推演这个年份还可能连带牵动的其他方面，例如事业、学业、家宅、身体、人际、搬动、证照、口舌、合作等，但必须有命理依据，不可空扩。',
+    '7. 但不能违背原盘结构、喜忌逻辑和现实年龄常识。',
+    '8. 六亲部分里，凡本地规则已经给出较强定式的，默认优先保留其主判断，不要随意弱化。',
+    '9. 尤其兄弟排行类断语，如果规则已经给出“若与现实不符，可能对应上方手足有损、分开抚养、不同门、排行错位”等解释，这些关键解释不要删减。',
+    '10. 你可以比规则讲得更深，但不要比规则讲得更虚。',
+    '面向用户的输出要求：优先输出最终判断，不要输出规则过程。',
+    '默认输出结构：',
+    '1. 流年验事：只挑最强的 2 到 4 个年份，每个年份直接说可能发生了什么，但每条判断都必须暗含喜用神、神煞、刑冲合害和六亲牵动的综合依据，而且不局限于规则里已经点出的单一事项。',
+    '2. 六亲断语：以本地规则强结论为骨架，再继续深入分析，尤其不能漏掉兄弟数量排行、头胎男女、同胎等规则主导项；不要先解释规则，再给结论。',
+    '3. 当前问题回答：回到用户提问本身，直接回答。',
+    '除非用户追问，不要展开完整规则过程，不要复述“第一关 / 第二关 / 第三关”的内部推导。若涉及高风险绝对直断，必须先带免责声明再给结论。',
+  ].join('\n\n');
 }
