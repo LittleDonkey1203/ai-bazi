@@ -4,10 +4,9 @@ services:
     runtime: node
     repo: https://github.com/LittleDonkey1203/ai-bazi.git
     branch: deploy/render-monorepo
-    rootDir: zhouwenwang/zhouwenwang-divination
     plan: free
-    buildCommand: npm ci && npm --prefix backend ci && npm run build
-    startCommand: npm --prefix backend start
+    buildCommand: npm --prefix zhouwenwang/zhouwenwang-divination ci && npm --prefix zhouwenwang/zhouwenwang-divination/backend ci && npm --prefix zhouwenwang/zhouwenwang-divination run build
+    startCommand: npm --prefix zhouwenwang/zhouwenwang-divination/backend start
     healthCheckPath: /api/health
     autoDeployTrigger: commit
     envVars:
@@ -29,10 +28,9 @@ services:
     runtime: node
     repo: https://github.com/LittleDonkey1203/ai-bazi.git
     branch: deploy/render-monorepo
-    rootDir: bazi-mcp
     plan: free
-    buildCommand: npm ci && npm run build
-    startCommand: npm run start:http
+    buildCommand: npm --prefix bazi-mcp ci && npm --prefix bazi-mcp run build
+    startCommand: npm --prefix bazi-mcp run start:http
     healthCheckPath: /health
     autoDeployTrigger: commit
     envVars:
