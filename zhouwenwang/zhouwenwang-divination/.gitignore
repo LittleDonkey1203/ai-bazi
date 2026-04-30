@@ -26,5 +26,6 @@ dist-ssr
 release/
 dist/
 build/
+scripts/.tmp/
 **/release/
 **/win-unpacked/
