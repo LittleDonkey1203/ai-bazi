@@ -38,8 +38,8 @@ function scoreLiuQinReference(profile: BlindThreePassAnalysis['liuqinProfiles'][
   );
 }
 
-function buildBlindThreePassAiReferencePayload(blind: BlindThreePassAnalysis) {
-  const strongestSpecialYears = blind.specialYears.slice(0, 6).map((item) => ({
+function buildBlindThreePassAiSpecialYearFacts(item: BlindThreePassAnalysis['specialYears'][number]) {
+  return {
     year: item.year,
     age: item.age,
     kind: item.kind,
@@ -55,8 +55,14 @@ function buildBlindThreePassAiReferencePayload(blind: BlindThreePassAnalysis) {
     annualGods: item.annualGods,
     supportiveGods: item.supportiveGods,
     cautionGods: item.cautionGods,
+    whyImportant: item.whyImportant,
+  };
+}
+
+function buildBlindThreePassAiReferencePayload(blind: BlindThreePassAnalysis) {
+  const strongestSpecialYears = blind.specialYears.slice(0, 6).map((item) => ({
+    ...buildBlindThreePassAiSpecialYearFacts(item),
     whyImportant: item.whyImportant.slice(0, 4),
-    likelyEvents: item.likelyEvents.slice(0, 4),
   }));
 
   const priorityLiuQin = [...blind.liuqinProfiles]
@@ -86,6 +92,13 @@ function buildBlindThreePassAiReferencePayload(blind: BlindThreePassAnalysis) {
     strongestSpecialYears,
     priorityLiuQin,
     highRiskDisclaimer: blind.highRiskDisclaimer,
+  };
+}
+
+function buildBlindThreePassAiDetailPayload(blind: BlindThreePassAnalysis) {
+  return {
+    ...blind,
+    specialYears: blind.specialYears.map((item) => buildBlindThreePassAiSpecialYearFacts(item)),
   };
 }
 
@@ -192,6 +205,7 @@ export function buildYongShenFocus(chartData: BaZiChartData, question?: string):
 export function buildBlindThreePassFocus(chartData: BaZiChartData, question?: string): string {
   const yongShen = analyzeYongShen(chartData);
   const blind = analyzeBlindThreePass(chartData, question);
+  const blindAiDetail = buildBlindThreePassAiDetailPayload(blind);
 
   return [
     '本轮优先任务：先以 yongshen-v2 的本地喜用神结论为背景，再按高德臣盲派“过三关”的顺序直断。',
@@ -200,7 +214,7 @@ export function buildBlindThreePassFocus(chartData: BaZiChartData, question?: st
     question ? `用户当前问题：${question}` : '用户未指定单一问题，先围绕命主本身、事业、财运、婚姻展开。',
     `前置喜用神结论：格局 ${yongShen.finalPattern} / 用神 ${formatYongShenV2Elements(yongShen.yongElements)} / 忌神 ${formatYongShenV2Elements(yongShen.jiElements)}`,
     `喜用神规则结果：${JSON.stringify(buildYongShenAiPayload(yongShen), null, 2)}`,
-    `盲派过三关规则结果：${JSON.stringify(blind, null, 2)}`,
+    `盲派过三关规则结果：${JSON.stringify(blindAiDetail, null, 2)}`,
     `高风险直断免责声明：${blind.highRiskDisclaimer}`,
     '若输出兄弟个数、头胎男女、夭寿、早离、再婚或绝对排行等高风险绝对直断，必须先带上免责声明，再给依据，不允许伪装成稳结论。',
     '输出格式要求：按“第一关 / 第二关 / 第三关 / 特殊流年 / 六亲直断 / 当前大运验证”六段输出。',
@@ -224,12 +238,13 @@ export function buildBlindThreePassActionFocus(question?: string): string {
 export function buildBaziAiBridgeFocus(chartData: BaZiChartData, question?: string): string {
   const yongShen = analyzeYongShen(chartData);
   const blind = analyzeBlindThreePass(chartData, question);
+  const blindAiDetail = buildBlindThreePassAiDetailPayload(blind);
 
   return [
     '以下内容是页面本地规则引擎生成的隐藏上下文，供 AI 回答时使用，不要把原始 JSON、全部规则过程或逐关分析整段复述给用户。',
     question ? `当前问题：${question}` : '当前问题：命局总览',
     `喜用神规则结果：${JSON.stringify(buildYongShenAiPayload(yongShen), null, 2)}`,
-    `过三关规则结果：${JSON.stringify(blind, null, 2)}`,
+    `过三关规则结果：${JSON.stringify(blindAiDetail, null, 2)}`,
     `高风险直断免责声明：${blind.highRiskDisclaimer}`,
     '面向用户的输出要求：只吸收本地规则结论，优先输出最终判断、流年验事、六亲断语，以及对当前问题的直接回答。',
     '默认输出结构：',
@@ -262,6 +277,7 @@ export function buildBaziAiBridgeFocusV2(chartData: BaZiChartData, question?: st
   const yongShen = analyzeYongShen(chartData);
   const blind = analyzeBlindThreePass(chartData, question);
   const blindReference = buildBlindThreePassAiReferencePayload(blind);
+  const blindAiDetail = buildBlindThreePassAiDetailPayload(blind);
 
   return [
     '以下内容是页面本地规则引擎生成的隐藏上下文，供 AI 回答时使用，不要把原始 JSON、全部规则过程或逐关分析整段复述给用户。',
@@ -269,7 +285,7 @@ export function buildBaziAiBridgeFocusV2(chartData: BaZiChartData, question?: st
     question ? `当前问题：${question}` : '当前问题：命局总览',
     `喜用神规则结果：${JSON.stringify(buildYongShenAiPayload(yongShen), null, 2)}`,
     `过三关候选参考：${JSON.stringify(blindReference, null, 2)}`,
-    `过三关规则明细（仅供必要时查阅）：${JSON.stringify(blind, null, 2)}`,
+    `过三关规则明细（仅供必要时查阅）：${JSON.stringify(blindAiDetail, null, 2)}`,
     `高风险直断免责声明：${blind.highRiskDisclaimer}`,
     '使用优先级要求：',
     '1. 原盘、大运流年、现实年龄常识是基础。',
@@ -425,6 +441,7 @@ export function buildBaziAiBridgeFocusV3(chartData: BaZiChartData, question?: st
   const yongShen = analyzeYongShen(chartData);
   const blind = analyzeBlindThreePass(chartData, question);
   const blindReference = buildBlindThreePassAiReferencePayload(blind);
+  const blindAiDetail = buildBlindThreePassAiDetailPayload(blind);
 
   return [
     '以下内容是页面本地规则引擎生成的隐藏上下文，供你回答时使用。不要把原始 JSON、全部规则过程、字段名或逐关分析原样复述给用户。',
@@ -433,7 +450,7 @@ export function buildBaziAiBridgeFocusV3(chartData: BaZiChartData, question?: st
     question ? `当前问题：${question}` : '当前问题：命局总览',
     `喜用神规则结果：${JSON.stringify(buildYongShenAiPayload(yongShen), null, 2)}`,
     `过三关候选参考：${JSON.stringify(blindReference, null, 2)}`,
-    `过三关规则明细（仅供必要时查阅）：${JSON.stringify(blind, null, 2)}`,
+    `过三关规则明细（仅供必要时查阅）：${JSON.stringify(blindAiDetail, null, 2)}`,
     `高风险直断免责声明：${blind.highRiskDisclaimer}`,
     '当前分析材料包括：1. 八字原盘与 rawBaziData 2. 十神、宫位、关系信息 3. 大运流年 4. 喜用神规则结果 5. 过三关规则结果 6. 用户当前问题。',
     '你的工作方式必须是：先读原盘、十神结构、宫位关系、大运流年；再把喜用神结果真正纳入判断，明确事件和六亲是顺用神还是逆用神；再把过三关规则结果当作强参考，尤其是六亲定式、特殊流年、兄弟排行数量、头胎男女、同胎、多子少子、父母状态等；在以上基础上继续深入推论，而不是停留在本地规则给出的表层断语。',
