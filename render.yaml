@@ -2,6 +2,8 @@ services:
   - type: web
     name: zhouwenwang-divination
     runtime: node
+    repo: https://github.com/LittleDonkey1203/ai-bazi.git
+    branch: deploy/render-monorepo
     rootDir: zhouwenwang/zhouwenwang-divination
     plan: free
     buildCommand: npm ci && npm --prefix backend ci && npm run build
@@ -25,6 +27,8 @@ services:
   - type: web
     name: bazi-mcp-http
     runtime: node
+    repo: https://github.com/LittleDonkey1203/ai-bazi.git
+    branch: deploy/render-monorepo
     rootDir: bazi-mcp
     plan: free
     buildCommand: npm ci && npm run build
