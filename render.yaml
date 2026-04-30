@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: zhouwenwang-divination
+    runtime: node
+    rootDir: zhouwenwang/zhouwenwang-divination
+    plan: free
+    buildCommand: npm ci && npm --prefix backend ci && npm run build
+    startCommand: npm --prefix backend start
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: API_BASE
+        sync: false
+      - key: API_KEY
+        sync: false
+      - key: MODEL
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+
+  - type: web
+    name: bazi-mcp-http
+    runtime: node
+    rootDir: bazi-mcp
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start:http
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production

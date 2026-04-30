@@ -1,0 +1,353 @@
+/* TailwindCSS 现在使用 CDN 版本，不再需要本地编译 */
+/* @tailwind base; */
+/* @tailwind components; */
+/* @tailwind utilities; */
+
+/* 补充基础样式重置，确保与之前的样式保持一致 */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html, body {
+  height: 100%;
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  color-scheme: dark !important;
+}
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+body {
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  margin: 0;
+}
+
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+}
+
+input, button, textarea, select {
+  font: inherit;
+}
+
+p, h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
+}
+
+#root, #__next {
+  isolation: isolate;
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+}
+
+a {
+  font-weight: 500;
+  color: #FF9900;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #ffaa33;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+/* 默认按钮样式 */
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+/* 只覆盖默认按钮样式，不影响自定义样式的按钮 */
+button:not([style*="background"]):not([class*="bg-"]) {
+  background-color: #1a1a1a !important;
+  color: #FFFFFF !important;
+  border-color: transparent !important;
+}
+
+button:not([style*="background"]):not([class*="bg-"]):hover {
+  border-color: #FF9900 !important;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* 图标旋转动画 - 当父元素group被hover时触发 */
+.group:hover .icon-rotate-on-hover {
+  transform: rotate(360deg);
+  transition: transform 0.6s ease-in-out;
+}
+
+.icon-rotate-on-hover {
+  transition: transform 0.6s ease-in-out;
+}
+
+/* 强制所有输入元素使用暗色主题 */
+input, select, textarea {
+  background-color: #222222 !important;
+  color: #FFFFFF !important;
+  border-color: #444444 !important;
+}
+
+/* datetime-local 控件样式优化 */
+input[type="datetime-local"] {
+  color-scheme: dark;
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+  background-color: black !important;
+  border-color: black !important;
+  min-height: 36px;
+  height: 36px;
+  font-size: 16px;
+  line-height: 1.4;
+  vertical-align: middle;
+}
+
+input[type="datetime-local"]::-webkit-datetime-edit {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+input[type="datetime-local"]::-webkit-datetime-edit-text {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+input[type="datetime-local"]::-webkit-datetime-edit-month-field,
+input[type="datetime-local"]::-webkit-datetime-edit-day-field,
+input[type="datetime-local"]::-webkit-datetime-edit-year-field,
+input[type="datetime-local"]::-webkit-datetime-edit-hour-field,
+input[type="datetime-local"]::-webkit-datetime-edit-minute-field {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: brightness(0) invert(1);
+  opacity: 1;
+  cursor: pointer;
+}
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 0.8;
+}
+
+/* 注释掉自动跟随系统主题的设置，强制使用暗色主题 */
+/*
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+*/
+
+/* 只为根元素设置 color-scheme，避免过度覆盖 */
+html {
+  color-scheme: dark !important;
+}
+
+/* 五行能量条闪光动画 */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ======== 轻量级动画系统 ======== */
+
+/* 淡入动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* 淡出动画 */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.animate-fade-out {
+  animation: fadeOut 0.3s ease-in forwards;
+}
+
+/* 从上滑入 */
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in-from-top {
+  animation: slideInFromTop 0.4s ease-out forwards;
+}
+
+/* 从下滑入 */
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in-from-bottom {
+  animation: slideInFromBottom 0.4s ease-out forwards;
+}
+
+/* 从左滑入 */
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-from-left {
+  animation: slideInFromLeft 0.4s ease-out forwards;
+}
+
+/* 从右滑入 */
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-from-right {
+  animation: slideInFromRight 0.4s ease-out forwards;
+}
+
+/* 缩放动画 */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out forwards;
+}
+
+/* 弹跳动画 */
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-bounce-in {
+  animation: bounceIn 0.6s ease-out forwards;
+}
+
+/* 慢速旋转 */
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 2s linear infinite;
+}
+
+/* 动画延迟类 */
+.animation-delay-100 {
+  animation-delay: 0.1s;
+}
+
+.animation-delay-200 {
+  animation-delay: 0.2s;
+}
+
+.animation-delay-300 {
+  animation-delay: 0.3s;
+}
+
+.animation-delay-400 {
+  animation-delay: 0.4s;
+}
+
+.animation-delay-500 {
+  animation-delay: 0.5s;
+}

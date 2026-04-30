@@ -1,0 +1,148 @@
+{
+  "name": "zhouwenwang-divination",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "homepage": "./",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "dev-fast": "vite --host 0.0.0.0 --force",
+    "build": "npm run build:web",
+    "build:web": "cross-env APP_BUILD_TARGET=web tsc -b && vite build",
+    "build:electron": "cross-env APP_BUILD_TARGET=electron tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview --host 0.0.0.0",
+    "electron": "electron .",
+    "electron-dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && node scripts/electron-dev.js\"",
+    "electron-pack": "npm run build:electron && electron-builder",
+    "dist": "npm run build:electron && electron-builder --publish=never",
+    "dist-clean": "rimraf %LOCALAPPDATA%\\electron-builder\\Cache && npm run build:electron && electron-builder --publish=never",
+    "dist-offline": "cross-env ELECTRON_BUILDER_CACHE=%LOCALAPPDATA%\\electron-builder\\Cache npm run build:electron && electron-builder --publish=never",
+    "dist-mac": "npm run build:electron && electron-builder --mac --publish=never",
+    "dist-win": "npm run build:electron && electron-builder --win --publish=never",
+    "dist-linux": "npm run build:electron && electron-builder --linux --publish=never",
+    "pm2:dev": "pm2 start ecosystem.config.cjs",
+    "pm2:stop": "pm2 stop ecosystem.config.cjs",
+    "pm2:restart": "pm2 restart ecosystem.config.cjs",
+    "pm2:delete": "pm2 delete ecosystem.config.cjs",
+    "pm2:list": "pm2 list",
+    "pm2:logs": "pm2 logs frontend-dev"
+  },
+  "dependencies": {
+    "@headlessui/react": "^2.2.4",
+    "axios": "^1.10.0",
+    "cantian-tymext": "^0.0.21",
+    "date-fns": "^3.6.0",
+    "date-fns-tz": "^3.2.0",
+    "dotenv": "^16.5.0",
+    "framer-motion": "^12.18.1",
+    "lucide-react": "^0.518.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.6.2",
+    "recharts": "^2.15.4",
+    "remark-gfm": "^4.0.1",
+    "tyme4ts": "^1.3.4",
+    "zustand": "^5.0.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.25.0",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vitejs/plugin-react": "^4.4.1",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "electron": "^34.5.8",
+    "electron-builder": "^25.1.8",
+    "eslint": "^9.25.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^16.0.0",
+    "pm2": "^6.0.8",
+    "rimraf": "^6.0.1",
+    "terser": "^5.39.0",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.30.1",
+    "vite": "^6.3.5",
+    "wait-on": "^8.0.3"
+  },
+  "build": {
+    "appId": "com.zhouwenwang.divination",
+    "productName": "周文王占卜",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "node_modules/**/*"
+    ],
+    "mac": {
+      "icon": "public/icon.png",
+      "category": "public.app-category.entertainment",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": "universal"
+        }
+      ]
+    },
+    "dmg": {
+      "title": "周文王占卜",
+      "icon": "public/icon.png",
+      "background": null,
+      "backgroundColor": "#ffffff",
+      "window": {
+        "width": 540,
+        "height": 380
+      },
+      "contents": [
+        {
+          "x": 410,
+          "y": 180,
+          "type": "link",
+          "path": "/Applications"
+        },
+        {
+          "x": 130,
+          "y": 180,
+          "type": "file"
+        }
+      ]
+    },
+    "win": {
+      "icon": "public/icon.png",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "sign": false,
+      "verifyUpdateCodeSignature": false,
+      "certificateFile": false,
+      "certificatePassword": false
+    },
+    "linux": {
+      "icon": "public/icon.png",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}

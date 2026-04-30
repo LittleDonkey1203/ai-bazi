@@ -1,0 +1,20 @@
+{
+  "name": "new-prj-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "bazi-mcp",
+    "zhouwenwang/zhouwenwang-divination",
+    "zhouwenwang/zhouwenwang-divination/backend"
+  ],
+  "scripts": {
+    "bootstrap": "npm --prefix bazi-mcp ci && npm --prefix zhouwenwang/zhouwenwang-divination ci && npm --prefix zhouwenwang/zhouwenwang-divination/backend ci",
+    "build": "npm run build:app && npm run build:mcp",
+    "build:app": "npm --prefix zhouwenwang/zhouwenwang-divination run build",
+    "build:mcp": "npm --prefix bazi-mcp run build",
+    "dev:app": "npm --prefix zhouwenwang/zhouwenwang-divination run dev",
+    "dev:app:backend": "npm --prefix zhouwenwang/zhouwenwang-divination/backend run dev",
+    "start:app": "npm --prefix zhouwenwang/zhouwenwang-divination/backend start",
+    "start:mcp": "npm --prefix bazi-mcp run start:http"
+  }
+}
