@@ -146,9 +146,21 @@ export class YongShenMapper {
     if (['亥', '子', '丑'].includes(monthBranch)) {
       const insertedYongElement: FiveElement = '火';
       const forcedJiElement: FiveElement = '水';
+
+      // 将调候用神移到喜神列表首位
       const nextYongElements = moveToFront(yongElements, insertedYongElement);
       yongElements.splice(0, yongElements.length, ...nextYongElements);
-      jiElements.push(forcedJiElement);
+
+      // 从喜神列表中移除将要加入忌神的元素，避免冲突
+      const yongIndex = yongElements.indexOf(forcedJiElement);
+      if (yongIndex !== -1) {
+        yongElements.splice(yongIndex, 1);
+      }
+
+      // 将调候忌神加入忌神列表（如果还不在列表中）
+      if (!jiElements.includes(forcedJiElement)) {
+        jiElements.push(forcedJiElement);
+      }
 
       return {
         applied: true,
@@ -162,9 +174,21 @@ export class YongShenMapper {
     if (['巳', '午', '未'].includes(monthBranch)) {
       const insertedYongElement: FiveElement = '水';
       const forcedJiElement: FiveElement = '火';
+
+      // 将调候用神移到喜神列表首位
       const nextYongElements = moveToFront(yongElements, insertedYongElement);
       yongElements.splice(0, yongElements.length, ...nextYongElements);
-      jiElements.push(forcedJiElement);
+
+      // 从喜神列表中移除��要加入忌神的元素，避免冲突
+      const yongIndex = yongElements.indexOf(forcedJiElement);
+      if (yongIndex !== -1) {
+        yongElements.splice(yongIndex, 1);
+      }
+
+      // 将调候忌神加入忌神列表（如果还不在列表中）
+      if (!jiElements.includes(forcedJiElement)) {
+        jiElements.push(forcedJiElement);
+      }
 
       return {
         applied: true,
