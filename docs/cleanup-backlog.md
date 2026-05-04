@@ -1,0 +1,272 @@
+# Cleanup Backlog
+
+> 改造期间发生的"非主线"事件、临时妥协、已知技术债登记。
+> 后续 batch / 改造结束后的最终清理时溯源到这里。
+
+## batch 0 期间发生的重装事件
+
+**时间**:2026-05-04 (Phase 3 batch 0 step A 与 step C 之间)
+
+**原因**:Playwright chromium 下载过程中曾 kill 卡住的下载进程(国内 CDN 慢导致 40 分钟仍未完成)。kill 后 npm 在下次操作时检测到 node_modules 部分文件锁定 / 不一致,**部分回滚**了 vite 与 vitest 的二进制文件:
+- `node_modules/vite/dist/node/chunks/dep-CvfTChi5.js` 缺失 → dev server 启动后 HTTP 500
+- `node_modules/vitest/vitest.mjs` 缺失 → `npm test` 报 MODULE_NOT_FOUND
+
+**处理**:
+1. step A 后期(发现 vite 损坏):`npm install vite@6.3.5 --no-save`
+2. step C 末尾(发现 vitest 损坏):`npm install --no-save vitest@2.1.8 jsdom @testing-library/react @testing-library/jest-dom @testing-library/user-event`
+3. 两次都用 `--no-save`,确保不污染 package.json
+4. 重装后版本与 lockfile 已记录的版本完全匹配,npm 7+ 行为下 lockfile 也不被重写
+
+**影响范围**:
+- 仅 node_modules 二进制恢复
+- `package.json` 未改(已经是正确版本)
+- `package-lock.json` 未改(`git diff HEAD` 0 行,已 step C 后核查)
+- 没有引入未知/陌生依赖
+
+**遗留风险**:
+- 如果未来在干净环境(CI、新机器)`npm ci` 后,某些包的二进制仍出现"凭空缺失",溯源到此条目并尝试 `rm -rf node_modules && npm ci`。
+- 我们用的 npm v?(待 step E 确认),如果是 npm 6(老版),`--no-save` 行为对 lockfile 的影响可能更激进,需要重新核查
+
+**后续**:
+- batch 5 末批清理时,如发现 lockfile 有任何遗留异常,先看 `git log -p package-lock.json` 历史是否有非主线改动,然后决定是否 `npm ci` 强制重置
+- 若 CI 接入,在 CI 流程开头加 `npm ci` 而不是 `npm install`,可避免类似 partial-rollback 重演
+
+---
+
+## batch 0 step D 期间未迁移到 token 的硬编码颜色
+
+**时间**:2026-05-04 (Phase 3 batch 0 step D)
+
+**原因**:step D 把 4 个 partial 文件的 `bg-black` / `bg-[#111111]` / Sidebar 的 `text-[#FF9900]` 等迁移到 token 后,以下硬编码仍残留于 4 个 layout 文件中,因 (a) 缺对应 token 或 (b) 受测试断言锁定:
+
+### (a) 缺对应 token 的中性灰阶 — ✅ 已在 batch 0 step (d) 解决
+
+**最终处理(2026-05-04 用户决策)**:用户拍板"在 batch 0 范围内补完中性灰阶基础设施"。已落地:
+- `src/index.css` Layer 1 新增 9 个 `--c-gray-*`(100/300/400/500/600/700/750/800/900)
+- `src/index.css` Layer 2 新增 9 个语义 token(`--color-surface-{hover,sheet,active,deep}` / `--color-divider{,-strong}` / `--color-text-neutral-{mid,secondary,soft}`)
+- `index.html` 内联 Tailwind config 新增 9 个 utility(`surface-hover` / `surface-sheet` / `surface-active` / `surface-deep` / `divider` / `divider-strong` / `neutral-mid` / `neutral-2` / `neutral-soft`)
+- `docs/design-system.md` §1.1 / §1.2 / §1.4 同步更新,加入"漂移容忍度"规则:RGB 漂移 ≤ 5 直接合并到最近 token,不新增
+
+**预期影响**:后续 batch 1-5 替换 4 个 layout 文件 + 其他文件中累计 ~250 处灰 hex 时,有现成 utility 可用,无需再 case-by-case 决策。
+
+---
+
+**原始问题(已解决,记录用)**:design-system tokens 没有"中性灰阶"语义(deliberate — 全站走墨黑+米白+品牌色)。但代码里仍有这些灰:
+
+| 文件 | 出现的灰 hex | 出现位置 / 用途 |
+|------|------|----|
+| `Sidebar.tsx` | `#1a1a1a` ×2 (NavItem hover bg / SettingsItem hover bg) | nav 项悬停背景 |
+| `Sidebar.tsx` | `#2a2a2a` ×2 (NavItem active bg / SettingsItem active bg) | nav 项激活背景 |
+| `Sidebar.tsx` | `#333333` ×4 (border-r / border-b / border-t / hover bg) | 侧边栏边框/分隔/折叠按钮 hover |
+| `Sidebar.tsx` | `#CCCCCC` ×2 | 折叠按钮文字色 / 占位 nav 文字色 |
+| `BottomNav.tsx` | `#333333` ×3 (nav border-t / sheet border-t / sheet item border) | 底部 nav 与 more sheet 边框 |
+| `BottomNav.tsx` | `#222222` (sheet close btn hover bg) | more sheet 关闭按钮 hover |
+| `BottomNav.tsx` | `#1a1a1a` ×2 (sheet item hover bg / more btn hover bg) | sheet 内项目 hover |
+| `BottomNav.tsx` | `#CCCCCC` ×3 (inactive icon/text 颜色) | 未激活 nav 文字 |
+
+**处理选项(后续讨论)**:
+- (i) 在 design-system §1 增加灰阶语义 token(如 `--color-surface-hover: #1a1a1a` / `--color-divider-neutral: #333333` / `--color-text-tertiary-neutral: #CCCCCC`),迁移
+- (ii) 把这些灰色复用现有暗色 token(如 `--c-night-elevated: #12120f`),视觉会有微小变化
+- (iii) 接受现状,标记这些是"非主题色,纯结构色",规则上允许保留 hex
+- 推荐 **(i)**:tokens 显式声明,后续如需主题切换/强对比模式更易扩展。但这是 design-system 设计决策,需用户拍板,不在 batch 0 范围。
+
+### (b) 受测试断言锁定的 brand-orange 残留 — ✅ 已通过视觉契约原则承认,保留至改造结束
+
+| 文件 | 残留 | 测试断言 |
+|------|------|----------|
+| `BottomNav.tsx` 第 43 行 | `text-[#FF9900]` (NavLinkButton active 态) | 无直接断言,但与第 171 行同色,联动保留 |
+| `BottomNav.tsx` 第 171 行 | `text-[#FF9900]` ("更多"按钮 overflow active 态) | `BottomNav.test.tsx:116`: `expect(moreButton.className).toContain('text-[#FF9900]')` |
+| `BottomNav.tsx` 第 97 行 | `border-[#FF9900] text-[#FF9900] bg-[#FF9900]/10` (MoreSheet 项 active 态) | 同色系,与第 43/171 行联动 |
+
+**最终处理(2026-05-04 用户决策)**:
+- 适用 `docs/design-system.md` §0 **视觉契约原则**:测试断言 `toContain('text-[#FF9900]')` 是色彩契约,改造期间适应它,**不修改**
+- BottomNav 激活态官方色彩 = **橙色 `#FF9900`** = 语义上的 **brand-aux**(次级 CTA),与 §0 顶部"橙降级为次级 CTA / 状态色"完全对齐
+- design-system §5.1 白名单第一条已同步更新:BottomNav 激活态 = `var(--color-brand-aux)` 橙色文字 + 宋体标签 + 4px 圆点
+- **不再排队 batch 5 清理。改造结束后保留现状。**
+- **不需要"测试同步迁移"批次**。`PLAYBOOK.md` 不应再提此项
+
+### (c) 半透明叠加 (`bg-X/10` 等) 的迁移阻塞
+
+Tailwind 的 opacity modifier(`bg-brand/10`)要求底层颜色是 `rgb(R G B)` 格式才能动态合成 alpha。当前 `--color-brand: #c41e3a`(hex),不兼容。
+
+| 文件 | 出现 | 含义 |
+|------|------|----|
+| `BottomNav.tsx` 第 97 行 | `bg-[#FF9900]/10` | MoreSheet active 态背景 |
+| `BottomNav.tsx` 第 66 行 | `bg-black/60` | MoreSheet 蒙层背景 |
+
+**处理选项**:
+- (i) 把 design tokens 里的颜色改为 `rgb(R G B)` 三元组格式(Tailwind 的 modern 推荐),需要重写 §1.1 第 1 层 + 影响所有引用
+- (ii) 对每个透明叠加场景预定义一个 layer-2 token(如已有的 `--color-brand-subtle: rgba(196, 30, 58, 0.12)`),代码用 `bg-brand-subtle` 等
+- 推荐 **(ii)**:增量、不动 token 第 1 层;但需要为每个透明度场景定义 token
+
+**这部分 design 决策不属于 batch 0 范围,留给 batch 1+ 在遇到时一次性补 token。**
+
+---
+
+## batch 0 step E 闸门暴露的预存在债务
+
+**时间**:2026-05-04 (Phase 3 batch 0 step E)
+
+**来源**:跑 4 项质量闸门(lint / build:web / test / build:electron)时暴露,但**全部预存在 batch 0 之前**,不是改造引入的回归。step E 严格只跑闸门、不修代码,登记于此供后续决策。
+
+### 1. ESLint 100 errors / 5 warnings
+
+**状态**:闸门 1 失败(exit 1),但 step D 引入 0 个新错误。
+
+**分布**:
+- `src/masters/service.ts`:~20 处(主要是 `any` 滥用 + unused vars)
+- `src/games/bazi/BaZiPage.tsx` + `advancedAnalysis.ts` + `cantianAdapter.ts` + `chatMemory.ts`:~10 处
+- `src/games/lifekline/LifeKlinePage.tsx` + `KlineChart.tsx` + `logic.ts`:~12 处
+- `src/games/{liuyao,qimen,qinshi,zhougong}/*`:~12 处
+- `src/components/{common,layout,MasterSelectorDemo}/*`:~10 处
+- `src/core/*`:~13 处(主要 `any` + 1 prefer-const + 1 unused)
+- `src/utils/animations.ts` + `src/styles/modalStyles.ts` + `src/types/index.ts` + `src/games/types.ts`:~8 处
+- `src/masters/types.ts` + `MasterSelector.tsx` + `pages/HomePage.tsx`:~5 处
+
+**主要错误类型**:
+- `@typescript-eslint/no-explicit-any`:~50 处 — 历史代码大量使用 `any`
+- `@typescript-eslint/no-unused-vars`:~40 处 — 未使用的 imports / 局部变量
+- `@typescript-eslint/no-namespace`:3 处(`src/games/types.ts`)— ES2015 模块语法警告
+- `prefer-const`:3 处
+- `react-hooks/exhaustive-deps`:5 处(warnings)
+
+**ESLint 估算可自动修**:`--fix` 标记可处理 3 处。剩余 ~97 处需要人工。
+
+**处理选项**:
+- (A) 接受现状,改造期间 batch 1-5 改文件时**顺手修该文件内的简单 lint 错误**(unused imports / prefer-const),不破坏功能。改造结束后剩余作单独立项。
+- (B) batch 0 commit 后插入"lint debt cleanup"批次(B0.5),专门清 lint 错误,延后 batch 1 启动。
+- (C) 跑 `npm run lint -- --fix` 处理可自动修的 3 处,剩余手工。但这扩大 step E 范围,违反"step E 不修代码"约束。
+
+**推荐(A)**:不阻塞 batch 0 commit,把 lint 当持续监控指标。
+
+### 2. Vite "动态+静态混合导入"警告 8 处
+
+**状态**:闸门 2 / 4 通过,但产生警告。
+
+**现象**:vite 报告 8 个 `dynamic import will not move module into another chunk`,涉及:
+- `src/core/history.ts`:被 6 个文件静态导入 + 被 `src/core/settings.ts` 动态导入
+- `src/games/{liuyao,qimen,bazi,palmistry,zhougong,lifekline,qinshi}/*Page.tsx`:在 `MainContent.tsx`(动态懒加载)+ `games/index.ts`(静态)同时存在
+
+**影响**:vite 会把这些模块**放进静态 import 所在的 chunk**(`utils-vendor` 或 `index`),动态 lazy() 失效。`index` chunk 因此膨胀到 1170 KB(gzip 349 KB)。
+
+**根因**:`games/index.ts` 静态 import 所有 game 页面用于注册表,同时 `MainContent.tsx` 用 `lazy()` 期望按路由懒加载。两者冲突,lazy 失效。
+
+**修复方向**(超 batch 0 范围):
+- 让 `games/index.ts` 改为只导出 metadata + 路径(不静态 import 组件),`MainContent.tsx` 各路由独立 lazy import
+- 或者放弃 lazy,接受单 bundle 但减少首屏加载层
+
+**推荐**:登记给 batch 1(改 HomePage 时一并审视 games registry 结构),或独立做一次 perf 优化批次。**batch 0 不动**(这是结构性,会触碰 `games/index.ts` 业务逻辑禁区)。
+
+### 3. Bundle size > 1000 KB
+
+**状态**:警告(非失败)。`dist/assets/js/index-*.js`:1,170 KB / gzip 349 KB。
+
+**根因**:同问题 2,由于 lazy 失效,所有 game 页面塞进主 chunk。
+
+**处理**:解决问题 2 后此警告自动消失。**batch 0 不动**。
+
+---
+
+## hook regex 缺口加固 — ✅ 已在 batch 0 step F 前夕解决
+
+**时间**:2026-05-04(Phase 3 batch 0 step E 完成审查后,step F 前夕)
+
+**原始问题**:initial pre-commit hook 安装(2026-05-04 step E 前夕)时, `PROTECTED_PATHS` regex 不完全覆盖 CLAUDE.md "业务逻辑目录" 段。具体缺口:
+
+1. `src/games/bazi/advancedAnalysis.ts` —— 文件名不含 `(logic|engine|cantian|caseStorage|chatMemory|yongshen)` 关键字,原 general pattern 未命中
+2. `src/games/bazi/blind-three-pass/{knowledge,liuqinResolver,specialYearDetector,types}.ts` —— 4/5 文件未命中(仅 engine.ts 命中)
+3. `src/games/bazi/yongshen-v2/*.ts` —— 14 个文件因大小写敏感(代码用 `YongShen`,regex 用 `yongshen`)未命中
+4. `src/games/qinshi/{prompts,types}.ts` —— 完全无对应 regex
+5. `src/games/{types,index}.ts` —— games 根级,无对应 regex
+6. `src/masters/index.ts` —— 已被 `(service|prompts|config|types|index)` 覆盖(本项无实际缺口,审计时确认)
+
+**最终 regex 覆盖范围**:见 `.git/hooks/pre-commit` 文件头注释,11 项对照 CLAUDE.md 业务逻辑目录段全部 ✓。
+
+**自检**:
+- 12 条路径正则模拟测试,9 条期望 BLOCK 全部 ✅,3 条期望 PASS(UI 文件)全部 ✅
+- 1 条端到端 tmp 文件测试(`yongshen-v2/__hook_test_DELETE_ME__.tmp.ts`),hook exit=1,输出格式正确,tmp 已清理
+
+**补强工程认知**:design-system.md §0 "视觉契约原则" 类比,**hook regex 必须 = CLAUDE.md 业务逻辑目录段的完整覆盖**。任何机器红线只要存在缺口,就要假设"曾经被绕过过"。
+
+**未在 hook 覆盖的路径**(故意保留 — 由 ui-auditor 检查 10 单独保护):
+- `src/**/__tests__/*` 测试目录(允许 batch 0 step C 这类合法新增测试场景)
+- `src/test/setup.ts`
+
+---
+
+## node_modules 第 3 次损坏(vitest)
+
+**时间**:2026-05-04(Phase 3 batch 0 step F 完成后,step G 前夕)
+
+**现象**:visual-reviewer subagent 跑完(17 分钟,113 工具调用)后,`node_modules/vitest/` 整个目录消失(.bin/vitest 二进制 wrapper 仍在,但实际模块文件没了)。`npm test` 直接 MODULE_NOT_FOUND 失败。
+
+**追溯链**:
+- step C 末尾 `npm install vitest@2.1.8 --no-save`(任务 bc3qay9zr)→ vitest 当时可用,跑 45/45 通过
+- step E 跑 4 项闸门 → 45/45 又通过 → vitest 当时仍在
+- step F dispatch visual-reviewer subagent(Bash 权限可用)→ 17 分钟 + 113 工具调用
+- step F 后:vitest 目录消失
+
+**最可能元凶**:visual-reviewer subagent 在 Bash 中运行了某些操作(`npm install`?某种清理?),无意中触发 node_modules 重写或 vitest 因不在 package.json 显式 deps(它在,但被认为冗余?)被清理
+
+**处理(2026-05-04 step G 前夕修复)**:
+- `npm --prefix ... install vitest@2.1.8 --no-save` 重新安装
+- `npm test` 重跑确认 45/45
+- lockfile / package.json 0 行 diff(--no-save + 版本匹配)
+
+**警示模式**:这是 batch 0 期间第 **3 次** node_modules 损坏:
+1. step A 后期:vite/dist/node/chunks 缺失 → `npm install vite@6.3.5 --no-save` 修复
+2. step C:vitest 缺失 → `npm install vitest ... --no-save` 修复
+3. step F 后:vitest 又缺失 → 同方案修复
+
+每次都涉及 subagent / 后台 npm 任务被中断或并发干扰。**根因未定位**。
+
+**长期对策**(建议在 batch 1 启动前评估):
+- (a) batch 1 起每次 step E 前自动跑 `npm ci` 恢复到 lockfile-pinned 状态
+- (b) CI 化:把构建/测试搬到 GitHub Actions,本机仅用于编辑
+
+## subagent Bash 权限收紧待办
+
+**触发**:上面"node_modules 第 3 次损坏"事件高度怀疑由 subagent Bash 误用导致。
+
+**待办**:batch 1 启动前修改以下 subagent 配置,**移除 Bash 权限**(只保留必需的只读工具):
+- `.claude/agents/visual-reviewer.md` —— 本只需 Read/Glob + Playwright MCP 即可,不需要 Bash
+- `.claude/agents/ui-auditor.md` —— 需要 Bash 跑 git diff / npm lint 等,**保留**但收紧到只读命令(grep/git diff/wc/npm run lint -- 不带 install)
+- `.claude/agents/ui-scanner.md` —— 同上,只读探查
+- `.claude/agents/ui-refactorer.md` —— 改造主力,需 Bash + Edit/Write,保留全权,但需要 explicit prompt 禁止 `npm install` 类副作用命令
+
+**建议时机**:batch 0 commit 后、batch 1 启动前,作为独立 chore commit:`chore(agents): tighten subagent Bash permissions per batch 0 incident`。
+
+**警告**:在此之前,**不要**派遣任何带 Bash 权限的 subagent(visual-reviewer / ui-refactorer 等)做有副作用的工作。如有需要,在主会话直接执行。
+
+## F007 PalmistryPage 拼写错误 utility(batch 4 预警)
+
+**时间**:2026-05-04(batch 0 step G ui-auditor 检查 11 发现)
+
+**现象**:`src/games/palmistry/PalmistryPage.tsx` 含 18 处拼写错误的 utility(`text-brand-gray-300` / `bg-brand-orange-500` 等)。Tailwind config 中未定义 `brand-gray-300` / `brand-orange-500`(只定义了 `brand-gray` 和 `brand-orange`),这些 className 当前**渲染上不生效**(Tailwind 跳过未识别 utility,fallback 到父元素继承色)。
+
+**为何是陷阱**:batch 4 改造 PalmistryPage 时,如果 Claude 不假思索"修复拼写"(把 `text-brand-gray-300` 改成 `text-paper-3` 之类),会让视觉从"不生效"变成"生效",**行为变化**。
+
+**batch 4 改造时必须**:
+1. **先**在 mobile / desktop 视口上**确认每条拼写错误 utility 当前的渲染实际效果**(可能 fallback 到父元素继承色,可能就是"无样式")
+2. **决定**(用户 ack):
+   - 选 A:删除该 className(保持当前视觉,清理"无效声明")
+   - 选 B:修正拼写到正确 utility(改变视觉,需用户 ack)
+3. 若选 B,必须有**视觉前后对比**(Playwright before/after 截图),用户 ack 后才能 merge
+4. **严禁不经评估直接"修复拼写"**
+
+**警示位置**:本条目 + `docs/ui-inventory.md` F007 备注列(待 batch 4 启动前在 inventory 备注追加链接到本段)
+
+## (后续追加格式)
+
+每条新增事件按以下骨架写:
+
+```
+## <事件标题>
+
+**时间**:YYYY-MM-DD (阶段 + step)
+**原因**:为什么发生
+**处理**:做了什么
+**影响范围**:改动了哪些文件 / 哪些不应改的没动
+**遗留风险**:可能的副作用
+**后续**:何时回看、如何溯源
+```

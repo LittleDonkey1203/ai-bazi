@@ -1,0 +1,179 @@
+
+> zhouwenwang-divination-mobile@0.0.0 lint
+> eslint .
+
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\components\common\HistoryList.tsx
+  131:6  warning  React Hook useEffect has a missing dependency: 'loadRecords'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\components\common\MarkdownRenderer.tsx
+  17:3  error  'isStreaming' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\components\common\SettingsModal.tsx
+    6:38  error  'Fragment' is defined but never used        @typescript-eslint/no-unused-vars
+    7:10  error  'Dialog' is defined but never used          @typescript-eslint/no-unused-vars
+    7:18  error  'Transition' is defined but never used      @typescript-eslint/no-unused-vars
+    8:52  error  'Upload' is defined but never used          @typescript-eslint/no-unused-vars
+   10:24  error  'exportSettings' is defined but never used  @typescript-eslint/no-unused-vars
+   10:40  error  'importSettings' is defined but never used  @typescript-eslint/no-unused-vars
+   13:22  error  'hasValidApiKey' is defined but never used  @typescript-eslint/no-unused-vars
+  233:39  error  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  384:41  error  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\components\layout\Layout.tsx
+  37:6  warning  React Hook useEffect has missing dependencies: 'settings.serverUrl' and 'updateSettings'. Either include them or remove the dependency array                                                    react-hooks/exhaustive-deps
+  63:6  warning  React Hook useEffect has missing dependencies: 'initializeDefaultMaster', 'selectedMaster', 'setAvailableMasters', and 'setSelectedMaster'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\components\layout\MainContent.tsx
+  18:7   error  'QinShiPage' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  34:52  error  'isCollapsed' is defined but never used          @typescript-eslint/no-unused-vars
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\components\layout\Sidebar.tsx
+   45:40  error  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  154:11  error  'clearError' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\core\history.ts
+  212:9  error  'allRecords' is never reassigned. Use 'const' instead  prefer-const
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\core\settings.ts
+  27:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\core\storage.ts
+   30:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   54:14  error  'parseError' is defined but never used    @typescript-eslint/no-unused-vars
+   76:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  236:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  272:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\core\store.ts
+   47:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   49:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  156:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\core\types.ts
+   22:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  135:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\games\bazi\BaZiPage.tsx
+  171:7  error  'branchYinYangMap' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  186:7  error  'branchHiddenStemMap' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\games\bazi\advancedAnalysis.ts
+    7:3   error  'formatYongShenV2Scores' is defined but never used    @typescript-eslint/no-unused-vars
+  304:10  error  'formatSpecialYearSection' is defined but never used  @typescript-eslint/no-unused-vars
+  326:10  error  'formatLiuQinSection' is defined but never used       @typescript-eslint/no-unused-vars
+  347:10  error  'formatHighRiskSection' is defined but never used     @typescript-eslint/no-unused-vars
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\games\bazi\cantianAdapter.ts
+  156:10  error  'formatLunarDatetime' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\games\bazi\chatMemory.ts
+  296:33  error  '_master' is defined but never used             @typescript-eslint/no-unused-vars
+  296:50  error  '_hasSpecialContext' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\games\lifekline\LifeKlinePage.tsx
+    2:18  error  'AnimatePresence' is defined but never used  @typescript-eslint/no-unused-vars
+    3:22  error  'User' is defined but never used             @typescript-eslint/no-unused-vars
+    3:28  error  'Calendar' is defined but never used         @typescript-eslint/no-unused-vars
+    3:38  error  'RefreshCcw' is defined but never used       @typescript-eslint/no-unused-vars
+   84:52  error  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+   84:68  error  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  154:23  error  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\games\lifekline\components\KlineChart.tsx
+  21:43  error  'label' is defined but never used         @typescript-eslint/no-unused-vars
+  21:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  53:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\games\lifekline\logic.ts
+    2:3   error  'getFourPillarsGanZhi' is defined but never used      @typescript-eslint/no-unused-vars
+    4:3   error  'TIANGAN' is defined but never used                   @typescript-eslint/no-unused-vars
+    5:3   error  'DIZHI' is defined but never used                     @typescript-eslint/no-unused-vars
+   26:10  error  'getGanZhiIndex' is defined but never used            @typescript-eslint/no-unused-vars
+   33:10  error  'getGanZhiByIndex' is defined but never used          @typescript-eslint/no-unused-vars
+  187:58  error  'gender' is defined but never used                    @typescript-eslint/no-unused-vars
+  192:7   error  'baseScore' is never reassigned. Use 'const' instead  prefer-const
+  225:11  error  'volatility' is assigned a value but never used       @typescript-eslint/no-unused-vars
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\games\liuyao\LiuYaoPage.tsx
+    5:28  error  'HEXAGRAM_NAMES' is defined but never used                 @typescript-eslint/no-unused-vars
+  161:9   error  'generateTestHexagram' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  427:35  error  'e' is defined but never used                              @typescript-eslint/no-unused-vars
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\games\liuyao\logic.ts
+  216:9  error  'yaoTypes' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  217:9  error  'symbols' is assigned a value but never used   @typescript-eslint/no-unused-vars
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\games\qimen\QiMenPage.tsx
+  4:10  error  'RefreshCw' is defined but never used       @typescript-eslint/no-unused-vars
+  4:21  error  'Sparkles' is defined but never used        @typescript-eslint/no-unused-vars
+  8:3   error  'getPalaceColor' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\games\qimen\logic.ts
+  136:9  error  'day' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\games\qinshi\QinShiPage.tsx
+   6:35  error  'useEffect' is defined but never used             @typescript-eslint/no-unused-vars
+   7:18  error  'AnimatePresence' is defined but never used       @typescript-eslint/no-unused-vars
+  11:30  error  'convertImageToBase64' is defined but never used  @typescript-eslint/no-unused-vars
+  18:8   error  'QinShiData' is defined but never used            @typescript-eslint/no-unused-vars
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\games\types.ts
+   18:8  error  ES2015 module syntax is preferred over namespaces  @typescript-eslint/no-namespace
+   73:8  error  ES2015 module syntax is preferred over namespaces  @typescript-eslint/no-namespace
+  152:8  error  ES2015 module syntax is preferred over namespaces  @typescript-eslint/no-namespace
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\games\zhougong\ZhouGongPage.tsx
+  281:35  error  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\games\zhougong\logic.ts
+  195:61  error  'keywords' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\masters\MasterSelector.tsx
+  29:3  error    'className' is assigned a value but never used                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+  64:6  warning  React Hook useEffect has missing dependencies: 'onMasterChange' and 'selectedMaster'. Either include them or remove the dependency array. If 'onMasterChange' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\masters\service.ts
+   102:39  error  Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+   149:54  error  Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+   149:89  error  Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+   200:62  error  'gameType' is defined but never used                       @typescript-eslint/no-unused-vars
+   213:77  error  Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+   414:7   error  'lastSentLength' is never reassigned. Use 'const' instead  prefer-const
+   414:7   error  'lastSentLength' is assigned a value but never used        @typescript-eslint/no-unused-vars
+   490:19  error  Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+   493:14  error  Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+   617:22  error  'parseError' is defined but never used                     @typescript-eslint/no-unused-vars
+   678:19  error  Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+   681:14  error  Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+   688:11  error  'enableStreaming' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   712:11  error  'effectiveApiKey' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   845:14  error  Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+  1239:14  error  Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+  1428:16  error  'error' is defined but never used                          @typescript-eslint/no-unused-vars
+  1567:13  error  'apiKey' is assigned a value but never used                @typescript-eslint/no-unused-vars
+  1616:46  error  Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+  1629:17  error  Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\masters\types.ts
+  46:9  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\pages\HomePage.tsx
+  183:35  error  'index' is defined but never used  @typescript-eslint/no-unused-vars
+  259:54  error  'index' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\styles\modalStyles.ts
+  388:10  error  'type' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\types\index.ts
+  31:9   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  69:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  71:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  99:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\workspace\ai_bazi_zhouwenwang\zhouwenwang\zhouwenwang-divination-mobile\src\utils\animations.ts
+  85:6  warning  React Hook useEffect has a missing dependency: 'elementRef'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+✖ 105 problems (100 errors, 5 warnings)
+  3 errors and 0 warnings potentially fixable with the `--fix` option.
+

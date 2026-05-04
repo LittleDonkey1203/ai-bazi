@@ -7,3 +7,9 @@
 **/release/
 **/.env
 **/.git-monorepo-backup/
+
+# 模板原件归档(Phase 0 已使用,保留以备查阅,不进 git)
+docs/templates-archive/
+
+# 例外:lint baseline 文件作为 ui-auditor 检查 12 对照基准,必须进 git
+!docs/lint-baseline-*.log

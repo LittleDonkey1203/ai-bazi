@@ -1,0 +1,46 @@
+#!/bin/sh
+# UI 改造期间保护业务逻辑层的 pre-commit hook
+# 来源: CLAUDE.md "业务逻辑目录(改造禁止修改)" 段
+# 安装时间: 2026-05-04 (Phase 3 batch 0 step E 前夕, 用户回溯发现 hook 缺失)
+# 加固时间: 2026-05-04 (step F 前夕, 补齐 6 类原 regex 缺口)
+# 紧急绕过: git commit --no-verify (强烈不推荐, 需在 cleanup-backlog 登记)
+#
+# 覆盖范围 (对照 CLAUDE.md 业务逻辑目录段):
+#  1. src/core/*                                              ✓
+#  2. src/games/*/logic.ts (7 games)                          ✓ (general pattern)
+#  3. src/games/bazi/advancedAnalysis.ts                      ✓ (explicit, 原 regex 漏)
+#  4. src/games/bazi/{cantianAdapter,caseStorage,chatMemory,
+#     yongshenEngine,yongshenV2Analysis}.ts                   ✓ (general pattern)
+#  5. src/games/bazi/blind-three-pass/*.ts                    ✓ (entire dir, 原仅命中 engine.ts)
+#  6. src/games/bazi/yongshen-v2/*.ts                         ✓ (entire dir, 原因大小写不命中)
+#  7. src/games/qinshi/{prompts,types}.ts                     ✓
+#  8. src/games/{types,index}.ts                              ✓
+#  9. src/masters/{service,prompts,config,types,index}.ts     ✓
+# 10. src/utils/*.ts                                          ✓
+# 11. src/types/*                                             ✓
+#
+# 不在 hook 覆盖范围 (由 ui-auditor 检查 10 单独保护):
+# - 测试目录 src/**/__tests__/* + src/test/setup.ts
+#   (允许 batch 0 step C 这类合法新增测试场景)
+
+PROTECTED_PATHS="\
+zhouwenwang/zhouwenwang-divination-mobile/src/core/|\
+zhouwenwang/zhouwenwang-divination-mobile/src/games/.*/(logic|engine|cantian|caseStorage|chatMemory|yongshen).*\.ts$|\
+zhouwenwang/zhouwenwang-divination-mobile/src/games/bazi/advancedAnalysis\.ts$|\
+zhouwenwang/zhouwenwang-divination-mobile/src/games/bazi/blind-three-pass/.*\.ts$|\
+zhouwenwang/zhouwenwang-divination-mobile/src/games/bazi/yongshen-v2/.*\.ts$|\
+zhouwenwang/zhouwenwang-divination-mobile/src/games/qinshi/(prompts|types)\.ts$|\
+zhouwenwang/zhouwenwang-divination-mobile/src/games/(types|index)\.ts$|\
+zhouwenwang/zhouwenwang-divination-mobile/src/masters/(service|prompts|config|types|index)\.ts$|\
+zhouwenwang/zhouwenwang-divination-mobile/src/utils/.*\.ts$|\
+zhouwenwang/zhouwenwang-divination-mobile/src/types/"
+
+CHANGED=$(git diff --cached --name-only | grep -E "$PROTECTED_PATHS")
+if [ -n "$CHANGED" ]; then
+  echo "❌ 改造期禁止修改业务逻辑文件:"
+  echo "$CHANGED"
+  echo ""
+  echo "如确实需要修改, 请单独立项。"
+  echo "临时绕过(强烈不推荐): git commit --no-verify"
+  exit 1
+fi

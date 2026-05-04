@@ -78,22 +78,65 @@ git diff main --stat | grep -E '\.(test|spec)\.'
 
 如果有任何输出 → ❌ 测试被改了,严重违规。
 
-### 检查 11:brand-orange Deprecation(本工程专属)
+### 检查 11:brand-* Deprecation(本工程专属)
 
-> 来源:`docs/design-system.md` §1.4.1。旧品牌橙 `#FF9900`(对应 Tailwind 类 `brand-orange`)已降级为辅助色,**batch 0 ~ 4 期间禁止新增使用**,已有使用保留至 batch 5 统一清理。
+> 来源:`docs/design-system.md` §1.4.1。**4 个旧 brand-* Tailwind 类**已 deprecated,**batch 0 ~ 4 期间禁止新增使用**,已有使用保留至 batch 5 统一清理:
+> - `brand-orange`(指向 `var(--color-brand-aux)` = `#FF9900`)→ 用 `brand` 或 `brand-aux`
+> - `brand-black`(`#000000`)→ 用 `bg-black` 或 `bg-night`
+> - `brand-gray`(`#CCCCCC`)→ 用 `text-neutral-2`
+> - `brand-white`(`#FFFFFF`)→ 用 `bg-white` 或 `text-paper`
 
 对本 batch 修改的文件运行:
 
 ```bash
 git diff main -- '*.tsx' '*.html' '*.css' '*.ts' \
   | grep -E '^\+' | grep -v '^\+\+\+' \
-  | grep -E 'brand-orange|#FF9900|#ff9900|var\(--c-orange'
+  | grep -E 'brand-orange|brand-black|brand-gray|brand-white|#FF9900|#ff9900|var\(--c-orange'
 ```
 
 判定规则:
-- 当前 batch ∈ {0, 1, 2, 3, 4} 且命令有输出 → ⚠️ **警告**(违反 deprecation 政策);要求新增行改用 `bg-brand`(主 CTA)/ `bg-brand-aux`(次级 CTA)/ `var(--color-warning)`(警示态),并报告新增的具体文件 + 行号
+- 当前 batch ∈ {0, 1, 2, 3, 4} 且命令有输出 → ⚠️ **警告**(违反 deprecation 政策);报告新增的具体文件 + 行号 + 哪个 deprecated 类,要求改用对应新 utility(见上表)
 - 当前 batch = 5(末批清理)→ 允许出现"− 行"删除,但仍不应有"+ 行"新增;若有新增 → ⚠️ 警告
-- 旧文件中本就存在的 `brand-orange`(diff 上下文行,非 `+` 号开头)→ 忽略,不报
+- 旧文件中本就存在的 deprecated 类(diff 上下文行,非 `+` 号开头)→ 忽略,不报
+- **特例**(2026-05-04 视觉契约原则):`BottomNav.tsx` 第 43 / 97 / 171 行的 `text-[#FF9900]` / `border-[#FF9900]` / `bg-[#FF9900]/10` 受 `BottomNav.test.tsx:116` 测试断言锁定,改造期保留至结束,**不视为违规**(详见 design-system §0 视觉契约原则)
+
+### 检查 12:Lint 总数对比 baseline(本工程专属)
+
+> 来源:`docs/design-system.md` §10.1 lint 顺手修白名单 + `docs/lint-debt.md` baseline。
+> 改造期间 lint 错误总数**只允许下降,不允许上升**。下降的部分必须落在白名单(`no-unused-vars` / `prefer-const`)且**不在业务逻辑保护路径**。
+
+```bash
+# 跑当前 lint
+npm --prefix zhouwenwang/zhouwenwang-divination-mobile run lint > /tmp/current-lint.log 2>&1 || true
+
+# 提取错误数 / 警告数(行格式: "  L:C  error|warning  msg  rule")
+CUR_ERR=$(grep -cE "^[[:space:]]+[0-9]+:[0-9]+[[:space:]]+error[[:space:]]" /tmp/current-lint.log)
+CUR_WARN=$(grep -cE "^[[:space:]]+[0-9]+:[0-9]+[[:space:]]+warning[[:space:]]" /tmp/current-lint.log)
+BASE_ERR=$(grep -cE "^[[:space:]]+[0-9]+:[0-9]+[[:space:]]+error[[:space:]]" docs/lint-baseline-batch-0.log)
+BASE_WARN=$(grep -cE "^[[:space:]]+[0-9]+:[0-9]+[[:space:]]+warning[[:space:]]" docs/lint-baseline-batch-0.log)
+
+echo "errors: current=$CUR_ERR, baseline=$BASE_ERR, delta=$((CUR_ERR - BASE_ERR))"
+echo "warnings: current=$CUR_WARN, baseline=$BASE_WARN, delta=$((CUR_WARN - BASE_WARN))"
+
+# 找出新增的 error rule(如有)
+diff <(grep -oE "@typescript-eslint/[a-z-]+|prefer-const|react-hooks/[a-z-]+" docs/lint-baseline-batch-0.log | sort | uniq -c) \
+     <(grep -oE "@typescript-eslint/[a-z-]+|prefer-const|react-hooks/[a-z-]+" /tmp/current-lint.log | sort | uniq -c)
+```
+
+判定规则:
+
+- **CUR_ERR > BASE_ERR** → ❌ **严重**:lint 错误数增加,改造期间引入 lint 回归。报告新增的具体规则名 + 文件 + 行号
+- **CUR_ERR < BASE_ERR** → ✅ 允许,但需进一步验证:
+  - 减少的 errors **必须**集中在 `@typescript-eslint/no-unused-vars` 或 `prefer-const`(白名单)
+  - 减少的 errors **不应**出现在业务逻辑保护路径下的文件(违反 §10.1 后盾)
+  - 如减少数包含 `@typescript-eslint/no-explicit-any` 或 `react-hooks/exhaustive-deps` → ⚠️ **警告**(违反"严禁"列表,可能 Claude 顺手修了不该修的)
+- **CUR_ERR == BASE_ERR** → ✅ 通过(中性)
+- **CUR_WARN > BASE_WARN** → ⚠️ 警告(同等审视,但 warning 优先级低于 error)
+
+### 特例(检查 12)
+
+- 如果某 batch 的工作目标就是"独立 lint cleanup 批次"(在 `docs/PLAYBOOK.md` 中显式标记),允许减少任意类型的 errors;但仍**不允许**跨业务逻辑保护路径修复
+- baseline 文件 `docs/lint-baseline-batch-0.log` 由 batch 0 step E 生成,改造结束后可重新生成新 baseline 用于 lint cleanup 立项追踪
 
 ## 模式 2:全局最终审计
 

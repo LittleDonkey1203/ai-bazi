@@ -16,6 +16,15 @@
 - 中式元素接受度:**中**(印章、毛笔分隔线作为装饰位允许使用,见 §5)
 - 模板组件 `MobileTableCard`:**不使用**(本工程无后台、无数据表格)
 
+### 视觉契约原则
+
+测试用例如锁定具体视觉值(颜色 hex、字号 px、特定 className 字符串等),视为"**视觉契约**"。改造期间应**适应它**而非**修改它**。如某视觉值因合理设计原因必须变更,需在 `docs/cleanup-backlog.md` 登记并通过**单独立项**处理,**不混在 batch commit 里**。
+
+> 适用案例(2026-05-04 锁定):
+>
+> - **BottomNav 激活态保留 `#FF9900`(brand-aux)**:`BottomNav.test.tsx:116` 用 `expect(moreButton.className).toContain('text-[#FF9900]')` 断言 `text-[#FF9900]` 字符串。这是色彩契约。BottomNav 第 43 / 97 / 171 行的 active 态 / overflow active 态保持 `#FF9900` 直到改造结束,**不再排队 batch 5 清理**。语义上对齐 §0 顶部"橙降级为次级 CTA"的方向(active tab = 次级 CTA),与 brand-aux token 等价。
+> - 后续如有相同情形:发现某 `#hex` / `Npx` / className 字符串被 `.test.tsx` 显式断言,直接在本节增加一个 bullet 记录契约,在 cleanup-backlog 标 ✅ 已通过视觉契约原则承认。
+
 ## 1. 色彩(Design Tokens 三层结构)
 
 ### 1.1 第 1 层:原始色板(中国传统色 + 视觉北极星实际色值)
@@ -66,8 +75,34 @@
   --c-night-elevated: #12120f;   /* 卡片 / 模态 */
   --c-night-input:    #0d0d0a;   /* 表单内嵌 */
   --c-night-overlay:  rgba(10, 10, 15, 0.95); /* 底部 nav 半透 */
+
+  /* === 中性灰阶(新增,与 --c-night-* 中式暗色并行) === */
+  /* 用途:继承自旧设计的功能性灰色 UI(导航 hover / 边框 / 占位文字),
+     与 night-* 的中式冷调暗色不同,此为纯中性灰(R=G=B)。 */
+  --c-gray-100: #eeeeee;   /* 软提示文字 */
+  --c-gray-300: #cccccc;   /* 次级中性文字(本批最高频,90 处使用) */
+  --c-gray-400: #888888;   /* 中度文字 / 占位 / 中度图标 */
+  --c-gray-500: #444444;   /* 强分隔线 */
+  --c-gray-600: #333333;   /* 默认分隔线(62 处使用) */
+  --c-gray-700: #2a2a2a;   /* 激活/选中表面 */
+  --c-gray-750: #222222;   /* 蒙层控制表面(sheet 关闭按钮 hover 等) */
+  --c-gray-800: #1a1a1a;   /* 悬停表面(nav 项 hover) */
+  --c-gray-900: #111111;   /* 深表面(替代 night-elevated 的纯色版) */
 }
 ```
+
+#### 灰阶漂移容忍度规则
+
+后续 batch 中遇到与 token 不完全匹配但**每通道 RGB 漂移 ≤ 5** 的灰 hex,**直接合并到最近的 token**,**不新增 token**。
+
+> **理由**:历史代码中的细微灰色差异多为开发者无意识选择(`#252525` vs `#2a2a2a` vs `#272727`...),没有设计意图,token 化会污染语义体系。
+>
+> **例**:
+> - `#252525` / `#272727` / `#2b2b2b` / `#2d2d2d` → `bg-surface-active`(底层 `#2a2a2a`)
+> - `#121212` / `#151515` / `#171717` → `bg-surface-deep`(底层 `#111111`)
+> - `#8a8a8a` / `#8c8c8c` / `#8f8f8f` / `#9b9b9b` / `#9d9d9d` → `text-neutral-mid`(底层 `#888888`)
+>
+> 漂移容忍度 > 5 时,不要硬合并,登记到 `docs/cleanup-backlog.md` 等设计决策。
 
 ### 1.2 第 2 层:语义色(组件**只能**引用这一层)
 
@@ -94,6 +129,7 @@
   --color-brand-active: var(--c-vermilion-700);
   --color-brand-subtle: var(--c-vermilion-100);
   --color-brand-line:   var(--c-vermilion-line);
+  --color-brand-aux:    var(--c-orange-500); /* 次级品牌色 = 降级旧橙, 用于次级 CTA / 警示;与 --color-warning 同源不同语义 */
 
   /* 辅助(黄铜) */
   --color-accent:       var(--c-bronze-500);
@@ -118,6 +154,19 @@
   --color-element-earth: var(--c-earth);
   --color-element-metal: var(--c-metal);
   --color-element-water: var(--c-water);
+
+  /* 中性灰阶语义(新增,batch 0 step (d))*/
+  --color-surface-hover:    var(--c-gray-800);   /* nav 项 hover, sheet 项 hover */
+  --color-surface-sheet:    var(--c-gray-750);   /* 移动端 sheet / 蒙层控制表面 */
+  --color-surface-active:   var(--c-gray-700);   /* nav 项 active, 选中卡 */
+  --color-surface-deep:     var(--c-gray-900);   /* 中性深表面(替代 night-elevated 的纯灰版) */
+
+  --color-divider:          var(--c-gray-600);   /* 中性分隔线(与黄铜调 --color-border 不同) */
+  --color-divider-strong:   var(--c-gray-500);   /* 强分隔线 */
+
+  --color-text-neutral-mid:       var(--c-gray-400);   /* 占位 / 中度图标 */
+  --color-text-neutral-secondary: var(--c-gray-300);   /* 次级中性文字(90 处使用) */
+  --color-text-neutral-soft:      var(--c-gray-100);   /* 高对比软文字 */
 }
 ```
 
@@ -215,16 +264,17 @@
     theme: {
       extend: {
         colors: {
-          /* 旧 brand-* 保留(避免 batch 期间 .tsx 内 className="bg-brand-orange" 大面积变红) */
-          'brand-black':  '#000000',
-          'brand-white':  '#FFFFFF',
-          'brand-gray':   '#CCCCCC',
-          'brand-orange': 'var(--c-orange-500)',  // @deprecated batch 5 末批移除,新代码用 brand-aux
+          /* 旧 brand-* 全部 deprecated (batch 5 末批移除), 详见 §1.4.1 */
+          'brand-black':  '#000000',                    // @deprecated batch 5 移除, 用 bg-black 或 bg-night
+          'brand-gray':   '#CCCCCC',                    // @deprecated batch 5 移除, 用 text-neutral-2
+          'brand-white':  '#FFFFFF',                    // @deprecated batch 5 移除, 用 bg-white 或 text-paper
+          'brand-orange': 'var(--color-brand-aux)',     // @deprecated batch 5 移除, 用 brand 或 brand-aux
 
-          /* 新增,改造期 className 优先使用这一组 */
+          /* 改造期新增,新代码优先使用这一组 */
           'brand':        'var(--color-brand)',
           'brand-hover':  'var(--color-brand-hover)',
           'brand-subtle': 'var(--color-brand-subtle)',
+          'brand-aux':    'var(--color-brand-aux)',
           'accent':       'var(--color-accent)',
           'paper':        'var(--color-text-primary)',
           'paper-2':      'var(--color-text-secondary)',
@@ -236,6 +286,17 @@
           'earth':        'var(--color-element-earth)',
           'metal':        'var(--color-element-metal)',
           'water':        'var(--color-element-water)',
+
+          /* 中性灰阶 (batch 0 step (d) 新增) */
+          'surface-hover':  'var(--color-surface-hover)',
+          'surface-sheet':  'var(--color-surface-sheet)',
+          'surface-active': 'var(--color-surface-active)',
+          'surface-deep':   'var(--color-surface-deep)',
+          'divider':        'var(--color-divider)',
+          'divider-strong': 'var(--color-divider-strong)',
+          'neutral-mid':    'var(--color-text-neutral-mid)',
+          'neutral-2':      'var(--color-text-neutral-secondary)',
+          'neutral-soft':   'var(--color-text-neutral-soft)',
         },
         fontFamily: {
           serif: ['Songti SC', 'STSong', 'SimSun', 'FangSong', 'serif'],
@@ -248,14 +309,43 @@
 
 > ⚠️ Tailwind CDN 不能识别 `var(...)` 在 `colors` 里直接做 utility(如 `bg-brand` 会编译成 `background-color: var(--color-brand)` —— 这一步 CDN 是支持的)。`var()` 在 `colors` 字段是合法的:CDN 模式下生成 `background-color: var(--color-brand)` 是有效 CSS。**已验证可行**。
 
-### 1.4.1 brand-orange Deprecation 政策
+### 1.4.1 brand-* Deprecation 政策
 
-- `brand-orange` Tailwind 类处于 deprecation 期,**batch 0 ~ 4 不允许新增使用**,已存在使用保留至 batch 5 统一清理
-- ui-auditor 会在每个 batch 检查 `git diff` `+` 号行的 `brand-orange` 新增,违反 → 警告(详见 `.claude/agents/ui-auditor.md` 检查 11)
-- 新代码用法:
-  - 主 CTA / 激活态 → `bg-brand` / `text-brand`
-  - 次级 CTA / warning → 用 `var(--color-warning)` 或新增 utility `bg-brand-aux`(在 Tailwind config 显式映射:`'brand-aux': 'var(--color-warning)'`)
-- batch 5 统一清理时,把所有 `brand-orange` 用法按上述用法替换,然后从 `index.html` 内联 config 中删除 `brand-orange` 键
+**4 个旧 brand-* Tailwind 类**全部进入 deprecation 期,**batch 0 ~ 4 不允许新增使用**,已存在使用保留至 batch 5 统一清理:
+
+| Deprecated 类 | 解析值 | 新代码替换 |
+|---|---|---|
+| `brand-black` | `#000000` | `bg-black`(Tailwind 内置)或 `bg-night`(本工程墨黑) |
+| `brand-gray` | `#CCCCCC` | `text-neutral-2`(中性灰文字)|
+| `brand-white` | `#FFFFFF` | `bg-white`(Tailwind 内置)或 `text-paper`(米白文字)|
+| `brand-orange` | `var(--color-brand-aux)` = `#FF9900` | `bg-brand`(主 CTA 绛红)或 `bg-brand-aux`(次级 CTA 橙)|
+
+> **brand-aux 不在 deprecation 名单**:它是 batch 0 step B 引入的新 utility,代表"次级品牌色 = 降级旧橙",改造期间会持续使用。
+
+ui-auditor 会在每个 batch 检查 `git diff` `+` 号行的这 4 个 deprecated 类的新增,违反 → 警告(详见 `.claude/agents/ui-auditor.md` 检查 11,2026-05-04 已扩展为 4 类联检)。
+
+**视觉契约例外**:`BottomNav.tsx` 第 43 / 97 / 171 行的 `text-[#FF9900]` / `border-[#FF9900]` / `bg-[#FF9900]/10` 受 `BottomNav.test.tsx:116` 测试断言锁定,改造期间保留至结束(见 §0 视觉契约原则,不视为违规)。
+
+**brand-aux 语义**:
+- `--color-brand-aux: var(--c-orange-500)` —— 次级品牌色 = 降级后的旧橙
+- 用于次级 CTA、状态提示、警示等**非主品牌位**
+- 与 `--color-warning` 同源不同语义:`--color-warning` 是状态色(toast / badge),`--color-brand-aux` 是品牌色阶
+- 二者目前指向同一原始色 `#FF9900`,但语义独立,未来可以分别调整
+
+**实现细节(brand-orange 的 deprecation 期间接)**:
+- `brand-orange` Tailwind 键在 `index.html` 内联 config 中**实际指向 `var(--color-brand-aux)`**,而非直接指向 `var(--c-orange-500)`(第 1 层)
+- 理由:保持"组件只引第 2 层"纪律。即便是 deprecated 的兼容 key,也走语义层,不引第 1 层污染层级
+- 视觉等价(都解析为 `#FF9900`),无运行时差异
+- batch 5 清理时只需删除 `brand-orange` key 这一行(同时把所有 className 用法替换为 `bg-brand` / `bg-brand-aux`),无需追踪原始色
+- 同样的 layer-2 间接也用于新 key:`'brand-aux': 'var(--color-brand-aux)'`(显式映射,见 §1.4 配置)
+
+**新代码用法**:
+- 主 CTA / 激活态 → `bg-brand` / `text-brand`
+- 次级 CTA / 品牌弱化位 → `bg-brand-aux` / `text-brand-aux`(Tailwind 映射:`'brand-aux': 'var(--color-brand-aux)'`)
+- 状态/警示位(如 toast、attention badge)→ `bg-[var(--color-warning)]` 或新增 `bg-warning` 显式映射
+- `brand-orange` 现指向 `var(--color-brand-aux)`(同样落到第 2 层),保留兼容直到 batch 5 清理后移除 key
+
+batch 5 统一清理时,把所有 `brand-orange` 用法替换为对应的新 utility(主品牌位 → `bg-brand`;次级位 → `bg-brand-aux`),然后从 `index.html` 内联 config 中删除 `brand-orange` 键。
 
 ## 2. 字体
 
@@ -337,7 +427,7 @@ body { font-family: var(--font-sans); }
 
 | 位置 | 元素 | 落地组件 / 类名 |
 |------|------|------|
-| BottomNav 激活态指示 | 4px 黄铜小圆点 + 宋体标签(`font-serif`) | `S009 BottomNav.tsx`(已存在,batch 0 接 token) |
+| BottomNav 激活态指示 | 橙色文字 (`var(--color-brand-aux)`) + 宋体标签 + 4px 圆点装饰(色彩跟随 brand-aux) | `S009 BottomNav.tsx`(已存在,batch 0 接 token;active 态保留橙色见 §0 视觉契约原则) |
 | HomePage hero | 渐变文字 `linear-gradient(135deg, #f5f0e3, #d4a03e 60%, #c41e3a)`、宋体大标题、毛笔分隔线 `<Divider />` | `F001 HomePage.tsx`(batch 1) |
 | 占卜功能卡片(首页 grid) | 角落卦象水印 `opacity: 0.06`(`☰☲☵☳☴☱` lucide 之外) | `F001 HomePage.tsx`(batch 1) |
 | MasterSelector 大师卡 | **印章组件 `<Seal />`** —— 红色方框 + 单字 + `transform: rotate(-3deg)` | `F013 MasterSelector.tsx`(batch 1)新增 `components/decor/Seal.tsx` |
@@ -437,6 +527,50 @@ body { font-family: var(--font-sans); }
 - [ ] 未新增使用 `brand-orange` Tailwind 类(已有保留,新增禁止;详见 §1.4.1)
 - [ ] 视觉回归:对照 batch 0 的 baseline 跑一次,允许的差异需在 PR 描述里 ack
 - [ ] Electron 兼容:涉及 Layout / 路由 / 全局浮窗(F022 / F023)的改动后跑一次 `npm run build:electron`
+
+## 10.1 改造期间允许的 lint 顺手修复(白名单)
+
+> 来源:batch 0 step E 暴露 100 errors / 5 warnings 后的策略决策(2026-05-04)。
+> 完整债务清单:[`docs/lint-debt.md`](./lint-debt.md)
+> 增量检测:`.claude/agents/ui-auditor.md` 检查 12
+
+### 前置条件(必须**两个都满足**)
+
+1. **机器可识别**:eslint 已 flag 的错误,不靠人脑判断
+2. **零运行时影响**:删除前后程序行为完全等价(纯静态修复)
+
+### ✅ 允许的修复类型
+
+- 未使用的 import 删除(`@typescript-eslint/no-unused-vars` on imports)
+- 未使用的局部变量删除,前提**无副作用**(`@typescript-eslint/no-unused-vars` on locals)
+- `let` → `const`(`prefer-const`)
+- 注释化未使用的"已注释路由"组件 import(如 `// const QinShiPage = lazy(...)` 因路由被注释而 unused)
+
+### ❌ 严禁的修复类型
+
+- `any` → 具体类型(可能改运行时类型推导)
+- `useEffect` 依赖添加 / 删除(`react-hooks/exhaustive-deps`,改触发频率)
+- `namespace` → ES2015 module(`@typescript-eslint/no-namespace`,触碰业务结构)
+- 函数签名调整
+- Vite 动态/静态混合导入警告(结构性,留独立 perf 立项)
+- bundle size 警告(由上面派生)
+
+### 业务逻辑文件的额外保护
+
+即使修复属于上述"允许"范围,如果文件位于:
+- `src/core/*`
+- `src/games/*/(logic|engine|cantian|caseStorage|chatMemory|yongshen)*.ts`
+- `src/masters/{service,prompts,config,types,index}.ts`
+- `src/utils/*.ts`
+- `src/types/*`
+
+**任一保护路径下,不允许任何 lint 修复**。改正方式只有一个:**不修,登记到 `docs/lint-debt.md`,改造结束后单独立项**。
+
+`pre-commit hook` 会拦截 stage 这些路径下的修改,作为机器红线。`ui-auditor` 检查 4(业务逻辑隔离)+ 检查 12(lint 总数对比)双重后盾。
+
+### 已知 hook regex 未覆盖问题 — ✅ 已解决(2026-05-04 step F 前夕)
+
+`src/games/bazi/advancedAnalysis.ts` 与 `src/games/types.ts` 已被 hook regex 加固覆盖。`.git/hooks/pre-commit` 文件头注释包含完整 11 项对照表,与 CLAUDE.md "业务逻辑目录" 段全 ✓。详见 `docs/cleanup-backlog.md` "hook regex 缺口加固" 段。
 
 ## 11. 不在本设计系统范围内
 

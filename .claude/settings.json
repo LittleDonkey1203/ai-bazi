@@ -1,0 +1,28 @@
+{
+  "_comment": "Claude:请在初始化时根据项目实际情况替换占位符。matcher 中的 file_paths 扩展名要匹配项目使用的文件类型。command 中的 prettier/lint 命令要换成项目实际使用的工具。",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "_comment": "每次 Edit/Write 后自动格式化。如果项目用 Biome 替换为 biome format,如果用 dprint 替换为 dprint fmt。",
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_FILE_PATHS\" | grep -qE '\\.(vue|tsx|jsx|ts|js|css|scss|svelte)$'; then [TODO: 实际格式化命令,如 pnpm prettier --write] $CLAUDE_FILE_PATHS 2>/dev/null || true; fi"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "_comment": "会话结束时提示未提交改动",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "git status --short && echo '---提醒:本次会话有未提交改动,batch 完成后请使用规范 commit message---'"
+          }
+        ]
+      }
+    ]
+  }
+}

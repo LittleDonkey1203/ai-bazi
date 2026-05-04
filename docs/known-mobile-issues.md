@@ -6,7 +6,7 @@
 
 ## 全局模式(跨页面)
 
-### G1. BottomNav 永久遮挡主内容尾部
+### G1. BottomNav 永久遮挡主内容尾部 — ✅ 已在 batch 0 step D 修复
 
 **现象**:多个页面(home / masters / bazi / palmistry)在 baseline 截图中出现 BottomNav 覆盖在最后一屏内容之上,被遮挡的元素包括:
 - home.png:"奇门遁甲""手相分析"游戏卡片中部 + 底部"本地隐私保护""AI智能分析""传统易学智慧" 三栏部分被遮
@@ -14,15 +14,19 @@
 - bazi.png:**性别选择(男/女按钮)整体被 BottomNav 遮**,无法点击
 - palmistry.png:第二张卡片"智慧线"完全被遮(只看到圆点),其后内容也错位
 
-**推测对应文件**:
+**推测对应文件(已确认)**:
 - `S010 MainContent.tsx`:容器 `paddingBottom` 在 mobile 时仅 `5rem`(80px),BottomNav 实际高度(64px + safe-area-inset-bottom)若 ≥ 80px 就会遮
-- `S009 BottomNav.tsx`:实际渲染高度可能因 `min-height: 64px` + safe-area 超出预期
+  - 实际 paddingBottom 设置在 **`S007 Layout.tsx` 的内部容器** 上(不是 MainContent),已修复
 
-**修复时机**:
-- **batch 0 step D**:重新评估 `MainContent.tsx` 的 `pb-20` 是否够用;若不够,改 `pb-24`(96px)或 `pb-28`(112px)。**这属于"接 token + 微调安全边距",仍在 step D 的"接 token"语义内,可做**。
-- 若不在 batch 0 修,登记到 batch 1 起所有页面 layout 的"补 padding"清单
+**修复(2026-05-04 batch 0 step D)**:
+- `S007 Layout.tsx`: `paddingBottom: '5rem'` → `'calc(5rem + env(safe-area-inset-bottom))'`
+- 实际效果:
+  - 无 safe-area 设备(Android、桌面):80px(原值,nav 高 64 + 16px 缓冲)
+  - iPhone 13/14(safe-area=34):114px(覆盖 nav 64 + safe-area 34 + 16px 缓冲)
+  - iPhone Pro Max(safe-area=44):124px,同样有缓冲
+- 视觉回归对照需在 step F 跑一次确认
 
-**优先级**:🔴 高(影响关键 CTA 可达性)
+**剩余风险**:仅修了 Layout 容器,各页面 if 在自己内部又设置 `paddingBottom`/`pb-*` 而值过小,仍会被遮。本批未审计页面层。**留给 batch 1-4 各页处理时复核**。
 
 ---
 

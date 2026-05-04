@@ -36,3 +36,6 @@ playwright-report/
 playwright/.cache/
 tests/visual/**/*-actual.png
 tests/visual/**/*-diff.png
+
+# 视觉回归 actual 截图(每次跑生成,不进 git)
+tests/visual/actual/

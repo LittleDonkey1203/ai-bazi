@@ -1,0 +1,595 @@
+/* TailwindCSS 现在使用 CDN 版本，不再需要本地编译 */
+/* @tailwind base; */
+/* @tailwind components; */
+/* @tailwind utilities; */
+
+/* ========================================
+   Design Tokens — 三层结构
+   Source: docs/design-system.md §1.1 / §1.2 / §1.3 / §2.1 / §6.1
+   ----------------------------------------
+   层 1: 原始色板 (--c-*)
+   层 2: 语义色 (--color-*)
+   层 3: 组件 token (--button-* / --card-* / --input-* / --seal-* / --divider-*)
+   ======================================== */
+
+:root {
+  /* ========== 层 1: 原始色板 ========== */
+
+  /* 主品牌: 绛红 */
+  --c-vermilion-700: #7a1f26;
+  --c-vermilion-500: #c41e3a;
+  --c-vermilion-400: #d6364f;
+  --c-vermilion-100: rgba(196, 30, 58, 0.12);
+  --c-vermilion-line: rgba(196, 30, 58, 0.25);
+
+  /* 辅助: 黄铜 */
+  --c-bronze-700: #b8882a;
+  --c-bronze-500: #d4a03e;
+  --c-bronze-100: rgba(212, 160, 62, 0.08);
+  --c-bronze-line: rgba(212, 160, 62, 0.12);
+  --c-bronze-line-strong: rgba(212, 160, 62, 0.25);
+
+  /* 旧品牌橙 (降级为辅助/警示, batch 5 末批清理) */
+  --c-orange-500: #ff9900;
+  --c-orange-600: #e88800;
+  --c-orange-100: rgba(255, 153, 0, 0.12);
+
+  /* 五行/卦象语义色 */
+  --c-wood:  #2d8b5a;
+  --c-fire:  #c41e3a;
+  --c-earth: #b87333;
+  --c-metal: #d4a03e;
+  --c-water: #2d7d9a;
+
+  /* 装饰色 */
+  --c-amethyst-500: #7b5ea7;
+
+  /* 米白系 (深底之上的文字层) */
+  --c-paper-50:  #fffaf2;
+  --c-paper-100: #f5f0e3;
+  --c-paper-300: #c9bfaa;
+  --c-paper-500: #8a7d6b;
+  --c-paper-700: #6b6050;
+  --c-paper-900: #4a4030;
+
+  /* 墨黑 (背景层) */
+  --c-night-base:     #0a0a0f;
+  --c-night-elevated: #12120f;
+  --c-night-input:    #0d0d0a;
+  --c-night-overlay:  rgba(10, 10, 15, 0.95);
+
+  /* === 中性灰阶 (新增, 用于继承旧设计的功能性灰色 UI;与 --c-night-* 中式暗色并行) === */
+  /* 漂移容忍度: 后续 batch 中遇到与 token 不完全匹配但每通道 RGB 漂移 ≤ 5 的灰 hex,
+     直接合并到最近的 token, 不新增 token。详见 docs/design-system.md §1.1。 */
+  --c-gray-100: #eeeeee;   /* 软提示文字 */
+  --c-gray-300: #cccccc;   /* 次级中性文字 (本批最高频, 90 处使用) */
+  --c-gray-400: #888888;   /* 中度文字 / 占位 / 中度图标 */
+  --c-gray-500: #444444;   /* 强分隔线 */
+  --c-gray-600: #333333;   /* 默认分隔线 (62 处使用) */
+  --c-gray-700: #2a2a2a;   /* 激活/选中表面 */
+  --c-gray-750: #222222;   /* 蒙层控制表面 (sheet 关闭按钮 hover 等) */
+  --c-gray-800: #1a1a1a;   /* 悬停表面 (nav 项 hover) */
+  --c-gray-900: #111111;   /* 深表面 (替代 night-elevated 的纯色版) */
+
+  /* ========== 层 2: 语义色 (组件只能引用这一层) ========== */
+
+  /* 背景 */
+  --color-bg-base:     var(--c-night-base);
+  --color-bg-elevated: var(--c-night-elevated);
+  --color-bg-input:    var(--c-night-input);
+  --color-bg-overlay:  var(--c-night-overlay);
+
+  /* 文本 */
+  --color-text-primary:   var(--c-paper-100);
+  --color-text-secondary: var(--c-paper-300);
+  --color-text-tertiary:  var(--c-paper-500);
+  --color-text-muted:     var(--c-paper-700);
+  --color-text-disabled:  var(--c-paper-900);
+  --color-text-brand:     var(--c-vermilion-500);
+  --color-text-accent:    var(--c-bronze-500);
+
+  /* 品牌 */
+  --color-brand:        var(--c-vermilion-500);
+  --color-brand-hover:  var(--c-vermilion-400);
+  --color-brand-active: var(--c-vermilion-700);
+  --color-brand-subtle: var(--c-vermilion-100);
+  --color-brand-line:   var(--c-vermilion-line);
+  --color-brand-aux:    var(--c-orange-500);  /* 次级品牌色 = 降级旧橙, 用于次级 CTA / 状态/警示;与 --color-warning 同源不同语义 */
+
+  /* 辅助 (黄铜) */
+  --color-accent:             var(--c-bronze-500);
+  --color-accent-hover:       var(--c-bronze-700);
+  --color-accent-line:        var(--c-bronze-line);
+  --color-accent-line-strong: var(--c-bronze-line-strong);
+
+  /* 状态 */
+  --color-info:    var(--c-water);
+  --color-success: var(--c-wood);
+  --color-warning: var(--c-orange-500);
+  --color-danger:  var(--c-vermilion-700);
+
+  /* 边框 */
+  --color-border:        var(--color-accent-line);
+  --color-border-strong: var(--color-accent-line-strong);
+  --color-border-focus:  var(--color-brand);
+
+  /* 五行 */
+  --color-element-wood:  var(--c-wood);
+  --color-element-fire:  var(--c-fire);
+  --color-element-earth: var(--c-earth);
+  --color-element-metal: var(--c-metal);
+  --color-element-water: var(--c-water);
+
+  /* 中性灰阶语义 (新增, batch 0 step (d)) */
+  --color-surface-hover:    var(--c-gray-800);   /* nav 项 hover, sheet 项 hover */
+  --color-surface-sheet:    var(--c-gray-750);   /* 移动端 sheet / 蒙层控制表面 */
+  --color-surface-active:   var(--c-gray-700);   /* nav 项 active, 选中卡 */
+  --color-surface-deep:     var(--c-gray-900);   /* 中性深表面 (替代 night-elevated 的纯灰版) */
+
+  --color-divider:          var(--c-gray-600);   /* 中性分隔线 (与黄铜调 --color-border 不同) */
+  --color-divider-strong:   var(--c-gray-500);   /* 强分隔线 */
+
+  --color-text-neutral-mid:       var(--c-gray-400);   /* 占位 / 中度图标 */
+  --color-text-neutral-secondary: var(--c-gray-300);   /* 次级中性文字 (90 处使用) */
+  --color-text-neutral-soft:      var(--c-gray-100);   /* 高对比软文字 */
+
+  /* ========== 层 3: 组件 token ========== */
+
+  /* 主按钮 (渐变绛红) */
+  --button-primary-bg: linear-gradient(135deg, var(--c-vermilion-500), var(--c-vermilion-700));
+  --button-primary-text: var(--c-paper-100);
+  --button-primary-shadow: 0 8px 24px rgba(196, 30, 58, 0.3);
+
+  /* 次级按钮 (黄铜) */
+  --button-secondary-bg: linear-gradient(135deg, var(--c-bronze-500), var(--c-bronze-700));
+  --button-secondary-text: var(--c-night-base);
+
+  /* 三级按钮 (透明 + 黄铜描边) */
+  --button-ghost-bg: transparent;
+  --button-ghost-text: var(--c-bronze-500);
+  --button-ghost-border: 0.5px solid var(--color-accent-line);
+
+  --button-radius:      14px;
+  --button-radius-pill: 20px;
+
+  /* 卡片 */
+  --card-bg:        var(--color-bg-elevated);
+  --card-border:    0.5px solid var(--color-accent-line);
+  --card-border-hl: 1px solid var(--color-brand-line);
+  --card-radius:    16px;
+  --card-padding:   16px;
+
+  /* 输入 */
+  --input-bg:            var(--color-bg-input);
+  --input-border:        0.5px solid var(--color-accent-line);
+  --input-border-focus:  1px solid var(--color-brand);
+  --input-radius:        12px;
+  --input-height-mobile: 44px;
+  --input-color:         var(--color-text-primary);
+
+  /* 印章 (中式装饰组件) */
+  --seal-size-sm:    24px;
+  --seal-size-md:    36px;
+  --seal-size-lg:    48px;
+  --seal-border:     2px solid var(--color-brand);
+  --seal-border-off: 2px solid rgba(196, 30, 58, 0.25);
+  --seal-bg:         rgba(196, 30, 58, 0.12);
+  --seal-rotate:     -3deg;
+
+  /* 毛笔分隔线 */
+  --divider-line:      linear-gradient(90deg, transparent, var(--c-bronze-500), transparent);
+  --divider-opacity:   0.3;
+  --divider-thickness: 0.5px;
+
+  /* 间距 (4px 倍数) */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* 字号阶梯 */
+  --font-xs:   11px;
+  --font-sm:   12px;
+  --font-base: 13px;
+  --font-lg:   14px;
+  --font-xl:   17px;
+  --font-2xl:  22px;
+  --font-3xl:  26px;
+
+  /* 阴影 */
+  --shadow-card:   0 2px 12px rgba(0, 0, 0, 0.3);
+  --shadow-button: 0 8px 24px rgba(196, 30, 58, 0.3);
+
+  /* z-index 层级 */
+  --z-dropdown:   1000;
+  --z-sticky:     1020;
+  --z-modal:      1050;
+  --z-popover:    1070;
+  --z-tooltip:    1080;
+  --z-bottom-nav: 100;
+  --z-toast:      1090;
+
+  /* ========== 字体栈 (design-system §2.1) ========== */
+  /* 不引入 Noto Serif SC / Noto Sans SC, 强制走系统字体栈 */
+
+  --font-sans:
+    -apple-system, BlinkMacSystemFont,
+    "PingFang SC",
+    "HarmonyOS Sans",
+    "Microsoft YaHei",
+    Helvetica, Arial, sans-serif;
+
+  --font-serif-cn:
+    "Songti SC",
+    "STSong",
+    "SimSun",
+    "FangSong",
+    serif;
+
+  --font-mono:
+    "SF Mono", "Cascadia Code", "JetBrains Mono",
+    Consolas, "Courier New", monospace;
+}
+
+/* === 移动端字号微调 (design-system §6.1) === */
+@media (max-width: 768px) {
+  :root {
+    --font-3xl: 22px;
+    --font-2xl: 17px;
+  }
+}
+
+/* 补充基础样式重置，确保与之前的样式保持一致 */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html, body {
+  height: 100%;
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  color-scheme: dark !important;
+}
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+body {
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  margin: 0;
+}
+
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+}
+
+input, button, textarea, select {
+  font: inherit;
+}
+
+p, h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
+}
+
+#root, #__next {
+  isolation: isolate;
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+}
+
+a {
+  font-weight: 500;
+  color: #FF9900;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #ffaa33;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+/* 默认按钮样式 */
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+/* 只覆盖默认按钮样式，不影响自定义样式的按钮 */
+button:not([style*="background"]):not([class*="bg-"]) {
+  background-color: #1a1a1a !important;
+  color: #FFFFFF !important;
+  border-color: transparent !important;
+}
+
+button:not([style*="background"]):not([class*="bg-"]):hover {
+  border-color: #FF9900 !important;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* 图标旋转动画 - 当父元素group被hover时触发 */
+.group:hover .icon-rotate-on-hover {
+  transform: rotate(360deg);
+  transition: transform 0.6s ease-in-out;
+}
+
+.icon-rotate-on-hover {
+  transition: transform 0.6s ease-in-out;
+}
+
+/* 强制所有输入元素使用暗色主题 */
+input, select, textarea {
+  background-color: #222222 !important;
+  color: #FFFFFF !important;
+  border-color: #444444 !important;
+}
+
+/* datetime-local 控件样式优化 */
+input[type="datetime-local"] {
+  color-scheme: dark;
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+  background-color: black !important;
+  border-color: black !important;
+  min-height: 36px;
+  height: 36px;
+  font-size: 16px;
+  line-height: 1.4;
+  vertical-align: middle;
+}
+
+input[type="datetime-local"]::-webkit-datetime-edit {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+input[type="datetime-local"]::-webkit-datetime-edit-text {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+input[type="datetime-local"]::-webkit-datetime-edit-month-field,
+input[type="datetime-local"]::-webkit-datetime-edit-day-field,
+input[type="datetime-local"]::-webkit-datetime-edit-year-field,
+input[type="datetime-local"]::-webkit-datetime-edit-hour-field,
+input[type="datetime-local"]::-webkit-datetime-edit-minute-field {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: brightness(0) invert(1);
+  opacity: 1;
+  cursor: pointer;
+}
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 0.8;
+}
+
+/* 注释掉自动跟随系统主题的设置，强制使用暗色主题 */
+/*
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+*/
+
+/* 只为根元素设置 color-scheme，避免过度覆盖 */
+html {
+  color-scheme: dark !important;
+}
+
+/* 五行能量条闪光动画 */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ======== 轻量级动画系统 ======== */
+
+/* 淡入动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* 淡出动画 */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.animate-fade-out {
+  animation: fadeOut 0.3s ease-in forwards;
+}
+
+/* 从上滑入 */
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in-from-top {
+  animation: slideInFromTop 0.4s ease-out forwards;
+}
+
+/* 从下滑入 */
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in-from-bottom {
+  animation: slideInFromBottom 0.4s ease-out forwards;
+}
+
+/* 从左滑入 */
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-from-left {
+  animation: slideInFromLeft 0.4s ease-out forwards;
+}
+
+/* 从右滑入 */
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-from-right {
+  animation: slideInFromRight 0.4s ease-out forwards;
+}
+
+/* 缩放动画 */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out forwards;
+}
+
+/* 弹跳动画 */
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-bounce-in {
+  animation: bounceIn 0.6s ease-out forwards;
+}
+
+/* 慢速旋转 */
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 2s linear infinite;
+}
+
+/* 动画延迟类 */
+.animation-delay-100 {
+  animation-delay: 0.1s;
+}
+
+.animation-delay-200 {
+  animation-delay: 0.2s;
+}
+
+.animation-delay-300 {
+  animation-delay: 0.3s;
+}
+
+.animation-delay-400 {
+  animation-delay: 0.4s;
+}
+
+.animation-delay-500 {
+  animation-delay: 0.5s;
+}

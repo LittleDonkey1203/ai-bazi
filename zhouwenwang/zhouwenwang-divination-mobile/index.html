@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>周文王在线算命</title>
+    <!-- 使用TailwindCSS CDN版本，避免本地编译 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // 配置 Tailwind CSS — Design Tokens 引用 src/index.css 的 CSS 变量
+      // 详见 docs/design-system.md §1.4 / §1.4.1 (brand-orange deprecation)
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              // 旧 brand-* 全部 deprecated (batch 5 末批移除), 详见 docs/design-system.md §1.4.1
+              'brand-black':  '#000000',                    // @deprecated batch 5 移除, 用 bg-black 或 bg-night
+              'brand-gray':   '#CCCCCC',                    // @deprecated batch 5 移除, 用 text-neutral-2
+              'brand-white':  '#FFFFFF',                    // @deprecated batch 5 移除, 用 bg-white 或 text-paper
+              'brand-orange': 'var(--color-brand-aux)',     // @deprecated batch 5 移除, 用 brand 或 brand-aux
+
+              // 改造期新增, 新代码优先使用
+              'brand':        'var(--color-brand)',
+              'brand-hover':  'var(--color-brand-hover)',
+              'brand-active': 'var(--color-brand-active)',
+              'brand-subtle': 'var(--color-brand-subtle)',
+              'brand-aux':    'var(--color-brand-aux)',
+              'accent':       'var(--color-accent)',
+              'accent-hover': 'var(--color-accent-hover)',
+              'paper':        'var(--color-text-primary)',
+              'paper-2':      'var(--color-text-secondary)',
+              'paper-3':      'var(--color-text-tertiary)',
+              'paper-muted':  'var(--color-text-muted)',
+              'night':        'var(--color-bg-base)',
+              'night-2':      'var(--color-bg-elevated)',
+              'night-input':  'var(--color-bg-input)',
+              'wood':         'var(--color-element-wood)',
+              'fire':         'var(--color-element-fire)',
+              'earth':        'var(--color-element-earth)',
+              'metal':        'var(--color-element-metal)',
+              'water':        'var(--color-element-water)',
+
+              // 中性灰阶 (batch 0 step (d) 新增, 用于继承旧设计的功能性灰色 UI)
+              'surface-hover':  'var(--color-surface-hover)',
+              'surface-sheet':  'var(--color-surface-sheet)',
+              'surface-active': 'var(--color-surface-active)',
+              'surface-deep':   'var(--color-surface-deep)',
+              'divider':        'var(--color-divider)',
+              'divider-strong': 'var(--color-divider-strong)',
+              'neutral-mid':    'var(--color-text-neutral-mid)',
+              'neutral-2':      'var(--color-text-neutral-secondary)',
+              'neutral-soft':   'var(--color-text-neutral-soft)',
+            },
+            fontFamily: {
+              serif: ['Songti SC', 'STSong', 'SimSun', 'FangSong', 'serif'],
+            },
+          },
+        },
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
