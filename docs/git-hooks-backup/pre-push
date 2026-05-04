@@ -1,0 +1,23 @@
+#!/bin/sh
+# 改造期间禁止 push 到 deploy/render-monorepo 远程
+# 设置时间:2026-05-04(batch 0 收尾后,c4 footgun 事件后立即加固)
+# 失效条件:batch 5 完成 + UAT 通过后,手动移除此 hook 或改写为其他保护
+# 紧急绕过:git push --no-verify(强烈不推荐,需在 cleanup-backlog 登记)
+
+while read local_ref local_sha remote_ref remote_sha; do
+  case "$remote_ref" in
+    refs/heads/deploy/render-monorepo)
+      echo "❌ 改造期间禁止 push 到 origin/deploy/render-monorepo"
+      echo "   这会触发 Render 自动部署改造期半成品到生产"
+      echo "   batch 1-5 期间改造工作请 push 到 ui/refactor-2026-q2"
+      echo "   命令:git push -u origin ui/refactor-2026-q2"
+      echo ""
+      echo "   如确实需要部署(改造完全完成 + UAT 通过):"
+      echo "   1. 先移除此 hook:rm .git/hooks/pre-push"
+      echo "   2. 然后正常 push"
+      exit 1
+      ;;
+  esac
+done
+
+exit 0

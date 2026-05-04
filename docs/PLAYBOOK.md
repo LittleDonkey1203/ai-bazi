@@ -125,8 +125,8 @@ Phase 5  最终审计            三向对账、全局测试、视觉总览、�
 每次开启一个新 batch(包括 batch 0 的各 step)前,必须机器化验证以下 4 项。任何一项不满足 → **立即停下补齐**,不进入 batch 实质工作。
 
 ```bash
-# 1. 当前在 ui/refactor-* 改造分支
-git branch --show-current | grep -q '^ui/refactor' || stop
+# 1. 当前在 ui/refactor-2026-q2 改造分支(精确分支名,batch 0 收尾后锁定)
+git branch --show-current | grep -q '^ui/refactor-2026-q2$' || stop
 
 # 2. logic-frozen tag 存在
 git tag -l | grep -q logic-frozen || stop
@@ -136,8 +136,13 @@ git tag -l | grep -q logic-frozen || stop
 
 # 4. (打开 batch 时)与 logic-frozen tag 的 diff 在业务逻辑层为空
 git diff logic-frozen-2026-05-04 --name-only \
-  | grep -E "src/core/|src/games/.*/(logic|engine|cantian|caseStorage|chatMemory|yongshen).*\.ts$|src/masters/(service|prompts|config|types|index)\.ts$|src/utils/.*\.ts$|src/types/" \
+  | grep -E "src/core/|src/games/.*/(logic|engine|cantian|caseStorage|chatMemory|yongshen).*\.ts$|src/games/bazi/advancedAnalysis\.ts$|src/games/bazi/blind-three-pass/.*\.ts$|src/games/bazi/yongshen-v2/.*\.ts$|src/games/qinshi/(prompts|types)\.ts$|src/games/(types|index)\.ts$|src/masters/(service|prompts|config|types|index)\.ts$|src/utils/.*\.ts$|src/types/" \
   && stop || ok
+
+# 5. node_modules 健康(腾讯管家事件后新增,batch 0 收尾后锁定)
+cd zhouwenwang/zhouwenwang-divination-mobile && npm run check:deps
+# 退出码非 0 → stop, 先 rm -rf node_modules && (npm ci || pnpm install --shamefully-hoist) 重建,
+# 并检查腾讯管家(或其他系统加速类软件)是否仍开启 node_modules 清理
 ```
 
 ### 工程认知

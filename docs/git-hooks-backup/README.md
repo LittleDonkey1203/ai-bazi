@@ -4,6 +4,45 @@
 
 ## 当前备份
 
+### pre-push
+
+改造期间禁止 push 到 `origin/deploy/render-monorepo` 远程的 hook(2026-05-04 创建,batch 0 收尾后安装,c4 footgun 事件后立即加固)。
+
+**安装方式**:
+
+```bash
+cp docs/git-hooks-backup/pre-push .git/hooks/pre-push
+chmod +x .git/hooks/pre-push
+```
+
+**作用**:`git push` 时拦截任何针对 `refs/heads/deploy/render-monorepo` 远程引用的推送,**防止改造期间无意 push 触发 Render 自动部署半成品到生产**。本仓库的 `render.yaml` 设置 `autoDeployTrigger: commit`,任何到 origin/deploy 的 commit 都会自动部署。
+
+**临时绕过**(强烈不推荐):
+
+```bash
+git push --no-verify
+```
+
+绕过后**必须**在 `docs/cleanup-backlog.md` 登记原因。
+
+**失效条件**:UI 改造完全结束(batch 5 完成 + UAT 通过)后,可移除本 hook。
+
+**自检**:
+
+```bash
+# 模拟 push deploy 分支(应被拦)
+.git/hooks/pre-push origin git@example.com <<EOF
+abc def refs/heads/deploy/render-monorepo def
+EOF
+# 预期 exit=1 + 输出 "❌ 改造期间禁止 push 到 origin/deploy/render-monorepo"
+
+# 模拟 push ui/refactor-2026-q2(应放行)
+.git/hooks/pre-push origin git@example.com <<EOF
+abc def refs/heads/ui/refactor-2026-q2 def
+EOF
+# 预期 exit=0
+```
+
 ### pre-commit
 
 UI 改造期间业务逻辑保护 hook(2026-05-04 创建,batch 0 step E 前夕安装,step F 前夕加固)。

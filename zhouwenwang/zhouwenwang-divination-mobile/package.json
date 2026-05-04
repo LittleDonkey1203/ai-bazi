@@ -13,6 +13,7 @@
     "build:electron": "cross-env APP_BUILD_TARGET=electron tsc -b && vite build",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "check:deps": "node -e \"['vitest/vitest.mjs','jsdom/lib/api.js','@testing-library/react/dist/index.js','vite/dist/node/index.js'].forEach(p=>{try{require('node:fs').accessSync('node_modules/'+p)}catch{console.error('❌ MISSING:',p);process.exit(1)}});console.log('✅ All critical dev deps OK')\"",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:visual": "playwright test",

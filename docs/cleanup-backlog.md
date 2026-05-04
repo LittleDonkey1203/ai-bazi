@@ -256,6 +256,71 @@ Tailwind 的 opacity modifier(`bg-brand/10`)要求底层颜色是 `rgb(R G B)` �
 
 **警示位置**:本条目 + `docs/ui-inventory.md` F007 备注列(待 batch 4 启动前在 inventory 备注追加链接到本段)
 
+## batch 0 收尾后的分支结构修正(2026-05-04)
+
+**时间**:batch 0 commit `d76c5c6` 完成后,分支考古发现违反"改造分支隔离"原则。
+
+**发现**:整个 batch 0(b79edc2 / 11400be / 8d1dbac / 1226758 / d76c5c6 五个 commit)在 `deploy/render-monorepo` 分支完成,**该分支是 Render 部署源(`autoDeployTrigger: commit`)**,任何 push 都会触发生产自动部署。
+
+**根因**:
+- session start 时 HEAD 在 `deploy/render-monorepo`,我未主动开 `ui/refactor-*` 改造分支
+- step E 起草"强制门禁"段时只把"branch == ui/refactor-*"作为**未来约束**,未对自身追溯执行
+- "4 道防线就位"的 final report 里**注意到了 deploy 分支问题**,但 framed 为"batch 1 启动前的事",未升级为 P0
+
+**处理(执行选项 C 深拷贝 + 本地 reset)**:
+1. `git branch ui/refactor-2026-q2`(从当前 HEAD,同 hash)
+2. `git checkout ui/refactor-2026-q2`
+3. `git update-ref refs/heads/deploy/render-monorepo refs/remotes/origin/deploy/render-monorepo`(本地 deploy 重置回 origin = `3be42b5`,与远程一致,Render 部署源不动)
+4. **footgun 修正**:`git branch --unset-upstream ui/refactor-2026-q2`(`--set-upstream-to=X Y` 不要求同名,误设到 origin/deploy 是危险的)
+5. **新增 `.git/hooks/pre-push`**:拦截任何对 origin/deploy/render-monorepo 的 push,防止改造期 push 触发生产部署(备份在 `docs/git-hooks-backup/pre-push`)
+
+**现状(三道防线)**:
+- `ui/refactor-2026-q2` = `d76c5c6`(batch 0 完成,当前分支)
+- `deploy/render-monorepo` = `3be42b5`(改造前稳定状态,与远程一致)
+- `logic-frozen-2026-05-04` = `11400be`(tag 仍指向同 commit,有效)
+
+**经验教训**:
+- "四道防线"前置检查不能省略第 1 项分支验证
+- 写规则时必须**立即追溯应用到自身**,不能 framed 为"未来约束"
+- `--set-upstream-to=X Y` 不要求 X 与 Y 同名,这是 footgun(已在 incident 文档详记)
+- 改造期间 `ui/refactor-2026-q2` 应保持无 upstream 状态,首次 push 时显式 `git push -u origin ui/refactor-2026-q2`
+
+**改造结束后处理**:
+- batch 5 完成 + UAT 通过后,`ui/refactor-2026-q2` → `deploy/render-monorepo` 合并(fast-forward 或 squash,届时定)
+- `pre-push` hook 移除(`rm .git/hooks/pre-push`)
+- `logic-frozen-2026-05-04` tag 保留作历史参照
+
+## batch 0 收尾期间的 node_modules 清理事件(2026-05-04)
+
+**时间**:batch 0 收尾过程中,vitest / vite / jsdom / @testing-library 等 dev 包**反复消失 4 次**。
+
+**根因**:腾讯电脑管家的"系统加速 / 垃圾清理"功能定时扫描清理 `D:\workspace\` 下的 node_modules,误判为冗余大文件。完整诊断与处理详见 [`docs/incidents/vitest-disappear-2026-05-04.md`](./incidents/vitest-disappear-2026-05-04.md)。
+
+**关键证据**(让本事件区别于其他 vitest 问题):
+- lockfile 完整,`devDependencies.vitest = ^2.1.8` 正式声明(排除 prune)
+- Windows Defender 日志查询无 node_modules 隔离记录(排除 Defender)
+- node_modules 写测试通过(排除权限)
+- **不只 vitest,大批 dev 包同时消失**(@vitest/* / vite / jsdom / @testing-library/* 全部);timestamp 21:21:10 一次性更改,但 npm 元数据 18:01 没动 → **绕过 npm 的批量删除**
+- 用户确认:**腾讯电脑管家**(已关闭)
+
+**处理**(全部已落地):
+1. 用户关闭腾讯管家
+2. 杀 Playwright MCP 残留 11+ chrome.exe 进程(独立但相关问题)
+3. `rm -rf node_modules` + `pnpm install --shamefully-hoist --registry=https://registry.npmmirror.com`(2m 29s 完成,npm 卡 16 分钟,pnpm 救场)
+4. `npm run check:deps` 哨兵命令(`package.json` scripts 新增)
+5. `docs/PLAYBOOK.md` 强制门禁加**第 5 道防线**(每个 batch 启动前跑 `check:deps`)
+6. 完整 incident 存档:`docs/incidents/vitest-disappear-2026-05-04.md`
+
+**长期防护**:
+- 工程目录 `D:\workspace\` 必须在腾讯管家(或任何 AV)**永久白名单**;开发机不建议装"系统加速"类软件
+- 每次会话/batch 开始前跑 `npm run check:deps` 自检
+- CI 环境用 `npm ci` 严格按 lockfile 重建,不受本机 AV 影响
+
+**残余风险**:
+- 腾讯管家若开机自启,本次"关闭"可能下次启动失效
+- 建议用户**卸载腾讯管家**或加白名单后再确认
+- pnpm install 救场副产物 `pnpm-lock.yaml` 留在工作区,**本次 commit 不 stage**(本工程主路径仍是 npm + package-lock.json,pnpm 仅作紧急救场工具)
+
 ## (后续追加格式)
 
 每条新增事件按以下骨架写:
