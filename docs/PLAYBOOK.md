@@ -162,6 +162,30 @@ git ls-tree -r logic-frozen-2026-05-04 -- \
 # 触发:2026-05-05 batch 1 baseline 缺失事件,登记 cleanup-backlog "移动工程 src baseline 缺失"
 ```
 
+### 6 道防线执行规范:cwd 漂移防御(2026-05-05 batch 2 教训新增)
+
+**强制要求**:6 道防线**每条命令独立 `cd D:/workspace/ai_bazi_zhouwenwang && <cmd>` 显式锚定 monorepo 根**,不依赖前序 cwd 状态。
+
+**正例**:
+```bash
+cd D:/workspace/ai_bazi_zhouwenwang && git branch --show-current
+cd D:/workspace/ai_bazi_zhouwenwang && git tag -l | grep logic-frozen
+cd D:/workspace/ai_bazi_zhouwenwang && git ls-tree -r logic-frozen-2026-05-04 -- zhouwenwang/zhouwenwang-divination-mobile/src/core ... | wc -l
+```
+
+**反例**(本批 batch 2 启动时遭遇假阴性):
+```bash
+cd zhouwenwang/zhouwenwang-divination-mobile && npm run check:deps   # Gate 5,cwd 进入 mobile 子目录
+git ls-tree -r logic-frozen-2026-05-04 -- zhouwenwang/zhouwenwang-divination-mobile/src/core ... | wc -l   # Gate 6
+# 结果:0(假阴性)— 因为前一条 cd 后 cwd 已在 mobile 子目录,
+#       第 6 条用相对路径 zhouwenwang/zhouwenwang-divination-mobile/src/core 在 mobile 子目录下不存在
+#       立刻显示"baseline 真值 0 < 62"假违规,误以为需要重建 baseline
+```
+
+**触发原因**:batch 2 启动时 6 道防线 Gate 6 首次跑 `0`(假阴性),Bash 工具 cwd 在多次调用间持久化,Gate 5 `cd zhouwenwang/...` 后 cwd 进入 mobile 子目录,Gate 6 用相对路径 `zhouwenwang/.../src/core` 找不到目标。第二次跑(显式 `cd D:/workspace/ai_bazi_zhouwenwang &&`)立即得到正确值 72。
+
+**机器化检查**:在 `.claude/agents/ui-auditor.md` 与本 PLAYBOOK 里**所有跑 6 道防线 / Push 前 6 项审核 / 业务保护红线核查的 git/wc/grep 命令前都必须前缀 `cd D:/workspace/ai_bazi_zhouwenwang &&`**,否则视为命令无效。
+
 ### 工程认知
 
 `CLAUDE.md` 的硬性约束是**文档级保障**,可被遗忘 / 漂移 / 跨会话失效。**机器级保障(hook + tag + 自动审计)才是不可绕过的红线**。
@@ -206,6 +230,29 @@ git branch wip/batch-N-YYYYMMDD-HHMM   # 在当前 HEAD 留快照点,不切过�
 
 **C. inventory scope 锁定** — 从 `docs/ui-inventory.md` 取出 batch N 的所有文件列表,贴给用户口头确认 scope 才开工。
 
+**D. 批前探查基于实际代码读取(2026-05-05 batch 2 教训新增)**
+
+**强制要求**:批前对每个 scope 文件做"现状探查报告",**必须基于 Read 实际代码**,而非 inventory 备注 / 先验直觉 / 类比其他文件。报告必须包含:
+1. 实际行数 + 实际 flex / grid 布局结构(逐行号引用)
+2. 实际 hex / 字体栈 / inline style 的精确位置 + 行号
+3. 实际是否已用 `useBreakpoint()` / `isMobile` / Tailwind `md:` 断点
+4. 实际页面顶部标题 + 当前 styling
+5. 修法清单按行号块标注,与上述探查项一一对应
+
+**反例**(本批 batch 2 启动时被实测推翻的两个预测):
+- **D1 六爻矩阵竖向预测**:批前依 inventory 备注"卦象六爻矩阵需移动端竖向适配"假设当前是横向 6 列;实测 Read F003 line 572-680 发现已是 6 行竖向堆叠,**真问题是结果容器 560px 固定**。
+- **D2 < 360px 横滚必启用预测**:批前数学计算 `(320-32)/3 ≈ 95px < 100px` 推断必触发横滚兜底;实测 320 视口下九宫格收紧字号后能完整 3×3 显示,**横滚降级为无害保险丝**。
+
+**触发原因**:inventory 备注是 Phase 1 扫描时的"问题假设",可能在后续 batch 间已被部分解决或方向被推翻;依赖备注会做错决策、写无效改造代码。
+
+**正确流程**:
+1. 用户拍板决策点 D1-Dx
+2. Claude **先 Read 实际代码** → 给现状探查报告
+3. 用户基于真实现状 + Claude 决策建议二次拍板(可能推翻初版决策)
+4. **拍板后才 Edit**
+
+**反流程**(批 2 之前一度采用的危险路径):用户拍板 → Claude 直接 Edit → 实测发现假设错误 → 回炉。
+
 #### 4.2 改造阶段:中途质量门(每文件一闭环)
 
 **不允许"全部改完一次性 commit"**。每改完**一个文件**(以 `git diff` 单文件为单位):
@@ -241,6 +288,22 @@ git branch wip/batch-N-YYYYMMDD-HHMM   # 在当前 HEAD 留快照点,不切过�
 **范例**:commit `04d9af1` (fix(tokens): increase Divider visibility) — 实测 height 0.5px / opacity 0.3 → 1px / opacity 0.5,Refs cleanup-backlog "Divider token 数值修订"。
 
 **触发原因**:batch 1 期间 Divider 不可见的问题如果混进 `ui(batch-1):` main commit,后续 git blame 时会误认为是 batch 1 改造引入,事故溯源失真。
+
+#### 4.3.1 修法稳健性:数学化定位 + ≥3px 缓冲(2026-05-05 batch 2 教训新增)
+
+**强制要求**:当存在数学化"溢出 / 边缘像素 / 容器尺寸不足"问题时,修法**必须预留 ≥ 3px 缓冲**应对字体渲染差异 / 不同 DPI / line-height 微调 / 浏览器引擎差异。**不要为"最小改动"牺牲稳健性**。
+
+**典范流程**:
+1. 数学计算实际溢出量(如:cell 高度 111px,内容总高 138px,**溢出 27px**)
+2. 列出修法选项与"节省量":
+   - 选项 1(最小改动):节省 28px → **缓冲 1px,不足**
+   - 选项 2(组合修法):节省 32px → **缓冲 5px,稳健**
+3. **优先选择 ≥3px 缓冲的修法**;选项 1 在不同字号/DPI 下可能裁剪复发
+4. 浏览器实测验证缓冲在 320 / 375 / 桌面三视口下都生效
+
+**触发原因**:batch 2 F004 地盘天干 mobile 不可见问题,选项 1(节省 28px,1px 缓冲)看起来"刚好够",但用户决策选了选项 1+2 组合(节省 ~32px,5px 缓冲)。实测验证 5px 缓冲在 320 极窄视口、不同浏览器渲染差异下都稳定显示。如果选了选项 1,可能在某些边缘条件(如 webfont 加载完成后字高变化)裁剪复发,需要 batch 2 末或 batch 3 再修。
+
+**与 4.2 中途质量门的关系**:质量门要求每文件 ack 后才进下一个,如果数学缓冲不足导致回炉,会撞中途质量门(用户在浏览器实测时再次发现裁剪),整批节奏拖延。**预留 ≥3px 缓冲是"一次到位"的修法稳健性原则,与质量门相辅相成**。
 
 #### 4.4 批末:视觉回归 + 重截 baseline
 
