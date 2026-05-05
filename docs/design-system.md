@@ -215,10 +215,13 @@
   --seal-bg:        rgba(196, 30, 58, 0.12);
   --seal-rotate:    -3deg;
 
-  /* 毛笔分隔线 */
+  /* 毛笔分隔线
+     数值修订:2026-05-04 batch 1 期间发现 0.5px×0.3 在 DPR=1 屏不可见,
+     batch 0 step F 视觉审查未捕捉(无页面使用)。1px×0.5 后实际可见
+     亮度提升 ~3.3 倍,仍保持克制(opacity<60%)。 */
   --divider-line: linear-gradient(90deg, transparent, var(--c-bronze-500), transparent);
-  --divider-opacity: 0.3;
-  --divider-thickness: 0.5px;
+  --divider-opacity: 0.5;
+  --divider-thickness: 1px;
 
   /* 间距阶梯(4px 倍数)*/
   --space-1: 4px;

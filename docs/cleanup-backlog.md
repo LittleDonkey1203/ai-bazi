@@ -396,6 +396,79 @@ Tailwind 的 opacity modifier(`bg-brand/10`)要求底层颜色是 `rgb(R G B)` �
 
 **处理**:与上一条同 ticket(业务保护范围扩展),后续 PLAYBOOK 更新统一处理。**不在 batch 1 范围内执行**。
 
+## Divider token 数值修订(2026-05-04 batch 1 期间)
+
+**时间**:2026-05-04(Phase 4 batch 1, F001 HomePage 视觉验证后)
+
+**现象**:F001 HomePage hero 下方 `<Divider />` 在浏览器实际渲染不可见。
+
+**根因**:`--divider-thickness 0.5px` + `--divider-opacity 0.3` + 双端 transparent 渐变三重弱化叠加,在 DPR=1 屏完全消失。Playwright 实测证据(2026-05-04, Chrome 1217 / 1440×900 / DPR=1):
+- container `getBoundingClientRect.height`:**0.5**(Chrome 没 snap 到 1,用亚像素抗锯齿渲染半像素)
+- line span `computed height`:`0.5px`,`getBoundingClientRect.height`:`0.5`
+- 容器 opacity:0.3
+- 实际乘积:亚像素亮度 50% × opacity 30% × 渐变中心点 ≈ 总亮度 15% 的黄铜在墨黑底上,完全融为一体
+
+**根本原因**:batch 0 step F 视觉审查未验证 Divider 实际样态(那时 0 页面使用,baseline 截图里没有 Divider)。
+
+**处理(跨边界,batch 1 期间修 batch 0 token)**:
+- `src/index.css`:`--divider-thickness 0.5px → 1px`,`--divider-opacity 0.3 → 0.5`,加注释说明修订原因
+- `docs/design-system.md` §1.3:同步上述两个值 + 同样的修订注释
+- 独立 commit,前缀 `fix(tokens):`,与 batch 1 main commit `ui(batch-1):` 区分
+
+**经验教训**:
+- batch 0 step F 视觉验证时,装饰组件应在临时测试页中独立验证,不能因"baseline 没用到"就跳过
+- 后续 batch 验证新装饰组件时(如 batch 5 用 Divider 在 SettingsModal),仍需独立验证
+
+**影响范围**:
+- batch 1+ 所有用 Divider 的位置都受益于本次修订(F001 HomePage / 未来 F015 SettingsModal / F017 StreamingMarkdown 头部插槽)
+- 无需追溯改任何使用方代码,token 修订自动生效
+
+**遗留风险**:
+- 无运行时风险(token-only,无组件代码改动)
+- 视觉风险:1px+0.5 opacity 是否仍"克制",由 batch 1 视觉 ack 闭环
+
+## Playwright chromium 二进制目录命名 mismatch(2026-05-04)
+
+**时间**:2026-05-04(Phase 4 batch 1, Divider 视觉诊断时)
+
+**现象**:`npx playwright install chromium` 下载到 `C:\Users\ldkji\AppData\Local\ms-playwright\chromium-1217\chrome-win/`,但 Playwright 1.59.1 期望路径是 `chromium-1217/chrome-win64/`。Playwright 试启动时报:
+```
+Error: browserType.launch: Executable doesn't exist at C:\...\chromium-1217\chrome-win64\chrome.exe
+```
+
+**根因**:Playwright 包升级版本(可能 batch 0 期间 npm 重装时漂移到 1.59.1)+ Chromium 包结构在 Windows 64-bit 下的命名差异(老命名 `chrome-win/`,新命名 `chrome-win64/`)。下载脚本与运行时期望的目录命名不一致。
+
+**临时处理**(非永久):
+```bash
+mv "C:\Users\ldkji\AppData\Local\ms-playwright\chromium-1217\chrome-win" \
+   "C:\Users\ldkji\AppData\Local\ms-playwright\chromium-1217\chrome-win64"
+```
+
+**后续如再发生**(重装 / chromium 缓存被清等):
+```powershell
+# PowerShell:
+cd C:\Users\ldkji\AppData\Local\ms-playwright\chromium-1217
+Move-Item chrome-win chrome-win64
+```
+或:
+```bash
+# Bash:
+cd "C:\Users\ldkji\AppData\Local\ms-playwright\chromium-1217" && mv chrome-win chrome-win64
+```
+
+**长期方案**(超本批范围):
+- 升级 `@playwright/test` 到匹配 Chromium 命名的更新版本(本批 1.59.1 → 后续 1.60+ 可能修复)
+- 或显式锁定 Playwright 版本到一个已知 binary 命名一致的版本
+- 这是 devDependency 升级,**不在 batch 1 范围**,改造结束后单独立项
+
+**影响范围**:
+- 仅影响本机 Playwright 浏览器启动,不影响业务代码
+- 团队/CI 环境装 Playwright 后可能再次遇到,文档化避免重新踩坑
+
+**遗留风险**:
+- 重装 chromium / 升级 Playwright 后命名可能重新 mismatch
+- ms-playwright 缓存若被 AV 误删(类似腾讯管家事件),重装仍要再 mv 一次
+
 ## (后续追加格式)
 
 每条新增事件按以下骨架写:
