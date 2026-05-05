@@ -122,7 +122,13 @@ Phase 5  最终审计            三向对账、全局测试、视觉总览、�
 
 ## 每个 batch 开始前必须验证(强制门禁)
 
-每次开启一个新 batch(包括 batch 0 的各 step)前,必须机器化验证以下 4 项。任何一项不满足 → **立即停下补齐**,不进入 batch 实质工作。
+每次开启一个新 batch(包括 batch 0 的各 step)前,必须机器化验证以下 6 项。任何一项不满足 → **立即停下补齐**,不进入 batch 实质工作。
+
+### 输出形式要求(2026-05-05 batch 1 教训新增)
+
+每条防线的执行结果**必须粘贴实际命令的 stdout + 退出码**到当前会话,不接受"已检查"、"通过"等声明性陈述。**没有粘贴输出 = 没跑**。
+
+**触发原因**:batch 1 启动前曾"声明 5 道防线通过"但 baseline 真值未实际验证,改到 F001/F002/F013 才发现 mobile/src 大部分文件根本不在 git 里。详见 cleanup-backlog "移动工程 src baseline 缺失"。
 
 ```bash
 # 1. 当前在 ui/refactor-2026-q2 改造分支(精确分支名,batch 0 收尾后锁定)
@@ -143,6 +149,17 @@ git diff logic-frozen-2026-05-04 --name-only \
 cd zhouwenwang/zhouwenwang-divination-mobile && npm run check:deps
 # 退出码非 0 → stop, 先 rm -rf node_modules && (npm ci || pnpm install --shamefully-hoist) 重建,
 # 并检查腾讯管家(或其他系统加速类软件)是否仍开启 node_modules 清理
+
+# 6. baseline 真值验证(2026-05-05 batch 1 教训新增,防"diff 输出为空但文件根本不在 commit"假阳性)
+git ls-tree -r logic-frozen-2026-05-04 -- \
+  zhouwenwang/zhouwenwang-divination-mobile/src/core \
+  zhouwenwang/zhouwenwang-divination-mobile/src/games \
+  zhouwenwang/zhouwenwang-divination-mobile/src/masters \
+  zhouwenwang/zhouwenwang-divination-mobile/src/utils \
+  zhouwenwang/zhouwenwang-divination-mobile/src/types \
+  | wc -l
+# 必须 ≥ 62(2026-05-05 实测 72,阈值 = 实际 - 10);< 62 视为 baseline 缺失,立刻停下做 baseline 建立 commit
+# 触发:2026-05-05 batch 1 baseline 缺失事件,登记 cleanup-backlog "移动工程 src baseline 缺失"
 ```
 
 ### 工程认知
@@ -164,9 +181,129 @@ cd zhouwenwang/zhouwenwang-divination-mobile && npm run check:deps
 
 调用 `refactor-batch` skill,对每个 batch(N=1, 2, 3, ...)循环。详见对应 `.claude/skills/refactor-batch/SKILL.md`。
 
-### 推荐节奏
+### Batch 标准工作流(2026-05-05 batch 1 教训固化)
 
-- 一天处理 1-2 个 batch(每 batch 含审计、视觉、决策、可能的修复)
+batch 1 实操出 6 段标准流程,固化下来给 batch 2-5 复用。**严格按顺序执行,缺一不可**。
+
+#### 4.1 启动阶段
+
+**A. 跑 6 道防线** — 见上节"每个 batch 开始前必须验证(强制门禁)",每条贴实际 stdout + 退出码。
+
+**B. Stash + wip 分支安全锁**(任何 git 重大操作前):
+
+```bash
+git stash push -u -m "wip: pre-batch-N safety stash"
+git branch wip/batch-N-YYYYMMDD-HHMM   # 在当前 HEAD 留快照点,不切过去
+```
+
+**强制使用场景**(任何超出"普通改文件 + commit"的 git 操作都必须先做这一步):
+- 重写 tag(`git tag -f`)
+- 跨边界 token 修订(改 batch 0 的 `src/index.css`)
+- 任何 baseline / branch 结构调整
+- push 前的最后一刻
+
+**触发原因**:batch 1 baseline commit `f1afabe` 之前如果未做 stash + wip 安全锁,一旦 baseline add 后撤销操作出错,工作树 + 157 个新文件会丢。详见 cleanup-backlog "移动工程 src baseline 缺失"。
+
+**C. inventory scope 锁定** — 从 `docs/ui-inventory.md` 取出 batch N 的所有文件列表,贴给用户口头确认 scope 才开工。
+
+#### 4.2 改造阶段:中途质量门(每文件一闭环)
+
+**不允许"全部改完一次性 commit"**。每改完**一个文件**(以 `git diff` 单文件为单位):
+
+1. `npm test` — 必须 45/45(或当前基准)
+2. `npm run typecheck` — 0 errors
+3. **若有视觉变化** → dev server 跑起来 → **用户在浏览器实测 + 口头 ack**
+4. ack 后才进入下一个文件
+
+多个 ack 过的文件累积成一个 batch commit。**commit 时机由"全部 ack" 触发,不是"全部改完"**。
+
+**触发原因**:batch 1 F001 HomePage hero `<Divider />` 在 DPR=1 屏完全不可见(0.5px × 0.3 opacity × 双端透明渐变三重弱化)。当时如果未做"逐文件用户 ack",会被埋进 batch commit push 后才发现。详见 cleanup-backlog "Divider token 数值修订"。
+
+**例外:纯 token 替换可批量**(4 条同时为真才允许;任何一条不满足 → 逐文件 ack):
+- ✅ 只把 hex 色换成 `var(--color-*)` 或 Tailwind token 类
+- ✅ 不改任何布局类(`grid` / `flex` / `padding` / `margin`)
+- ✅ 不加任何装饰组件(`<Seal>` / `<Divider>` / `<GuaWatermark>`)
+- ✅ 不改字体(`font-serif` 等)
+
+例外路径仍需 `npm test` + `typecheck` 通过。
+
+#### 4.3 跨边界 token 修订流程
+
+改造 batch N 期间发现 batch 0 的 token 数值有问题(如 batch 1 发现 Divider 不可见),按以下流程,**不允许混入 batch N main commit**:
+
+1. **独立 commit**,prefix `fix(tokens):` 而非 `ui(batch-N):`
+2. commit message **必须包含**:
+   - `Refs: docs/cleanup-backlog.md <条目标题>`
+   - `Cross-batch: 在 batch N 期间修 batch 0 token,已显式登记`
+3. 同步更新 `docs/design-system.md` 对应数值
+4. `docs/cleanup-backlog.md` 登记一条:**修订原因 / 实测证据(数值/截图) / 影响范围 / 遗留风险**
+
+**范例**:commit `04d9af1` (fix(tokens): increase Divider visibility) — 实测 height 0.5px / opacity 0.3 → 1px / opacity 0.5,Refs cleanup-backlog "Divider token 数值修订"。
+
+**触发原因**:batch 1 期间 Divider 不可见的问题如果混进 `ui(batch-1):` main commit,后续 git blame 时会误认为是 batch 1 改造引入,事故溯源失真。
+
+#### 4.4 批末:视觉回归 + 重截 baseline
+
+batch N main commit 之后、push 之前,按顺序:
+
+**A. 跑视觉回归**
+
+```bash
+cd zhouwenwang/zhouwenwang-divination-mobile
+npx playwright test tests/visual/baseline.spec.ts
+```
+
+**B. 分类每条 mismatch**
+
+| 类别 | 处置 |
+|------|------|
+| 真 batch N 改造差异 | 写入 `docs/audit-batch-N.md` + 用户 ack 截图 |
+| batch 0 / batch N-1 累积假阳性 | cleanup-backlog 登记,不动 |
+
+**C. 跑 audit-batch skill** → 产出 `docs/audit-batch-N.md`,P0=0 才能 push。
+
+**D. 重截 baseline**(独立 commit,在 main commit 之后):
+
+```bash
+npx playwright test --update-snapshots tests/visual/baseline.spec.ts
+git add tests/visual/*-snapshots/
+git commit -m "test(visual): re-baseline after batch N (X snapshots updated)"
+```
+
+**触发原因**:batch 1 实测,baseline `8d1dbac` (May 4 18:35) 早于 batch 0 layout commit `d76c5c6` (May 4 21:58),mobile liuyao / qimen 出现 5px scrollWidth 假阳性。**不每批重截 → 假阳性累积到 batch 5 全 fail → 视觉回归防线失效**。详见 cleanup-backlog "视觉回归 baseline 时机错配"。
+
+#### 4.5 Push 前 6 项审核(全部贴实际命令输出)
+
+| # | 项目 | 验证命令 | 通过条件 |
+|---|------|---------|---------|
+| 1 | commit message 完整 | `git log -1 --format=%B HEAD` | 含 `Refs:` + 业务约束验证段 |
+| 2 | 文件范围 = batch N inventory | `git diff <prev-batch-tag> --name-only` | 与 inventory 列逐一对照 |
+| 3 | logic-frozen tag 指向正确 | `git rev-parse logic-frozen-2026-05-04` | 仍指向 baseline commit(若本批未重打 tag) |
+| 4 | 业务逻辑 diff = 空 | `git diff logic-frozen-2026-05-04 -- src/core/ src/games/*/logic.ts src/masters/{service,prompts,config,types,index}.ts src/utils/ src/types/` | 无输出 |
+| 5 | pre-commit hook 实际跑过 | commit 时控制台有 hook 输出 / `[ -x .git/hooks/pre-commit ]` 验证可执行 | 通过 |
+| 6 | dry-run push 通过 | `git push --dry-run origin ui/refactor-2026-q2` | 仅推到 ui/refactor-2026-q2,不触 deploy/render-monorepo |
+
+任一项不通过 → **立即停**,修完重审 6 项。
+
+**触发原因**:batch 0 收尾时 5 个 commit 误在 `deploy/render-monorepo` 分支完成,几乎触发 Render 生产自动部署(已通过 option C 修正 + pre-push hook 拦截)。详见 cleanup-backlog "batch 0 收尾后的分支结构修正"。第 6 项 dry-run 是 batch 1 没做但应做的 belt-and-suspenders。
+
+#### 4.6 Push 后清理
+
+Push 成功后**立即**清理启动阶段的安全脚手架:
+
+```bash
+git push origin ui/refactor-2026-q2  # 真实 push
+git stash list | grep "pre-batch-N safety" && git stash drop <stash-id>
+git branch -D wip/batch-N-YYYYMMDD-HHMM
+```
+
+**强制纪律**:任何阶段创建的 stash + wip 分支,都在 batch N push 完成后统一清理。**不允许"留作下批用"——下批用下批的安全脚手架,不复用上批的**。
+
+**触发原因**:不清理 → 下批启动 6 道防线时 `git stash list` / `git branch` 残留迷惑判断"哪个是 wip / 哪个是真"。复用上批的 stash 还会让"本批 wip"与"上批未清理"语义混淆。
+
+### 节奏建议
+
+- 一天处理 1-2 个 batch(每 batch 含 6 段标准工作流)
 - 每个 batch 完成后做一次冒烟测试(打开几个核心页面真机看一眼)
 - 如果连续两个 batch 出现 P0 问题,停下复盘 design-system.md 是否有缺失
 
@@ -223,3 +360,44 @@ cd zhouwenwang/zhouwenwang-divination-mobile && npm run check:deps
 - Claude 遇到不确定的设计/代码决策,使用 AskUserQuestion 工具
 - **绝不**基于"通常做法"或"看起来像"做修改
 - 不确定时优先 Read / Grep,而不是猜
+
+### 关于 baseline 真值(2026-05-05 batch 1 新增)
+
+`git diff <tag> -- <path>` 输出为空有两种含义:
+- **(a)** 真无改动
+- **(b)** 文件根本不在 `<tag>` 指向的 commit 里
+
+**仅靠 `git diff` 无法区分**。判断流程:
+
+1. `git ls-tree -r <baseline-tag> -- <path>` 验证文件在 baseline 中存在
+2. 不存在 → baseline 缺失,**先做 baseline 建立 commit**(`chore(repo): track ... as baseline`),再开始改造
+3. 存在 → diff 空 = 真无改动
+
+**触发**:batch 1 改 F001/F002/F013 时 `git status` 显示文件 untracked,溯源发现移动工程 fs 派生但未做完整 git add,baseline 缺失。`git diff logic-frozen-2026-05-04 -- src/core/` 之前一直输出空,但其实是因为 src/core/ 那时根本不在任何 commit 里。详见 cleanup-backlog "移动工程 src baseline 缺失"。
+
+---
+
+## PLAYBOOK 自身的迭代纪律(2026-05-05 新增)
+
+每个 batch 启动 prompt 必须包含一项:
+
+> "读 cleanup-backlog 中本批新登记的工程债,如果有'流程改进'类的,立即 propose 写入 PLAYBOOK。"
+
+每个 batch 都可能暴露新的盲点,PLAYBOOK 必须随之进化。
+
+**不允许**:
+- ❌ 把"流程改进"类工程债拖到末批 batch 5 才一并处理
+- ❌ batch 启动时跳过"PLAYBOOK 是否需要更新"的检查
+
+**每次更新 PLAYBOOK 用独立 commit**,格式:
+```
+docs(playbook): incorporate batch N lessons (...)
+```
+
+**触发**:batch 1 期间登记 13+ 条 cleanup-backlog,其中"流程改进"类(baseline 真值 / 重截 baseline / dry-run / 中途质量门 等)如果不在 batch 1 末固化进 PLAYBOOK,batch 2 就会重复同样的盲点,导致"教训年年学,坑年年踩"。
+
+**鉴别"流程改进"类工程债的快速判断**:
+- ✅ 是流程改进:任何"下次应该 / 不应该……"句式的反思 — 写入 PLAYBOOK
+- ✅ 是流程改进:任何会被多个 batch 复用的检查项 / 命令模板 — 写入 PLAYBOOK
+- ❌ 不是流程改进:具体某个文件的 token 修订决策 — 留在 cleanup-backlog
+- ❌ 不是流程改进:具体某个 commit 的事件溯源 — 留在 cleanup-backlog
