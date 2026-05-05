@@ -7,7 +7,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import type { Master } from '../types';
 import { fetchMasters, getDefaultMaster } from './service';
-import { colors, styleUtils, animations } from '../styles/modalStyles';
+import { styleUtils, animations } from '../styles/modalStyles';
+import { Seal } from '../components/decor';
 
 interface MasterSelectorProps {
   /** 当前选中的大师 */
@@ -39,10 +40,10 @@ export const MasterSelector: React.FC<MasterSelectorProps> = ({
       try {
         setIsLoading(true);
         setError(null);
-        
+
         const mastersData = await fetchMasters();
         setMasters(mastersData);
-        
+
         // 如果没有选中的大师，默认选择周文王或第一个
         if (!selectedMaster && mastersData.length > 0) {
           const zhouwenwang = mastersData.find(m => m.id === 'zhouwenwang') || getDefaultMaster(mastersData);
@@ -51,7 +52,7 @@ export const MasterSelector: React.FC<MasterSelectorProps> = ({
             onMasterChange(zhouwenwang);
           }
         }
-        
+
       } catch (err) {
         console.error('加载大师数据失败:', err);
         setError(err instanceof Error ? err.message : '加载大师数据失败');
@@ -80,11 +81,11 @@ export const MasterSelector: React.FC<MasterSelectorProps> = ({
             width: '32px',
             height: '32px',
             border: '2px solid transparent',
-            borderTop: `2px solid ${colors.primary}`,
+            borderTop: `2px solid var(--color-brand)`,
             borderRadius: '50%',
             ...animations.spin
           }}></div>
-          <span style={{ marginLeft: '12px', color: colors.white }}>加载大师数据中...</span>
+          <span style={{ marginLeft: '12px', color: 'var(--color-text-secondary)' }}>加载大师数据中...</span>
         </div>
       </div>
     );
@@ -116,7 +117,7 @@ export const MasterSelector: React.FC<MasterSelectorProps> = ({
   if (masters.length === 0) {
     return (
       <div style={{ padding: '16px' }}>
-        <div style={{ textAlign: 'center', color: colors.gray[300] }}>
+        <div style={{ textAlign: 'center', color: 'var(--color-text-tertiary)' }}>
           <p>暂无可用的大师</p>
         </div>
       </div>
@@ -125,39 +126,39 @@ export const MasterSelector: React.FC<MasterSelectorProps> = ({
 
   return (
     <div>
-      <div style={{ 
-        display: 'grid', 
+      <div style={{
+        display: 'grid',
         gap: '12px',
         gridTemplateColumns: compact ? '1fr' : 'repeat(auto-fit, minmax(260px, 1fr))'
       }}>
         {masters.map((master) => {
           const isSelected = selectedMaster?.id === master.id;
           const isDisabled = loading || isLoading;
-          
+
           const cardStyle = {
             position: 'relative' as const,
             cursor: isDisabled ? 'not-allowed' : 'pointer',
             transition: 'all 0.3s ease',
-            borderRadius: '10px',
+            borderRadius: '12px',
             padding: '12px',
             minHeight: compact ? '70px' : 'auto',
-            border: `2px solid ${isSelected ? colors.primary : '#333333'}`,
-            background: isSelected 
-              ? 'rgba(255, 153, 0, 0.1)' 
-              : '#111111',
+            border: `1px solid ${isSelected ? 'var(--color-brand)' : 'var(--color-border)'}`,
+            background: isSelected
+              ? 'var(--color-brand-subtle)'
+              : 'var(--color-bg-elevated)',
             opacity: isDisabled ? 0.5 : 1,
-            boxShadow: isSelected 
-              ? '0 8px 25px -8px rgba(255, 153, 0, 0.2)' 
-              : '0 2px 4px rgba(0, 0, 0, 0.1)'
+            boxShadow: isSelected
+              ? '0 8px 25px -8px rgba(196, 30, 58, 0.25)'
+              : '0 2px 4px rgba(0, 0, 0, 0.2)'
           };
-          
+
           const hoverStyle = !isDisabled ? {
             ...cardStyle,
-            border: `2px solid ${isSelected ? colors.primary : 'rgba(255, 153, 0, 0.5)'}`,
+            border: `1px solid ${isSelected ? 'var(--color-brand)' : 'var(--color-brand-hover)'}`,
             transform: 'translateY(-2px)',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
           } : cardStyle;
-          
+
           return (
             <motion.div
               key={master.id}
@@ -170,59 +171,45 @@ export const MasterSelector: React.FC<MasterSelectorProps> = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
             >
-              {/* 选中指示器 */}
+              {/* 选中印章 */}
               {isSelected && (
-                                  <motion.div 
-                    style={{
-                      position: 'absolute',
-                      top: '10px',
-                      right: '10px'
-                    }}
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.1 }}
+                <motion.div
+                  style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                  }}
+                  initial={{ scale: 0, rotate: 0 }}
+                  animate={{ scale: 1, rotate: -3 }}
+                  transition={{ delay: 0.1, type: 'spring', stiffness: 300 }}
                 >
-                  <div style={{
-                    width: '12px',
-                    height: '12px',
-                    background: colors.primary,
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <div style={{
-                      width: '6px',
-                      height: '6px',
-                      background: colors.black,
-                      borderRadius: '50%'
-                    }}></div>
-                  </div>
+                  <Seal char={master.name[0]} active size="sm" />
                 </motion.div>
               )}
-              
+
               {/* 大师信息 */}
-              <div style={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
                 gap: '4px',
                 justifyContent: 'flex-start',
-                paddingRight: '20px',
+                paddingRight: '32px',
                 minHeight: compact ? '46px' : 'auto',
                 flex: 1
               }}>
                 <h4 style={{
-                  fontWeight: '500',
+                  fontWeight: 500,
                   fontSize: '15px',
-                  color: isSelected ? colors.white : colors.gray[200],
+                  fontFamily: 'var(--font-serif-cn)',
+                  color: isSelected ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
                   margin: 0
                 }}>
                   {master.name}
                 </h4>
                 <p style={{
                   fontSize: '11px',
-                  lineHeight: '1.4',
-                  color: isSelected ? colors.gray[300] : colors.gray[400],
+                  lineHeight: '1.6',
+                  color: isSelected ? 'var(--color-text-secondary)' : 'var(--color-text-tertiary)',
                   margin: 0,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -235,26 +222,26 @@ export const MasterSelector: React.FC<MasterSelectorProps> = ({
                   {master.description}
                 </p>
               </div>
-              
+
               {/* 加载状态覆盖 */}
               {loading && isSelected && (
-                                  <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'rgba(0, 0, 0, 0.5)',
-                    borderRadius: '10px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: 'rgba(10, 10, 15, 0.6)',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
                   <div style={{
                     width: '20px',
                     height: '20px',
                     border: '2px solid transparent',
-                    borderTop: `2px solid ${colors.primary}`,
+                    borderTop: `2px solid var(--color-brand)`,
                     borderRadius: '50%',
                     ...animations.spin
                   }}></div>
@@ -264,8 +251,8 @@ export const MasterSelector: React.FC<MasterSelectorProps> = ({
           );
         })}
       </div>
-      
+
 
     </div>
   );
-}; 
+};

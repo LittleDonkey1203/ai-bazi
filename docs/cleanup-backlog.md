@@ -469,6 +469,29 @@ cd "C:\Users\ldkji\AppData\Local\ms-playwright\chromium-1217" && mv chrome-win c
 - 重装 chromium / 升级 Playwright 后命名可能重新 mismatch
 - ms-playwright 缓存若被 AV 误删(类似腾讯管家事件),重装仍要再 mv 一次
 
+## F013 MasterSelector 的 `className` prop 未生效
+
+**时间**:2026-05-04 (Phase 4 batch 1, F013 改造)
+
+**原因**:`MasterSelector.tsx` 的 props 接口声明了 `className?: string`,但组件的根 `<div>` 从未将其透传到 DOM。任何外部传入的 className(目前 `MasterSelectorDemo.tsx`、`HomePage.tsx`、`SettingsModal.tsx` 三个使用方都未传)在视觉上不生效。
+
+**处理**:在 batch 1 的 F013 改造中**第一次改完发现可顺手修复**(只需在根 div 加 `className={className}`),但属于"顺手"行为,违反 batch 1 硬约束(props 行为不变 + 不顺手修无关 bug)。**立即回退,改回原始的 `<div>`(无 className 透传)**,登记本条目。
+
+**影响范围**:
+- 本次 batch 1 commit 仅迁移视觉 token,不修复 className 透传 bug
+- 三个调用方都未传 className,所以行为上**无可观测变化**
+- props 接口签名仍包含 `className?: string`(未删除,符合"不改 props 接口"约束)
+
+**遗留风险**:
+- 接口承诺的 `className` 在实现中是死代码,如果未来调用方传入它会"静默失败"
+- 本身无视觉/功能损害,但是接口与实现的不一致
+
+**后续**:
+- 改造结束后(batch 5 完成后)与其他清理一并立项处理。两个选项:
+  - (a) 实现透传(在根 div 加 `className={className}`)— 行为变化,需视觉确认三个使用方是否依赖根 div 无 class 的现状
+  - (b) 删除 `className?: string` prop — 但这是 props 接口变更,需要小心
+- 不在 UI 改造范围内,纯 TS 接口/实现一致性问题
+
 ## (后续追加格式)
 
 每条新增事件按以下骨架写:
