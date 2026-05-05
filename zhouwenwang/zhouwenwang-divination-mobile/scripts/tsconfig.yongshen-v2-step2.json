@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "outDir": "./.tmp/yongshen-v2-step2",
+    "rootDir": "..",
+    "noEmit": false
+  },
+  "include": [
+    "./yongshen-v2-step2-runner.ts",
+    "../src/games/bazi/yongshen-v2/**/*.ts"
+  ]
+}
