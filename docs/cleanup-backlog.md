@@ -492,6 +492,42 @@ cd "C:\Users\ldkji\AppData\Local\ms-playwright\chromium-1217" && mv chrome-win c
   - (b) 删除 `className?: string` prop — 但这是 props 接口变更,需要小心
 - 不在 UI 改造范围内,纯 TS 接口/实现一致性问题
 
+## 视觉回归 baseline 时机错配(2026-05-05 batch 1 视觉回归发现)
+
+**时间**:2026-05-05(Phase 4 batch 1, 批末视觉回归跑完后)
+
+**现象**:mobile liuyao / mobile qimen 5px scrollWidth diff(404 → 409),触发 visual regression snapshot mismatch,但 batch 1 没改这两个页面。
+
+**根因**:Playwright baseline 截图 commit `8d1dbac` (May 4 18:35) 早于 batch 0 改 Layout/BottomNav 的 commit `d76c5c6` (May 4 21:58)。Baseline 反映的是 **batch 0 前** 的状态(那时整个 mobile/src 还不在 git 里,fs 上是桌面工程派生原貌),不是 batch 0 后的状态。
+
+证据:
+- `git rev-parse 8d1dbac:zhouwenwang/zhouwenwang-divination-mobile/src/index.css` → `fatal: not in commit`
+- `git rev-parse 8d1dbac:zhouwenwang/zhouwenwang-divination-mobile/src/components/layout/Layout.tsx` → `fatal: not in commit`
+- 后续 `d76c5c6` 在 `src/index.css` 注入 token + 改 Layout/BottomNav/MainContent/Sidebar(`bg-black`→`bg-night` 等),这些影响 mobile 视口下页面的 scrollWidth
+
+**影响**:每个后续 batch 的视觉回归都会包含"batch 0 → 当前"的累积差异,假阳性 mismatch 会越来越多,直到 batch 5 时所有 16 张都 fail → **视觉回归防线失效**。
+
+**batch 1 实测**:5 failed / 16
+- home desktop / home mobile:✅ 真 batch 1 (F001 改造)
+- masters mobile:✅ 真 batch 1 (F002 改造)
+- **liuyao mobile / qimen mobile:⚠️ batch 0 累积假阳性**(5px scrollWidth 差,batch 1 未改 LiuYao/QiMen)
+
+**处理**:本批不做(超范围),登记此处。
+
+**重截时机**:**batch 1 push 完成 + batch 2 启动前**的"已知干净状态"时,跑:
+```bash
+cd zhouwenwang/zhouwenwang-divination-mobile
+npx playwright test --update-snapshots --project=desktop --project=mobile tests/visual/baseline.spec.ts
+```
+让 baseline 重新指向"batch 1 完成后"的 fs 状态。
+
+**重截后影响**:
+- batch 2-5 视觉回归对比"含 batch 1 改造"的 baseline,只看到本批改造差异,不再被累积假阳性污染
+- 失去 batch 0 前的"真原始 baseline"参照(已用 `docs/visual-batch-0.md` + 截图存档代偿)
+- 重截动作单独 commit:`test(visual): re-baseline after batch 1`
+
+**长期方案**:每个 batch 完成 + push 后立即重截 baseline,把"baseline 重截"加入 `docs/PLAYBOOK.md` 批末例行步骤(本批不动 PLAYBOOK,记此处)。
+
 ## (后续追加格式)
 
 每条新增事件按以下骨架写:
