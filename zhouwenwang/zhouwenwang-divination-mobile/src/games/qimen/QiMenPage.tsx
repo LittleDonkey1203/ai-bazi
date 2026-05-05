@@ -16,6 +16,7 @@ import { useMaster, useUI } from '../../core/store';
 import { StreamingMarkdown, ErrorToast, useAutoScroll } from '../../components/common';
 import { getRandomQuestions } from '../../core/quickQuestions';
 import { getVideoPath } from '../../utils/resources';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 import type { DivinationRecord } from '../../types';
 
 // 时间处理工具函数
@@ -52,6 +53,7 @@ const QiMenPage = () => {
   const { selectedMaster } = useMaster();
   const { error, setError } = useUI();
   const navigate = useNavigate();
+  const { isMobile } = useBreakpoint();
   
   // 使用通用的自动滚动Hook
   const { contentRef: analysisRef } = useAutoScroll({
@@ -316,7 +318,8 @@ const QiMenPage = () => {
     ];
 
     return (
-      <div className="grid grid-cols-3 gap-0 max-w-2xl mx-auto border-2 border-white">
+      <div className={isMobile ? 'overflow-x-auto w-full' : ''}>
+        <div className={`grid grid-cols-3 gap-0 mx-auto border-2 border-divider-strong ${isMobile ? 'min-w-[300px]' : 'max-w-2xl'}`}>
           {layout.map((row, rowIndex) =>
             row.map((position, colIndex) => {
             const palace = chartData.palaces.find(p => p.position === position);
@@ -326,7 +329,7 @@ const QiMenPage = () => {
             const hasGoodStar = isGoodStar(palace.star);
             const isExcellentPosition = hasGoodDoor && hasGoodStar;
             const isGoodPosition = hasGoodDoor || hasGoodStar;
-            
+
             const palaceName = getPalaceName(position);
             const wuxing = getPalaceWuxing(position);
             const wuxingColor = getWuxingColor(wuxing);
@@ -335,37 +338,37 @@ const QiMenPage = () => {
               <motion.div
                 key={position}
                 className={`
-                  aspect-square p-2 border border-white transition-all duration-300 relative overflow-hidden
-                  ${palace.isCenter 
-                    ? 'bg-gradient-to-br from-[#FF9900]/10 to-[#FF9900]/3' 
+                  aspect-square ${isMobile ? 'p-1' : 'p-2'} border border-divider-strong transition-all duration-300 relative overflow-hidden
+                  ${palace.isCenter
+                    ? 'bg-gradient-to-br from-brand/10 to-brand/5'
                     : isExcellentPosition
                       ? 'bg-gradient-to-br from-green-800/30 to-green-900/10'
                       : isGoodPosition
                         ? 'bg-gradient-to-br from-green-900/20 to-green-950/10'
-                        : 'bg-gradient-to-br from-[#0a0a0a] to-[#151515]'
+                        : 'bg-gradient-to-br from-night to-night-2'
                   }
                 `}
                 whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.2 }}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                style={{ 
+                style={{
                   position: 'relative',
                   transition: `all 0.3s ease`,
-                  transitionDelay: `${(rowIndex * 3 + colIndex) * 0.05}s` 
+                  transitionDelay: `${(rowIndex * 3 + colIndex) * 0.05}s`
                 }}
               >
-                <div 
+                <div
                   className="flex flex-col justify-between"
-                  style={{ height: '90%', padding: '8px' }}
+                  style={{ height: isMobile ? '100%' : '90%', padding: '8px' }}
                 >
                   
                   {/* 顶部：八神（小字，居中） */}
                   <div className="text-center" style={{ minHeight: '20px' }}>
-                    <span 
+                    <span
+                      className="text-neutral-2"
                       style={{
-                        fontSize: '14px',
-                        color: '#CCCCCC',
+                        fontSize: isMobile ? '12px' : '14px',
                         fontWeight: '500'
                       }}
                     >
@@ -379,15 +382,19 @@ const QiMenPage = () => {
                     style={{ paddingLeft: '4px', paddingRight: '16px' }}
                   >
                     
-                    {/* 左侧：垂直排列信息 */}
-                    <div 
+                    {/* 左侧：垂直排列信息 - mobile 字号收紧 */}
+                    <div
                       className="flex flex-col items-start justify-center"
-                      style={{ gap: '8px', minWidth: '80px', maxWidth: '80px' }}
+                      style={{
+                        gap: isMobile ? '4px' : '8px',
+                        minWidth: isMobile ? '60px' : '80px',
+                        maxWidth: isMobile ? '60px' : '80px'
+                      }}
                     >
                       {/* 天盘天干（中等大小，突出） */}
-                      <div 
+                      <div
                         style={{
-                          fontSize: '22px',
+                          fontSize: isMobile ? '18px' : '22px',
                           fontWeight: '700',
                           color: 'white',
                           letterSpacing: '1px',
@@ -396,11 +403,11 @@ const QiMenPage = () => {
                       >
                         {palace.heavenStem}
                       </div>
-                      
-                      {/* 九星（中字，颜色区分） */}
-                      <div 
+
+                      {/* 九星（中字，颜色区分；吉星语义色保留）*/}
+                      <div
                         style={{
-                          fontSize: '16px',
+                          fontSize: isMobile ? '13px' : '16px',
                           fontWeight: '600',
                           color: isGoodStar(palace.star) ? '#FCD34D' : '#CCCCCC',
                           lineHeight: '1.1',
@@ -409,11 +416,11 @@ const QiMenPage = () => {
                       >
                         {palace.star}
                       </div>
-                      
-                      {/* 八门（中字，颜色区分） */}
-                      <div 
+
+                      {/* 八门（中字，颜色区分；吉门语义色保留）*/}
+                      <div
                         style={{
-                          fontSize: '16px',
+                          fontSize: isMobile ? '13px' : '16px',
                           fontWeight: '600',
                           color: isGoodDoor(palace.door) ? '#F87171' : '#CCCCCC',
                           lineHeight: '1.1',
@@ -425,21 +432,27 @@ const QiMenPage = () => {
                     </div>
 
                     {/* 右侧：宫位名 + 五行 */}
-                    <div 
+                    <div
                       className="flex flex-col justify-center"
-                      style={{ marginLeft: '8px', flex: '1', alignItems: 'center', paddingRight: '20px', marginTop: '12px' }}
+                      style={{
+                        marginLeft: isMobile ? '4px' : '8px',
+                        flex: '1',
+                        alignItems: 'center',
+                        paddingRight: isMobile ? '8px' : '20px',
+                        marginTop: isMobile ? 0 : '12px'
+                      }}
                     >
-                      {/* 宫位名称（特大字，艺术效果） */}
-                      <div 
-                        style={{ 
-                          fontSize: '48px',
+                      {/* 宫位名称（特大字，艺术效果；D5a: font-serif 走 design-system 栈; D2: mobile 收紧字号 + 让步给地盘天干）*/}
+                      <div
+                        className="font-serif"
+                        style={{
+                          fontSize: isMobile ? '28px' : '48px',
                           fontWeight: '900',
                           color: wuxingColor,
-                          fontFamily: '"Noto Serif SC", "STKaiti", "STSong", serif',
                           textShadow: `0 0 15px ${wuxingColor}AA, 0 0 25px ${wuxingColor}60`,
-                          letterSpacing: '2px',
+                          letterSpacing: isMobile ? '1px' : '2px',
                           lineHeight: '1',
-                          marginBottom: '8px',
+                          marginBottom: isMobile ? '2px' : '8px',
                           textAlign: 'center'
                         }}
                       >
@@ -465,12 +478,12 @@ const QiMenPage = () => {
 
                   </div>
 
-                  {/* 底部：地盘天干 */}
-                  <div className="text-left">
-                    <span 
+                  {/* 底部：地盘天干（A2.2: flex-shrink-0 防 mobile 被压扁裁切）*/}
+                  <div className="text-left flex-shrink-0">
+                    <span
+                      className="text-neutral-soft"
                       style={{
-                        fontSize: '14px',
-                        color: '#DDDDDD',
+                        fontSize: isMobile ? '12px' : '14px',
                         fontWeight: '500'
                       }}
                     >
@@ -484,27 +497,33 @@ const QiMenPage = () => {
             );
           })
         )}
+        </div>
       </div>
     );
   };
 
   return (
-    <motion.div 
-      className="min-h-screen bg-black text-white"
+    <motion.div
+      className="min-h-screen bg-night text-white"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
       <div className="max-w-7xl mx-auto px-4 py-12">
         {/* 页面标题 */}
-        <motion.div 
+        <motion.div
           className="text-center mb-2"
           variants={itemVariants}
         >
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-[#EEEEEE] via-[#CCCCCC] to-[#FF9900] bg-clip-text text-transparent">
+          <h1
+            className="text-4xl md:text-5xl font-bold font-serif mb-4 bg-clip-text text-transparent"
+            style={{
+              backgroundImage: 'linear-gradient(135deg, #f5f0e3 0%, #d4a03e 60%, #c41e3a 100%)',
+            }}
+          >
             奇门遁甲
           </h1>
-          <p className="text-xl text-[#CCCCCC] max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl text-neutral-2 max-w-3xl mx-auto leading-relaxed">
             古代最高层次的预测学，以时间、空间、人和为三要素，探寻吉凶祸福的运行规律
           </p>
         </motion.div>
@@ -517,32 +536,31 @@ const QiMenPage = () => {
           >
             <motion.div variants={itemVariants}>
               
-              {/* 输入框和按钮水平排列 - 居中 */}
-              <div className="flex justify-center items-center gap-4 mb-8">
+              {/* 输入框和按钮 - mobile 竖向堆叠 / desktop 水平居中 */}
+              <div className={`flex ${isMobile ? 'flex-col' : 'flex-row justify-center'} items-center gap-4 mb-8`}>
                 <motion.input
                   type="text"
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
                   placeholder="您想算点什么？"
-                  className="w-[300px] h-[46px] px-6 py-3 bg-[#222222] border-2 border-[#333333] rounded-xl !text-white !text-lg !font-bold placeholder:!text-[#888888] focus:border-[#FF9900] focus:outline-none transition-all duration-300"
-                  style={{ 
+                  className={`${isMobile ? 'w-full' : 'w-[300px]'} h-[46px] px-6 py-3 bg-surface-sheet border-2 border-divider rounded-xl !text-white !text-lg !font-bold placeholder:!text-neutral-mid focus:border-brand focus:outline-none transition-all duration-300`}
+                  style={{
                     color: 'white',
                     fontSize: '18px',
                     fontWeight: 'bold',
-                    backgroundColor: '#222222',
                     borderRadius: '12px',
                     height: '46px'
                   }}
                   whileFocus={{ scale: 1.01 }}
                   disabled={isGenerating}
                 />
-                <motion.button 
+                <motion.button
                   onClick={performDivination}
                   disabled={isGenerating || !question.trim()}
-                  className={`px-8 py-3 h-[46px] rounded-xl font-bold text-lg transition-all duration-300 shadow-lg whitespace-nowrap flex items-center justify-center ${
+                  className={`${isMobile ? 'w-full' : ''} px-8 py-3 h-[46px] rounded-xl font-bold text-lg transition-all duration-300 shadow-lg whitespace-nowrap flex items-center justify-center ${
                     isGenerating || !question.trim()
-                      ? 'bg-[#444444] text-[#888888] cursor-not-allowed'
-                      : 'bg-gradient-to-r from-[#FF9900] to-[#E68A00] text-black hover:from-[#E68A00] hover:to-[#CC7700] hover:shadow-xl hover:shadow-[#FF9900]/30'
+                      ? 'bg-divider-strong text-neutral-mid cursor-not-allowed'
+                      : 'bg-gradient-to-r from-brand to-brand-active text-paper hover:from-brand-hover hover:to-brand hover:shadow-xl'
                   }`}
                   whileHover={!isGenerating && question.trim() ? { scale: 1.05, y: -2 } : {}}
                   whileTap={!isGenerating && question.trim() ? { scale: 0.98 } : {}}
@@ -558,15 +576,15 @@ const QiMenPage = () => {
                 </motion.button>
               </div>
 
-              {/* 快速开始水平布局 - 居中 */}
-              <div className="flex justify-center items-center gap-3 mb-8">
+              {/* 快速开始 - mobile label 单独一行 / desktop 同一行 */}
+              <div className={`flex ${isMobile ? 'flex-col items-start' : 'flex-row justify-center items-center'} gap-3 mb-8`}>
                 <h4 className="text-lg font-medium text-white whitespace-nowrap">快速开始：</h4>
                 <div className="flex flex-wrap gap-4">
                   {quickQuestions.map((quickQuestion, index) => (
                     <motion.span
                       key={index}
                       onClick={() => !isGenerating && quickStart(quickQuestion)}
-                      className={`px-4 py-2 text-[#CCCCCC] text-sm cursor-pointer hover:text-[#FF9900] transition-all duration-300 ${
+                      className={`px-4 py-2 text-neutral-2 text-sm cursor-pointer hover:text-brand transition-all duration-300 ${
                         isGenerating ? 'opacity-50 cursor-not-allowed' : ''
                       }`}
                       whileHover={!isGenerating ? { scale: 1.05, y: -2 } : {}}
@@ -581,42 +599,42 @@ const QiMenPage = () => {
                 </div>
               </div>
 
-              {/* 时间选择区域 - 简洁版本 */}
-              <div className="flex justify-center items-center gap-3">
+              {/* 时间选择区域 - mobile 竖向 / desktop 水平 */}
+              <div className={`flex ${isMobile ? 'flex-col items-center' : 'flex-row justify-center items-center'} gap-3`}>
                 <div className="flex items-center gap-3">
-                  <Clock className="h-5 w-5 text-[#FF9900]" />
+                  <Clock className="h-5 w-5 text-brand" />
                   <h4 className="text-lg font-medium text-white whitespace-nowrap">起盘时间：</h4>
                 </div>
-                
-                <div className="flex items-center gap-4">
+
+                <div className="flex items-center gap-4 flex-wrap justify-center">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       checked={useCurrentTime}
                       onChange={() => handleUseCurrentTimeChange(true)}
-                      className="text-[#FF9900] focus:ring-[#FF9900]"
+                      className="text-brand focus:ring-brand"
                       disabled={isGenerating}
                     />
-                    <span className="text-[#CCCCCC]">当前时间</span>
+                    <span className="text-neutral-2 whitespace-nowrap">当前时间</span>
                   </label>
-                  
+
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       checked={!useCurrentTime}
                       onChange={() => handleUseCurrentTimeChange(false)}
-                      className="text-[#FF9900] focus:ring-[#FF9900]"
+                      className="text-brand focus:ring-brand"
                       disabled={isGenerating}
                     />
-                    <span className="text-[#CCCCCC]">选择时间</span>
+                    <span className="text-neutral-2 whitespace-nowrap">选择时间</span>
                   </label>
-                  
+
                   {!useCurrentTime && (
                     <motion.input
                       type="datetime-local"
                       value={formatDateTimeForInput(selectedTime)}
                       onChange={handleTimeChange}
-                      className="bg-black border border-black rounded-lg px-3 py-2 text-white text-base focus:border-[#FF9900] focus:outline-none [&::-webkit-datetime-edit]:text-white [&::-webkit-datetime-edit-text]:text-white [&::-webkit-datetime-edit-month-field]:text-white [&::-webkit-datetime-edit-day-field]:text-white [&::-webkit-datetime-edit-year-field]:text-white [&::-webkit-datetime-edit-hour-field]:text-white [&::-webkit-datetime-edit-minute-field]:text-white [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:invert"
+                      className={`bg-surface-sheet border border-divider rounded-lg px-3 py-2 text-white text-base ${isMobile ? 'w-full' : ''} focus:border-brand focus:outline-none [&::-webkit-datetime-edit]:text-white [&::-webkit-datetime-edit-text]:text-white [&::-webkit-datetime-edit-month-field]:text-white [&::-webkit-datetime-edit-day-field]:text-white [&::-webkit-datetime-edit-year-field]:text-white [&::-webkit-datetime-edit-hour-field]:text-white [&::-webkit-datetime-edit-minute-field]:text-white [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:invert`}
                       style={{
                         colorScheme: 'dark',
                         color: 'white !important',
@@ -625,11 +643,11 @@ const QiMenPage = () => {
                         height: '36px',
                         lineHeight: '1.4',
                         fontSize: '16px',
-                        marginLeft: '5px'
+                        marginLeft: isMobile ? 0 : '5px'
                       }}
                       disabled={isGenerating}
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: 'auto' }}
+                      initial={isMobile ? { opacity: 0 } : { opacity: 0, width: 0 }}
+                      animate={isMobile ? { opacity: 1 } : { opacity: 1, width: 'auto' }}
                       transition={{ duration: 0.3 }}
                     />
                   )}
@@ -649,18 +667,20 @@ const QiMenPage = () => {
               >
                 <div className="text-center">
                   <h3 className="text-2xl font-semibold text-white mb-6">奇门起盘，时空定局</h3>
-                  
-                  {/* 起盘动画区域 */}
+
+                  {/* 起盘动画区域 - mobile 撑满 16:9 / desktop 固定 560×315 */}
                   <div className="flex justify-center">
-                    <div className="bg-black flex items-center justify-center relative overflow-hidden rounded-xl" style={{ width: '560px', height: '315px' }}>
+                    <div
+                      className={`bg-night flex items-center justify-center relative overflow-hidden rounded-xl ${isMobile ? 'w-full max-w-[560px] aspect-video' : ''}`}
+                      style={isMobile ? undefined : { width: '560px', height: '315px' }}
+                    >
                       {/* 实际使用MP4视频 */}
-                      <video 
-                        autoPlay 
-                        muted 
+                      <video
+                        autoPlay
+                        muted
                         playsInline
                         preload="metadata"
                         className="w-full h-full object-cover rounded-xl"
-                        style={{ width: '560px', height: '315px' }}
                         onEnded={handleVideoEnded}
                         onError={(e) => {
                           console.log('奇门视频加载失败，显示备用动画');
@@ -675,12 +695,12 @@ const QiMenPage = () => {
                         {/* 如果视频加载失败，显示备用动画 */}
                         <div className="relative">
                           <motion.div
-                            className="w-16 h-16 border-4 border-[#FF9900] border-t-transparent rounded-full"
+                            className="w-16 h-16 border-4 border-brand border-t-transparent rounded-full"
                             animate={{ rotate: 360 }}
                             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                           />
                           <motion.div
-                            className="absolute inset-4 border-2 border-[#CCCCCC] border-b-transparent rounded-full"
+                            className="absolute inset-4 border-2 border-neutral-2 border-b-transparent rounded-full"
                             animate={{ rotate: -360 }}
                             transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
                           />
@@ -689,7 +709,7 @@ const QiMenPage = () => {
                             animate={{ scale: [1, 1.2, 1] }}
                             transition={{ duration: 2, repeat: Infinity }}
                           >
-                            <span className="text-[#FF9900] text-2xl font-bold">遁</span>
+                            <span className="text-brand text-2xl font-bold font-serif">遁</span>
                           </motion.div>
                         </div>
                       </video>
@@ -707,15 +727,17 @@ const QiMenPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              {/* 与视频相同尺寸的奇门盘显示容器 */}
+              {/* 与视频相同尺寸的奇门盘显示容器 - mobile 撑满 / desktop 固定 560 */}
               <div className="flex justify-center">
-                <div style={{ width: '560px', minHeight: '315px' }}>
-                  {/* 基本信息条 */}
-                  <motion.div 
+                <div
+                  className={isMobile ? 'w-full max-w-[560px]' : ''}
+                  style={isMobile ? undefined : { width: '560px', minHeight: '315px' }}
+                >
+                  {/* 基本信息条 - D9: mobile 2×2 grid / desktop 4 列 */}
+                  <motion.div
+                    className="bg-night-2 border border-divider"
                     style={{
-                      background: '#1a1a1a',
-                      border: '1px solid #333',
-                      padding: '20px 24px',
+                      padding: isMobile ? '16px' : '20px 24px',
                       borderRadius: '12px 12px 0 0'
                     }}
                     initial={{ opacity: 0, scale: 0.95 }}
@@ -724,35 +746,35 @@ const QiMenPage = () => {
                   >
                     <div style={{
                       display: 'grid',
-                      gridTemplateColumns: '1fr 1fr 1fr 1fr',
-                      gap: '32px',
+                      gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr 1fr',
+                      gap: isMobile ? '16px' : '32px',
                       textAlign: 'center'
                     }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <div style={{ color: '#CCCCCC', fontSize: '14px', fontWeight: '500' }}>时间</div>
-                        <div style={{ color: 'white', fontSize: '16px', fontWeight: '600', whiteSpace: 'nowrap' }}>{formatDateTime(chartData)}</div>
+                        <div className="text-neutral-2" style={{ fontSize: '14px', fontWeight: '500' }}>时间</div>
+                        <div style={{ color: 'white', fontSize: isMobile ? '14px' : '16px', fontWeight: '600', whiteSpace: isMobile ? 'normal' : 'nowrap' }}>{formatDateTime(chartData)}</div>
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <div style={{ color: '#CCCCCC', fontSize: '14px', fontWeight: '500' }}>遁甲</div>
-                        <div style={{ color: '#FF9900', fontSize: '16px', fontWeight: '700', whiteSpace: 'nowrap' }}>
+                        <div className="text-neutral-2" style={{ fontSize: '14px', fontWeight: '500' }}>遁甲</div>
+                        <div className="text-brand" style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: '700', whiteSpace: 'nowrap' }}>
                           {chartData.escapeType === 'yang' ? '阳' : '阴'}遁{chartData.bureauNumber}局
                         </div>
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <div style={{ color: '#CCCCCC', fontSize: '14px', fontWeight: '500' }}>值符</div>
-                        <div style={{ color: '#FBBF24', fontSize: '16px', fontWeight: '600', whiteSpace: 'nowrap' }}>{chartData.dutyChief}</div>
+                        <div className="text-neutral-2" style={{ fontSize: '14px', fontWeight: '500' }}>值符</div>
+                        <div style={{ color: '#FBBF24', fontSize: isMobile ? '14px' : '16px', fontWeight: '600', whiteSpace: 'nowrap' }}>{chartData.dutyChief}</div>
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <div style={{ color: '#CCCCCC', fontSize: '14px', fontWeight: '500' }}>值使</div>
-                        <div style={{ color: '#34D399', fontSize: '16px', fontWeight: '600', whiteSpace: 'nowrap' }}>{chartData.dutyDoor}</div>
+                        <div className="text-neutral-2" style={{ fontSize: '14px', fontWeight: '500' }}>值使</div>
+                        <div style={{ color: '#34D399', fontSize: isMobile ? '14px' : '16px', fontWeight: '600', whiteSpace: 'nowrap' }}>{chartData.dutyDoor}</div>
                       </div>
                     </div>
                   </motion.div>
 
                   {/* 奇门盘主体 - 深色卡片 */}
-                  <motion.div 
-                    className="bg-[#1a1a1a] border border-[#333] p-6 flex flex-col"
-                    style={{ 
+                  <motion.div
+                    className="bg-night-2 border border-divider p-6 flex flex-col"
+                    style={{
                       minHeight: '400px',
                       borderRadius: '0 0 16px 16px',
                       overflow: 'hidden'
@@ -771,44 +793,35 @@ const QiMenPage = () => {
 
                     {/* 大师分析按钮 - 底部固定 */}
                     <div style={{ margin: '15px' }}>
-                      <motion.button 
+                      <motion.button
                         onClick={getAnalysis}
                         disabled={isAnalyzing || !selectedMaster || analysisComplete}
                         className={`w-full px-4 py-3 rounded-xl font-bold text-lg transition-all duration-300 shadow-lg flex items-center justify-center ${
                           isAnalyzing || !selectedMaster || analysisComplete
-                            ? 'bg-[#444444] cursor-not-allowed'
-                            : 'bg-gradient-to-r from-[#FF9900] to-[#E68A00] hover:from-[#E68A00] hover:to-[#CC7700] hover:shadow-xl hover:shadow-[#FF9900]/30'
+                            ? 'bg-divider-strong text-neutral-mid cursor-not-allowed'
+                            : 'bg-gradient-to-r from-brand to-brand-active hover:from-brand-hover hover:to-brand text-paper hover:shadow-xl'
                         }`}
-                        style={{
-                          color: isAnalyzing || !selectedMaster || analysisComplete ? '#888888' : '#000000'
-                        }}
                         whileHover={!isAnalyzing && selectedMaster && !analysisComplete ? { scale: 1.02 } : {}}
                         whileTap={!isAnalyzing && selectedMaster && !analysisComplete ? { scale: 0.98 } : {}}
                       >
                         {isAnalyzing ? (
-                          <span 
-                            className="flex items-center justify-center gap-3"
-                            style={{ color: '#888888' }}
-                          >
-                            <div 
-                              className="animate-spin rounded-full h-4 w-4 border-b-2"
-                              style={{ borderColor: '#888888' }}
-                            ></div>
-                            <span style={{ color: '#888888' }}>
+                          <span className="flex items-center justify-center gap-3 text-neutral-mid">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                            <span>
                               {aiAnalysis ? `${selectedMaster?.name}正在分析...` : `${selectedMaster?.name}解盘中...`}
                             </span>
                           </span>
                         ) : (
-                          <span style={{ color: isAnalyzing || !selectedMaster || analysisComplete ? '#888888' : '#000000' }}>
+                          <span>
                             {analysisComplete ? `${selectedMaster?.name}解盘完成` : '大师解盘'}
                           </span>
                         )}
                       </motion.button>
-                      
+
                       {!selectedMaster && (
-                        <motion.button 
+                        <motion.button
                           onClick={() => navigate('/settings')}
-                          className="w-full mt-2 bg-gradient-to-r from-[#FF9900] to-[#E68A00] text-black px-4 py-3 rounded-xl font-bold text-sm hover:from-[#E68A00] hover:to-[#CC7700] transition-all duration-300 shadow-lg hover:shadow-[#FF9900]/30 flex items-center justify-center"
+                          className="w-full mt-2 bg-gradient-to-r from-brand to-brand-active hover:from-brand-hover hover:to-brand text-paper px-4 py-3 rounded-xl font-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center"
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                         >
@@ -824,19 +837,19 @@ const QiMenPage = () => {
 
           {/* 大师分析结果 */}
           {aiAnalysis && (
-            <motion.div 
+            <motion.div
               ref={analysisRef}
               className="p-4"
               variants={itemVariants}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <div 
+              <div
                 style={{
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  marginBottom: '20rem',
+                  marginBottom: isMobile ? '4rem' : '20rem',
                 }}
               >
                 <StreamingMarkdown

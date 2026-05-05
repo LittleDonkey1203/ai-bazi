@@ -528,6 +528,169 @@ npx playwright test --update-snapshots --project=desktop --project=mobile tests/
 
 **长期方案**:每个 batch 完成 + push 后立即重截 baseline,把"baseline 重截"加入 `docs/PLAYBOOK.md` 批末例行步骤(本批不动 PLAYBOOK,记此处)。
 
+## 阴爻灰色 token 缺失(2026-05-05 batch 2 F003 浏览器实测发现)
+
+**时间**:2026-05-05(Phase 4 batch 2,F003 LiuYaoPage 浏览器实测 ack 期间)
+
+**分类**:设计系统层面待迭代
+
+**现象**:F003 LiuYaoPage 六爻矩阵的阴爻条形显示用硬编码 hex `#6b7280`(常态)/ `#9ca3af`(动爻态),单独看略显单调,与改造后的绛红/黄铜/墨青调色板存在视觉断层。出现位置:
+- `LiuYaoPage.tsx` L642 / L653:阴爻左右两段 backgroundColor 三元式 `isMoving ? '#9ca3af' : '#6b7280'`
+- `LiuYaoPage.tsx` L671:阴爻动爻 marker `×` 颜色 `#E5E7EB`(动爻态)
+
+**当前状态**:**视觉契约保留态,未违规**。理由:
+1. design-system 未定义"阴爻 / 阳爻 / 动爻 / 静爻"语义色 token(§1.2 语义层只到状态色 + 五行色)
+2. 阴阳爻是**配对视觉契约**:阳爻当前用 `#fbbf24`(动)/`#f59e0b`(静)橙黄,阴爻用 `#9ca3af`/`#6b7280` 灰阶,**单独修阴爻而保留阳爻会破坏阴阳配对**
+3. batch 2 改造硬约束"一次只动一批",登记后保留至专项处理
+
+**建议方案**(未来设计系统迭代时):
+- design-system §1.2 语义层增加配对 token:
+  - `--color-yao-yang-static: #f59e0b`(阳爻静态,黄铜系延续)
+  - `--color-yao-yang-moving: #fbbf24`(阳爻动爻态)
+  - `--color-yao-yin-static: <待定>`(阴爻静态,候选 `#6b7280` 现状或墨青系 `--c-water` 衍生)
+  - `--color-yao-yin-moving: <待定>`(阴爻动爻态,候选 `#9ca3af` 现状或更浅墨青)
+- design-system §5.1 中式装饰白名单增加"六爻矩阵阴阳爻配色"条目,纳入语义化色彩契约
+
+**处理批次建议**:
+- (a) **batch 5 MarkdownRenderer 改造**期间一并落地(届时 F003/F004/F005/F008 共用 MarkdownRenderer 三色标记重构,可一次性处理阴阳爻 token)
+- (b) **独立 design-system 迭代**(改造结束后)— 评估配对 token 是否值得加,涉及 LiuYaoPage 一处使用,投入产出比低,可能直接接受现状
+
+**不在 batch 2 修复的理由**:
+- 阴阳爻配对契约,单改阴爻破坏配对(见上"当前状态" §2)
+- 非 batch 2 scope(scope = F003 LiuYaoPage + F004 QiMenPage 视觉重构 + token 迁移,不含设计系统层级新增)
+- 设计系统 token 新增需要用户拍板(参考 batch 0 step (d) 中性灰阶 token 的引入流程),不是改造期内的"顺手修"
+
+**影响范围**:无运行时影响。当前 hex 直写在 `LiuYaoPage.tsx` 内部,batch 2 commit 显式声明保留。
+
+**遗留风险**:
+- batch 5 MarkdownRenderer 三色标记如果引入语义化色彩 prop(`【卦辞】黄铜 / 【解析】绛红 / 【建议】墨绿`),阴阳爻仍是孤岛 hex,与三色标记的语义化方向略冲突
+- 如果未来引入主题切换 / 高对比模式,阴爻灰色无 token 难以批量调整
+
+**后续**:batch 5 启动时本条目作为 MarkdownRenderer 改造的"延伸 scope" 评估;若评估为(b)路径,改造结束后单独立项。
+
+## F004 快速开始 chip 横滑跑马灯增强候选(2026-05-05 batch 2 F004 浏览器实测提出)
+
+**时间**:2026-05-05(Phase 4 batch 2,F004 QiMenPage 浏览器实测 ack 期间)
+
+**分类**:功能增强候选(非缺陷,**不修**)
+
+**现象**:F004 QiMenPage mobile 视口下"快速开始"3 个示例问题 chip 当前以 `flex flex-wrap` 布局,在 375 视口可能换行(每行 1-2 chip)。F003 LiuYaoPage 同模式。
+
+**用户原话**(2026-05-05 实测反馈):
+> "3个chips有换行,这个不知道可不可以优化。是否可以采用滚动字幕的方式左右滚动,并且加上一些动效框"
+
+**增强建议**(未来 microinteraction / motion design 迭代时):
+- chip 容器改为 `overflow-x-auto` + `flex-nowrap`,允许横向滑动浏览
+- 加跑马灯效果(自动轮播 + 用户滑动可暂停)
+- chip 加动效边框(hover/active 态毛笔笔触动画 / 印章描边等中式装饰动效)
+- 接入 framer-motion `motion.div` + `useScroll` / 自定义 marquee 组件
+
+**处理批次建议**:
+- 未来 **microinteraction / motion design 独立迭代**(改造结束后)
+- 或在 design-system 增加 `<MarqueeChips>` decor 组件后,在 batch 5 通用组件迭代期一并落地
+
+**不在 batch 2 修复的理由**:
+1. **超 batch 2 scope**:batch 2 = F003 LiuYaoPage + F004 QiMenPage 视觉重构 + token 迁移 + 横向溢出修复。功能增强不在改造范围内
+2. **当前 wrap 排列已修复 F004-3 / F003-4 横向溢出**(known-mobile-issues 登记的真缺陷),功能与可用性零问题
+3. **动效设计需要 motion design 投入**(easing / 时长 / 暂停时机 / 滑动惯性),不属于"严守一次只动一批"的颗粒度
+4. **跨页面影响**:F003 LiuYaoPage 同样有 chip 模式(L375-395),增强需统一两页,可能 F008 ZhouGongPage 也有,合并立项更合理
+
+**影响范围**:无运行时影响。当前 chip wrap 行为已修复 F004-3 缺陷,功能完整。
+
+**遗留风险**:
+- 用户体验上可能感觉 wrap 排列略不"现代"。但当前实现严格按"修复缺陷不引入新功能"原则。
+
+**后续**:在 microinteraction / motion design 立项时本条目作为参考输入;或作为 design-system §5 中式装饰白名单的扩展候选(印章 / 毛笔分隔线 / 卦象水印 之外的"动效装饰"扩展)。
+
+## F004 九宫格 D2 兜底 B 实施状态(2026-05-05 batch 2 浏览器实测确认)
+
+**时间**:2026-05-05(Phase 4 batch 2,F004 QiMenPage 浏览器实测 ack 期间)
+
+**分类**:实施状态记录(无遗留问题,记录为参考)
+
+**现状**:F004 九宫格在 mobile 已实施 D2 兜底 B(横滚兜底)+ D2 选项 A(收紧字号)。代码位置:
+- `QiMenPage.tsx` L321:`<div className={isMobile ? 'overflow-x-auto w-full' : ''}>` 外层 wrapper
+- `QiMenPage.tsx` L322:`grid grid-cols-3 ... ${isMobile ? 'min-w-[300px]' : 'max-w-2xl'}` grid 容器最小宽度
+
+**用户实测观察**(2026-05-05 浏览器实测):
+- **375 视口**:收紧字号已能塞下完整 3×3 九宫格,**未触发横滚**(符合 D2 选项 A 设计预期)
+- **320 视口(iPhone 5/SE)**:理论计算 `(320 - 32 px-4 - 4 border)/3 ≈ 95 px` 每 cell × 3 cells ≈ 285 px,小于 `min-w-[300px]` 应触发横滚,但**用户实测未观察到横滚**
+
+**实测偏差可能原因**:
+1. DevTools 模拟设备视口 vs 真实设备视口存在 px 计算偏差(2x DPR / scrollbar 占用 / 移动端 Safari header 高度等)
+2. Tailwind `min-w-[300px]` 实际像素解析受 grid 容器自身 padding/border 影响
+3. mx-auto 在 wrapper 与 grid 容器嵌套层级中的居中计算与边距挤压
+
+**处置决策**:**保留现状**(用户拍板,2026-05-05)
+- 理由 1:`overflow-x-auto` + `min-w-[300px]` 是**无害保险丝**,在 ≥ 300px 显示时不触发横滚 = 符合 D2 选项 A "收紧字号能塞下"的设计目标
+- 理由 2:在更窄极端屏幕(< 300px,如折叠屏未展开 / 老款 Android 工业设备 / iWatch 浏览器)兜底有效
+- 理由 3:删除 `overflow-x-auto` 风险高于保留 — 一旦真实窄屏出现,九宫格内容会被父容器强制压缩,出现内层 cell 撕裂或字符叠加
+
+**触发阈值实证**(为未来真实极窄屏反馈时排查):
+- 触发上限:grid 容器实际宽度 < `min-w-[300px]` → 启用横滚
+- 实际 `min-w-[300px]` 按 Tailwind CDN 解析 = `min-width: 300px`(无单位转换)
+- 父容器 `<div>` 在 mobile 是 w-full(占满父 flex 容器)
+- 推算触发屏宽 ≤ ~ 332 px(含 px-4 padding 32 px)
+
+**遗留风险**:
+- 真实设备测试若发现 320 触发(预期但用户未观察到),可能因 DevTools / 真机差异;无需修复
+- 真实设备 < 300 触发时,横滚体验需要 **横滚提示**(否则用户不知道要滑)— 未来可加 `mask-image: linear-gradient(...)` 表明右侧可滑
+
+**影响范围**:无运行时影响。当前实施已通过 375/320 实测验证(主流 mobile 视口零问题)。
+
+**后续**:
+- 如出现真实极窄屏设备反馈,再实测验证 `min-w-[300px]` 触发阈值
+- 如真实设备发现可滑但用户感知差,加横滚 affordance 提示(右侧渐变蒙层 / "→ 横滑查看" 文案)
+- 改造结束后 visual regression 跑一次 320 视口快照,固定行为基线
+
+## F004 getWuxingColor 默认色 hex 兜底(2026-05-05 batch 2 audit-batch-2 P2-2 识别)
+
+**时间**:2026-05-05(Phase 4 batch 2,ui-auditor 审计 P2-2)
+
+**分类**:设计系统层面待迭代(业务函数体内 hex,本批严守红线不动)
+
+**现象**:`QiMenPage.tsx` line 288 `getWuxingColor` 函数内 fallback 色硬编码:
+```typescript
+const getWuxingColor = (wuxing: string) => {
+  const colorMap: { [key: string]: string } = {
+    '木': '#22C55E', // 绿色
+    '火': '#EF4444', // 红色
+    '土': '#8B4513', // 棕色
+    '金': '#FFD700', // 金色
+    '水': '#3B82F6'  // 蓝色
+  };
+  return colorMap[wuxing] || '#CCCCCC';   // ← 默认 fallback 色
+};
+```
+
+**当前状态**:**业务函数体兜底色,灰阶漂移容忍度内**(≈ `--c-gray-300: #cccccc`,与 design-system §1.1 "灰阶漂移容忍度规则:每通道 RGB 漂移 ≤ 5 直接合并"一致)。视觉等价于 `text-neutral-2`,无视觉差。
+
+**不在 batch 2 修复的理由**:
+1. **业务函数体内 hex**:`getWuxingColor` 是 `src/games/qimen/QiMenPage.tsx` 内 helper 函数(L278-288),虽然属于"UI 渲染辅助",但函数体的 fallback 色逻辑(`||` 操作 + 兜底字符串)属于 helper 内部决策,本批严守"业务函数体不动"红line(即使是 UI helper,fallback 色逻辑层一并不动以避免边界争议)
+2. **审计 P2-2 识别**:ui-auditor 模式 1 检查 6(硬编码残留)识别为非阻塞,审计建议登记
+3. **设计系统层级 token 缺失**:design-system 当前无 `--color-wuxing-default` 这类"五行默认色"语义 token,新增 token 需要用户拍板(参考 batch 0 step (d) 中性灰阶 token 的引入流程)
+
+**建议方案**(未来设计系统迭代时):
+- design-system §1.2 语义层增加 `--color-wuxing-default: var(--c-gray-300)`(或更小语义如 `--color-text-fallback`,可跨场景复用)
+- 同时把 `getWuxingColor` 改用 `var(--color-wuxing-default)` 字符串字面量(注意 inline color 接 var() 在 Tailwind CDN 模式下的可行性,需要 batch 5 时实证)
+- 或:把 `getWuxingColor` 函数从 hex 字符串返回改为 token 名返回(如 `'wuxing-wood'` / `'wuxing-default'`),调用方 `<div className={\`text-\${wuxing-color}\`}>` — 改造较大,需独立评估
+
+**处理批次建议**:
+- (a) **batch 5 设计系统独立迭代**期间一并处理(届时 design-system §1.2 / §1.4.1 等其他 token 整理也会做,统一一次性 commit)
+- (b) **延后到改造结束后的 design-system 二阶段优化**(若 batch 5 时间紧张)— 涉及 1 处使用,投入产出比可评估
+
+**与其他 P2 的关系**:
+- 与"阴爻灰色 token 缺失"(2026-05-05 同期登记条目)是**同类问题**:都是设计系统语义 token 缺失导致的业务文件内 hex 直写
+- 与 batch 0 step (d) 引入的中性灰阶 token(`--color-surface-hover` 等)逻辑同源,可视为"灰阶语义 token 第二批扩展"
+
+**影响范围**:无运行时影响。当前 hex 直写在 `QiMenPage.tsx` 内部,batch 2 audit P2-2 显式声明保留,无视觉差(与 `--c-gray-300` 等价)。
+
+**遗留风险**:
+- 如果未来引入主题切换 / 高对比模式,`#CCCCCC` 硬编码无 token 难以批量调整(同阴爻灰风险)
+- design-system §10 改造单文件 checklist "颜色:其他硬编码 hex → `var(--color-*)` 或 Tailwind utility" 严格执行的话,本条目应在 batch 5 末批清理(灰阶迁移合规期内)
+
+**后续**:batch 5 启动时本条目作为"业务函数体内 hex 兜底色"专项 scope 评估;同期处理"阴爻灰色 token 缺失";若评估为 (b) 路径,改造结束后单独立项与 design-system §10 lint debt 一并清理。
+
 ## (后续追加格式)
 
 每条新增事件按以下骨架写:

@@ -9,6 +9,7 @@ import { addRecord } from '../../core/history';
 import { StreamingMarkdown, ErrorToast, useAutoScroll } from '../../components/common';
 import { getRandomQuestions } from '../../core/quickQuestions';
 import { getVideoPath } from '../../utils/resources';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 import type { DivinationRecord } from '../../types';
 
 const LiuYaoPage = () => {
@@ -26,6 +27,7 @@ const LiuYaoPage = () => {
   const { selectedMaster } = useMaster();
   const { error, setError } = useUI();
   const navigate = useNavigate();
+  const { isMobile } = useBreakpoint();
   
   // 使用通用的自动滚动Hook
   const { contentRef: analysisRef } = useAutoScroll({
@@ -264,22 +266,27 @@ const LiuYaoPage = () => {
   };
 
   return (
-    <motion.div 
-      className="min-h-screen bg-black text-white"
+    <motion.div
+      className="min-h-screen bg-night text-white"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
       <div className="max-w-7xl mx-auto px-4 py-12">
         {/* 页面标题 */}
-        <motion.div 
+        <motion.div
           className="text-center mb-2"
           variants={itemVariants}
         >
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-[#EEEEEE] via-[#CCCCCC] to-[#FF9900] bg-clip-text text-transparent">
+          <h1
+            className="text-4xl md:text-5xl font-bold font-serif mb-4 bg-clip-text text-transparent"
+            style={{
+              backgroundImage: 'linear-gradient(135deg, #f5f0e3 0%, #d4a03e 60%, #c41e3a 100%)',
+            }}
+          >
             六爻占卜
           </h1>
-          <p className="text-xl text-[#CCCCCC] max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl text-neutral-2 max-w-3xl mx-auto leading-relaxed">
             传承千年的六爻占卜智慧，通过摇卦的方式获得卦象，解读人生吉凶
           </p>
         </motion.div>
@@ -291,32 +298,31 @@ const LiuYaoPage = () => {
           >
             <motion.div variants={itemVariants}>
               
-              {/* 输入框和按钮水平排列 - 居中 */}
-              <div className="flex justify-center items-center gap-4 mb-8">
+              {/* 输入框和按钮 - mobile 竖向堆叠 / desktop 水平居中 */}
+              <div className={`flex ${isMobile ? 'flex-col' : 'flex-row justify-center'} items-center gap-4 mb-8`}>
                 <motion.input
                   type="text"
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
                   placeholder="您想算点什么？"
-                  className="w-[300px] h-[46px] px-6 py-3 bg-[#222222] border-2 border-[#333333] rounded-xl !text-white !text-lg !font-bold placeholder:!text-[#888888] focus:border-[#FF9900] focus:outline-none transition-all duration-300"
-                  style={{ 
+                  className={`${isMobile ? 'w-full' : 'w-[300px]'} h-[46px] px-6 py-3 bg-surface-sheet border-2 border-divider rounded-xl !text-white !text-lg !font-bold placeholder:!text-neutral-mid focus:border-brand focus:outline-none transition-all duration-300`}
+                  style={{
                     color: 'white',
                     fontSize: '18px',
                     fontWeight: 'bold',
-                    backgroundColor: '#222222',
                     borderRadius: '12px',
                     height: '46px'
                   }}
                   whileFocus={{ scale: 1.01 }}
                   disabled={isDivining}
                 />
-                <motion.button 
+                <motion.button
                   onClick={performDivination}
                   disabled={isDivining || !question.trim()}
-                  className={`px-8 py-3 h-[46px] rounded-xl font-bold text-lg transition-all duration-300 shadow-lg whitespace-nowrap flex items-center justify-center ${
+                  className={`${isMobile ? 'w-full' : ''} px-8 py-3 h-[46px] rounded-xl font-bold text-lg transition-all duration-300 shadow-lg whitespace-nowrap flex items-center justify-center ${
                     isDivining || !question.trim()
-                      ? 'bg-[#444444] text-[#888888] cursor-not-allowed'
-                      : 'bg-gradient-to-r from-[#FF9900] to-[#E68A00] text-black hover:from-[#E68A00] hover:to-[#CC7700] hover:shadow-xl hover:shadow-[#FF9900]/30'
+                      ? 'bg-divider-strong text-neutral-mid cursor-not-allowed'
+                      : 'bg-gradient-to-r from-brand to-brand-active text-paper hover:from-brand-hover hover:to-brand hover:shadow-xl'
                   }`}
                   whileHover={!isDivining && question.trim() ? { scale: 1.05, y: -2 } : {}}
                   whileTap={!isDivining && question.trim() ? { scale: 0.98 } : {}}
@@ -332,11 +338,11 @@ const LiuYaoPage = () => {
                 </motion.button>
               </div>
 
-              {/* 时间选择区域 */}
-              <div className="flex justify-center items-center gap-6 mb-6">
+              {/* 时间选择区域 - mobile 竖向 / desktop 水平 */}
+              <div className={`flex ${isMobile ? 'flex-col items-center' : 'flex-row justify-center items-center'} gap-${isMobile ? '3' : '6'} mb-6`}>
                 <div className="flex items-center gap-3">
-                  <Clock className="w-5 h-5 text-[#FF9900]" />
-                  <span className="text-white font-medium">起卦时间：</span>
+                  <Clock className="w-5 h-5 text-brand" />
+                  <span className="text-white font-medium whitespace-nowrap">起卦时间：</span>
                 </div>
                 <div className="flex items-center gap-4">
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -344,20 +350,20 @@ const LiuYaoPage = () => {
                       type="radio"
                       checked={useCurrentTime}
                       onChange={() => setUseCurrentTime(true)}
-                      className="form-radio text-[#FF9900] focus:ring-[#FF9900] bg-[#222222] border-[#333333]"
+                      className="form-radio text-brand focus:ring-brand bg-surface-sheet border-divider"
                       disabled={isDivining}
                     />
-                    <span className="text-[#CCCCCC]">当前时间</span>
+                    <span className="text-neutral-2 whitespace-nowrap">当前时间</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       checked={!useCurrentTime}
                       onChange={() => setUseCurrentTime(false)}
-                      className="form-radio text-[#FF9900] focus:ring-[#FF9900] bg-[#222222] border-[#333333]"
+                      className="form-radio text-brand focus:ring-brand bg-surface-sheet border-divider"
                       disabled={isDivining}
                     />
-                    <span className="text-[#CCCCCC]">自选时间</span>
+                    <span className="text-neutral-2 whitespace-nowrap">自选时间</span>
                   </label>
                 </div>
                 {!useCurrentTime && (
@@ -365,21 +371,21 @@ const LiuYaoPage = () => {
                     type="datetime-local"
                     value={selectedTime.toISOString().slice(0, 16)}
                     onChange={(e) => setSelectedTime(new Date(e.target.value))}
-                    className="px-3 py-2 bg-[#222222] border border-[#333333] rounded-lg text-white focus:border-[#FF9900] focus:outline-none transition-all duration-300"
+                    className="px-3 py-2 bg-surface-sheet border border-divider rounded-lg text-white focus:border-brand focus:outline-none transition-all duration-300"
                     disabled={isDivining}
                   />
                 )}
               </div>
 
-              {/* 快速开始水平布局 - 居中 */}
-              <div className="flex justify-center items-center gap-3">
+              {/* 快速开始 - mobile label 单独一行 / desktop 同一行 */}
+              <div className={`flex ${isMobile ? 'flex-col items-start' : 'flex-row justify-center items-center'} gap-3`}>
                 <h4 className="text-lg font-medium text-white whitespace-nowrap">快速开始：</h4>
                 <div className="flex flex-wrap gap-4">
                   {quickQuestions.map((quickQuestion, index) => (
                     <motion.span
                       key={index}
                       onClick={() => !isDivining && quickStart(quickQuestion)}
-                      className={`px-4 py-2 text-[#CCCCCC] text-sm cursor-pointer hover:text-[#FF9900] transition-all duration-300 ${
+                      className={`px-4 py-2 text-neutral-2 text-sm cursor-pointer hover:text-brand transition-all duration-300 ${
                         isDivining ? 'opacity-50 cursor-not-allowed' : ''
                       }`}
                       whileHover={!isDivining ? { scale: 1.05, y: -2 } : {}}
@@ -407,21 +413,22 @@ const LiuYaoPage = () => {
               >
                 <div className="text-center">
                   <h3 className="text-2xl font-semibold text-white mb-6">古法摇卦，天机显现</h3>
-                  
-                  {/* 摇卦动画区域 */}
+
+                  {/* 摇卦动画区域 - mobile 撑满 16:9 / desktop 固定 560×315 */}
                   <div className="flex justify-center">
-                    <div className="bg-black flex items-center justify-center relative overflow-hidden rounded-xl" style={{ width: '560px', height: '315px' }}>
+                    <div
+                      className={`bg-night flex items-center justify-center relative overflow-hidden rounded-xl ${isMobile ? 'w-full max-w-[560px] aspect-video' : ''}`}
+                      style={isMobile ? undefined : { width: '560px', height: '315px' }}
+                    >
                       {/* 实际使用MP4视频 */}
-                      <video 
-                        autoPlay 
-                        muted 
-                        loop 
+                      <video
+                        autoPlay
+                        muted
+                        loop
                         playsInline
                         preload="metadata"
                         className="w-full h-full object-cover rounded-xl"
-                        style={{ 
-                          width: '560px', 
-                          height: '315px',
+                        style={{
                           display: videoLoaded ? 'block' : 'none'
                         }}
                         onError={(e) => {
@@ -438,18 +445,18 @@ const LiuYaoPage = () => {
                       >
                         <source src={getVideoPath("liuyao.mp4")} type="video/mp4" />
                       </video>
-                      
+
                       {/* 备用动画 - 只在视频加载失败时显示 */}
                       {!videoLoaded && (
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="relative">
                             <motion.div
-                              className="w-16 h-16 border-4 border-[#FF9900] border-t-transparent rounded-full"
+                              className="w-16 h-16 border-4 border-brand border-t-transparent rounded-full"
                               animate={{ rotate: 360 }}
                               transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                             />
                             <motion.div
-                              className="absolute inset-4 border-2 border-[#CCCCCC] border-b-transparent rounded-full"
+                              className="absolute inset-4 border-2 border-neutral-2 border-b-transparent rounded-full"
                               animate={{ rotate: -360 }}
                               transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
                             />
@@ -458,7 +465,7 @@ const LiuYaoPage = () => {
                               animate={{ scale: [1, 1.2, 1] }}
                               transition={{ duration: 2, repeat: Infinity }}
                             >
-                              <span className="text-[#FF9900] text-2xl font-bold">卦</span>
+                              <span className="text-brand text-2xl font-bold font-serif">卦</span>
                             </motion.div>
                           </div>
                         </div>
@@ -477,14 +484,17 @@ const LiuYaoPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              {/* 与视频相同尺寸的卦象显示容器 */}
+              {/* 与视频相同尺寸的卦象显示容器 - mobile 撑满 / desktop 固定 560×315 */}
               <div className="flex justify-center">
-                <div style={{ width: '560px', height: '315px' }}>
+                <div
+                  className={isMobile ? 'w-full max-w-[560px]' : ''}
+                  style={isMobile ? undefined : { width: '560px', height: '315px' }}
+                >
 
                   {/* 卦象主体 - 深色卡片，填满剩余空间 */}
-                  <motion.div 
-                    className="bg-[#1a1a1a] border border-[#333] p-6 flex flex-col"
-                    style={{ 
+                  <motion.div
+                    className="bg-night-2 border border-divider p-6 flex flex-col"
+                    style={{
                       minHeight: '280px',
                       borderRadius: '16px',
                       overflow: 'hidden'
@@ -496,14 +506,13 @@ const LiuYaoPage = () => {
                     {/* 卦名和卦象描述 */}
                     <div className="text-center mb-4">
                       <div className="flex items-center justify-center gap-8">
-                        {/* 卦名 - 大字艺术效果 */}
-                        <h3 
-                          style={{ 
+                        {/* 卦名 - 大字艺术效果（D5a: font-serif 走 design-system 栈; D7: 蓝→墨青 text-water）*/}
+                        <h3
+                          className="font-serif text-water"
+                          style={{
                             fontSize: '42px',
                             fontWeight: '900',
-                            color: '#3B82F6',
-                            fontFamily: '"Noto Serif SC", "STKaiti", "STSong", serif',
-                            textShadow: '0 0 15px rgba(59, 130, 246, 0.6), 0 0 25px rgba(59, 130, 246, 0.4)',
+                            textShadow: '0 0 15px rgba(45, 125, 154, 0.6), 0 0 25px rgba(45, 125, 154, 0.4)',
                             letterSpacing: '4px',
                             lineHeight: '1',
                             marginRight: '20px'
@@ -512,18 +521,18 @@ const LiuYaoPage = () => {
                           {result.originalHexagram.name}
                         </h3>
                         
-                        {/* 卦象结构描述 - 精致标签样式 */}
+                        {/* 卦象结构描述 - 精致标签样式（黄铜 + 中性灰 token）*/}
                         <div className="flex flex-col gap-2">
-                          <div 
-                            style={{ 
+                          <div
+                            className="text-accent"
+                            style={{
                               fontSize: '16px',
                               fontWeight: '600',
-                              color: '#FBBF24',
-                              backgroundColor: 'rgba(251, 191, 36, 0.15)',
-                              border: '1px solid rgba(251, 191, 36, 0.4)',
+                              backgroundColor: 'rgba(212, 160, 62, 0.15)',
+                              border: '1px solid rgba(212, 160, 62, 0.4)',
                               borderRadius: '8px',
                               padding: '6px 12px',
-                              boxShadow: '0 0 8px rgba(251, 191, 36, 0.3)',
+                              boxShadow: '0 0 8px rgba(212, 160, 62, 0.3)',
                               whiteSpace: 'nowrap'
                             }}
                           >
@@ -532,11 +541,11 @@ const LiuYaoPage = () => {
                               return `${structure.upperTrigram.name}上${structure.lowerTrigram.name}下`;
                             })()}
                           </div>
-                          <div 
-                            style={{ 
+                          <div
+                            className="text-neutral-2"
+                            style={{
                               fontSize: '13px',
                               fontWeight: '500',
-                              color: '#CCCCCC',
                               backgroundColor: 'rgba(204, 204, 204, 0.1)',
                               border: '1px solid rgba(204, 204, 204, 0.3)',
                               borderRadius: '6px',
@@ -553,7 +562,7 @@ const LiuYaoPage = () => {
                       </div>
                       
                       {/* 起卦时间信息 */}
-                      <div className="mt-3 text-sm text-[#888888]">
+                      <div className="mt-3 text-sm text-neutral-mid">
                         <div className="flex items-center justify-center gap-4">
                           {result.divinationTime && (
                             <>
@@ -591,14 +600,13 @@ const LiuYaoPage = () => {
                             transition={{ delay: index * 0.1 + 0.3 }}
                             whileHover={{ scale: 1.01 }}
                           >
-                            {/* 爻位名称 - 艺术字效果 */}
-                            <span 
-                              style={{ 
+                            {/* 爻位名称 - 艺术字效果（D5a: font-serif 走 design-system 栈; 主品牌橙 -> brand 绛红）*/}
+                            <span
+                              className="font-serif text-brand"
+                              style={{
                                 fontSize: '20px',
                                 fontWeight: '800',
-                                color: '#FF9900',
-                                fontFamily: '"Noto Serif SC", "STKaiti", "STSong", serif',
-                                textShadow: '0 0 10px rgba(255, 153, 0, 0.6), 0 2px 4px rgba(0, 0, 0, 0.3)',
+                                textShadow: '0 0 10px rgba(196, 30, 58, 0.6), 0 2px 4px rgba(0, 0, 0, 0.3)',
                                 letterSpacing: '1px',
                                 lineHeight: '1',
                                 marginRight: '15px',
@@ -609,9 +617,9 @@ const LiuYaoPage = () => {
                             >
                               {positionName}
                             </span>
-                            
-                            {/* 爻的条形显示 */}
-                            <div className="flex-1" style={{ minWidth: '200px' }}>
+
+                            {/* 爻的条形显示 - mobile 移除 min-width 让 bar 收缩 */}
+                            <div className={`flex-1 ${isMobile ? 'min-w-0' : ''}`} style={isMobile ? undefined : { minWidth: '200px' }}>
                               {yaoTypeValue === 'yang' ? (
                                 // 阳爻 - 完整的橙色长条
                                 <div 
@@ -681,44 +689,35 @@ const LiuYaoPage = () => {
 
                     {/* 大师分析按钮 - 底部固定 */}
                     <div style={{ margin: '15px' }}>
-                      <motion.button 
+                      <motion.button
                         onClick={getAnalysis}
                         disabled={analyzing || !selectedMaster || analysisComplete}
                         className={`w-full px-4 py-3 rounded-xl font-bold text-lg transition-all duration-300 shadow-lg ${
                           analyzing || !selectedMaster || analysisComplete
-                            ? 'bg-[#444444] cursor-not-allowed'
-                            : 'bg-gradient-to-r from-[#FF9900] to-[#E68A00] hover:from-[#E68A00] hover:to-[#CC7700] hover:shadow-xl hover:shadow-[#FF9900]/30'
+                            ? 'bg-divider-strong cursor-not-allowed text-neutral-mid'
+                            : 'bg-gradient-to-r from-brand to-brand-active hover:from-brand-hover hover:to-brand text-paper hover:shadow-xl'
                         }`}
-                        style={{
-                          color: analyzing || !selectedMaster || analysisComplete ? '#888888' : '#000000'
-                        }}
                         whileHover={!analyzing && selectedMaster && !analysisComplete ? { scale: 1.02 } : {}}
                         whileTap={!analyzing && selectedMaster && !analysisComplete ? { scale: 0.98 } : {}}
                       >
                         {analyzing ? (
-                          <span 
-                            className="flex items-center justify-center gap-3"
-                            style={{ color: '#888888' }}
-                          >
-                            <div 
-                              className="animate-spin rounded-full h-4 w-4 border-b-2"
-                              style={{ borderColor: '#888888' }}
-                            ></div>
-                            <span style={{ color: '#888888' }}>
+                          <span className="flex items-center justify-center gap-3 text-neutral-mid">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                            <span>
                               {analysis ? `${selectedMaster?.name}正在分析...` : `${selectedMaster?.name}解卦中...`}
                             </span>
                           </span>
                         ) : (
-                          <span style={{ color: analyzing || !selectedMaster || analysisComplete ? '#888888' : '#000000' }}>
+                          <span>
                             {analysisComplete ? `${selectedMaster?.name}解卦完成` : '大师解卦'}
                           </span>
                         )}
                       </motion.button>
-                      
+
                       {!selectedMaster && (
-                        <motion.button 
+                        <motion.button
                           onClick={() => navigate('/settings')}
-                          className="w-full mt-2 bg-gradient-to-r from-[#FF9900] to-[#E68A00] text-black px-4 py-3 rounded-xl font-bold text-sm hover:from-[#E68A00] hover:to-[#CC7700] transition-all duration-300 shadow-lg hover:shadow-[#FF9900]/30"
+                          className="w-full mt-2 bg-gradient-to-r from-brand to-brand-active hover:from-brand-hover hover:to-brand text-paper px-4 py-3 rounded-xl font-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl"
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                         >
@@ -734,21 +733,21 @@ const LiuYaoPage = () => {
 
           {/* 大师分析结果 */}
           {analysis && (
-            <motion.div 
+            <motion.div
               ref={analysisRef}
               className="p-4"
-              style={{ marginTop: '14rem' }}
+              style={{ marginTop: isMobile ? '2rem' : '14rem' }}
               variants={itemVariants}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
 
-              <div 
+              <div
                 style={{
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  marginBottom: '20rem',
+                  marginBottom: isMobile ? '4rem' : '20rem',
                 }}
               >
                 <StreamingMarkdown
