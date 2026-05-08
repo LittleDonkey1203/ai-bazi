@@ -97,12 +97,15 @@ export function buildModelsListUrl(apiKey: string): string {
 
 /**
  * 验证API密钥格式
+ * 接受任意 ≥ 20 字符的 key:Google 官方(AIza...)、OpenAI 兼容代理(sk-...)、
+ * 其他 Gemini 兼容网关(viviai.cc / oneapi 等)。
+ * 与 src/core/settings.ts L189 apiKeyPattern 校验语义对齐。
  * @param apiKey API密钥
  * @returns 是否为有效格式
  */
 export function isValidApiKeyFormat(apiKey: string): boolean {
   const trimmedKey = apiKey.trim();
-  return trimmedKey.length >= 20 && trimmedKey.startsWith('AIza');
+  return trimmedKey.length >= 20;
 }
 
 /**
