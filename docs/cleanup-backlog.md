@@ -1191,6 +1191,44 @@ const getWuxingColor = (wuxing: string) => {
 
 ---
 
+## Cross-batch 配置运维:Gemini BASE_URL/API_KEY env 注入支持(b6caf80)
+
+**时间**:2026-05-09 (Phase 4 batch 3 与 batch 4 之间,配置运维改造)
+
+**原因**:用户需求把 Gemini API endpoint 切到 viviai.cc 等 Gemini 兼容代理(协议格式相同,仅 URL 不同),避免直接编辑业务文件 + 避免 key 进 git 历史。
+
+**处理**:独立 `feat(config)` commit `b6caf80`(--no-verify 用户授权,理由:语义为配置运维非业务逻辑改):
+- `src/masters/config.ts`:`API_CONFIG.GEMINI_API_KEY` + `GEMINI_CONFIG.ENDPOINTS.{BASE_URL,MODELS_LIST}` 改读 `import.meta.env.VITE_GEMINI_*?.trim() || fallback`,fallback 保留 Google 官方 endpoint(向后兼容,env 缺失时行为 100% 等价于改前)
+- `.env.example`(新增,进 git):团队/CI 参考文档,viviai.cc 替换示例已写入注释
+- `.env.local`(用户本地创建,已在 .gitignore):含真实 key/url,不进 git
+
+**业务保护红线影响**:
+- `src/masters/config.ts` 是 logic-frozen-2026-05-04 锁定的业务文件
+- 本 commit 修改了它,但**仅默认值改为 env 读取,业务逻辑零改**
+- `buildGeminiApiUrl()` / `buildGeminiModelsListUrl()` / `service.ts` 8 处调用全部 0 改动
+
+**logic-frozen tag 演进**:
+- 旧 `logic-frozen-2026-05-04`(指向 f1afabe)**保留**,batch 1+2+3 audit 历史指针完整
+- 新 `logic-frozen-2026-05-09`(指向 b6caf80)**新建**,batch 4+ 启动 6 道防线 Gate 4-6 引用
+- PLAYBOOK L144 / L154 已同步更新到新 tag,加注释明确历史 tag 保留语义
+
+**与同类条目关系**:
+- 与 batch 3 末追加 "F005 consult tab '发送追问' 按钮 UX 优化" 同属 Cross-batch 区间事件登记
+- 设立模板:Cross-batch 改造(配置/工具/底座修订)走 `feat:` 独立 commit + 新 logic-frozen tag + cleanup-backlog 登记三联
+
+**遗留风险**:
+- 团队成员需要拿到自己的 .env.local(README 后续应加引导段)
+- CI 环境若不配 .env.local,fallback 会走 Google 官方 endpoint,可能因网络不通 fail — 后续需明确 CI 是否需要 mock 或 stub
+- `import.meta.env.VITE_GEMINI_API_KEY` 会被打包进客户端 bundle,**生产部署时 key 仍可能被反编译提取**,这是 Vite/Webpack 客户端 env 的固有限制(`SettingsModal` UI + localStorage 路径在生产更安全)
+
+**用户后续操作清单**(已 commit + push 之后):
+1. ✅ 在 `zhouwenwang/zhouwenwang-divination-mobile/` 创建 `.env.local`(我不创建,避免再次暴露 key)
+2. ✅ 内容:`VITE_GEMINI_BASE_URL=https://api.viviai.cc/v1beta/models` + `VITE_GEMINI_API_KEY=<新 key>`
+3. ✅ 重启 dev server(`npm run dev`)使 env 生效
+4. ✅ 浏览器实测 AI 流式生成
+
+---
+
 ## F005 consult tab "发送追问" 按钮 UX 优化
 
 **时间**:2026-05-08 (Phase 4 batch 3 末实测)

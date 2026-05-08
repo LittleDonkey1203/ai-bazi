@@ -141,7 +141,9 @@ git tag -l | grep -q logic-frozen || stop
 [ -x .git/hooks/pre-commit ] || stop
 
 # 4. (打开 batch 时)与 logic-frozen tag 的 diff 在业务逻辑层为空
-git diff logic-frozen-2026-05-04 --name-only \
+# 当前活动 tag:logic-frozen-2026-05-09(指向 b6caf80,feat config env injection 之后)
+# 历史 tag:logic-frozen-2026-05-04(指向 f1afabe,batch 1+2+3 baseline,保留供 audit 历史溯源)
+git diff logic-frozen-2026-05-09 --name-only \
   | grep -E "src/core/|src/games/.*/(logic|engine|cantian|caseStorage|chatMemory|yongshen).*\.ts$|src/games/bazi/advancedAnalysis\.ts$|src/games/bazi/blind-three-pass/.*\.ts$|src/games/bazi/yongshen-v2/.*\.ts$|src/games/qinshi/(prompts|types)\.ts$|src/games/(types|index)\.ts$|src/masters/(service|prompts|config|types|index)\.ts$|src/utils/.*\.ts$|src/types/" \
   && stop || ok
 
@@ -151,7 +153,8 @@ cd zhouwenwang/zhouwenwang-divination-mobile && npm run check:deps
 # 并检查腾讯管家(或其他系统加速类软件)是否仍开启 node_modules 清理
 
 # 6. baseline 真值验证(2026-05-05 batch 1 教训新增,防"diff 输出为空但文件根本不在 commit"假阳性)
-git ls-tree -r logic-frozen-2026-05-04 -- \
+# 使用当前活动 tag:logic-frozen-2026-05-09(2026-05-09 重打,feat config env injection 之后)
+git ls-tree -r logic-frozen-2026-05-09 -- \
   zhouwenwang/zhouwenwang-divination-mobile/src/core \
   zhouwenwang/zhouwenwang-divination-mobile/src/games \
   zhouwenwang/zhouwenwang-divination-mobile/src/masters \
