@@ -1229,6 +1229,52 @@ const getWuxingColor = (wuxing: string) => {
 
 ---
 
+## Cross-batch 配置运维:isValidApiKeyFormat 放宽 AIza 前缀(744a6d4)
+
+**时间**:2026-05-10 (Phase 4 batch 3 与 batch 4 之间,配置运维改造)
+
+**根因**:用户实测 viviai.cc 时报 "未配置有效的 Gemini API 密钥",但服务侧 endpoint + key + model 全部 curl 200。诊断发现 `src/masters/config.ts` L103-106 `isValidApiKeyFormat()` 硬编码要求 key 以 `AIza` 开头(Google 官方前缀),viviai.cc 等 Gemini 兼容代理使用 `sk-` 前缀(OpenAI 风格)→ 客户端校验拦截 → 业务代码 hasValidApiKey() 抛错。
+
+**工程内一致性 bug**:
+- `src/core/settings.ts` L189 `apiKeyPattern: /^[A-Za-z0-9_-]+$/` — 宽松(SettingsModal UI 入口校验)
+- `src/masters/config.ts` L105 `isValidApiKeyFormat` — 严格(env / store / fallback 共用)
+两个 key 校验函数不一致,语义错位。
+
+**处理**:独立 `fix(config)` commit `744a6d4`(--no-verify 用户授权):
+- 删除 `&& trimmedKey.startsWith('AIza')` 硬编码前缀要求
+- 仅保留 `length >= 20` 检查
+- 与 `core/settings.ts` apiKeyPattern 校验语义对齐
+- AIza 前缀 key 仍然通过(向后兼容 Google 官方)
+
+**业务保护红线影响**:
+- `src/masters/config.ts` 是业务保护红线文件(连续第 2 次改,同 b6caf80 env injection)
+- 本 commit 修改了它,但**仅放宽校验,业务逻辑零改**
+- `getActiveApiKey()` / `hasValidApiKey()` / `buildGeminiApiUrl()` / `service.ts` 调用全部 0 改
+
+**logic-frozen tag 演进**:
+- `logic-frozen-2026-05-04`(f1afabe)保留 — batch 1+2+3 audit 历史指针
+- `logic-frozen-2026-05-09`(b6caf80)保留 — feat env injection 之后
+- `logic-frozen-2026-05-10`(744a6d4)**新建** — fix isValidApiKeyFormat 之后,batch 4+ 启动 6 道防线 Gate 4-6 引用
+- PLAYBOOK L144 / L154 同步更新
+
+**Cross-batch 配置运维改造模式**(已第 2 次应用,可固化为模板):
+1. 探查根因 + 确认改业务文件
+2. 用户授权 `--no-verify` 单独 commit
+3. 独立 `feat:`/`fix:` commit message(非 ui(batch-N))
+4. 新建 logic-frozen tag 指向新 commit
+5. PLAYBOOK Gate 4/6 同步更新 + cleanup-backlog 登记
+
+**遗留风险**:
+- 校验放宽后,任意 ≥20 字符 key 都通过格式检查
+- 真实 key 是否有效仍由 viviai.cc 服务端响应决定(业务代码已有 401/403 错误处理)
+- 不影响 SettingsModal UI 校验(已用 apiKeyPattern,本来就宽松)
+
+**用户后续操作**:
+- ✅ 浏览器硬刷新(Vite HMR 应自动重 build,但保险起见硬刷新)
+- ✅ 重新测起盘 + AI 流式
+
+---
+
 ## F005 consult tab "发送追问" 按钮 UX 优化
 
 **时间**:2026-05-08 (Phase 4 batch 3 末实测)
