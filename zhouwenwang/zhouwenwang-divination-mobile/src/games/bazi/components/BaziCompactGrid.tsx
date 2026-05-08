@@ -28,7 +28,24 @@ export interface BaziCompactGridColumn {
 
 export interface BaziCompactGridProps {
   columns: BaziCompactGridColumn[];
+  hideRows?: string[];
+  dataMinWidth?: number;
+  labelWidth?: number;
+  hideColumnSubtitle?: boolean;
 }
+
+const SHORT_GODS_MAP: Record<string, string> = {
+  '天乙贵人': '天乙',
+  '福星贵人': '福星',
+  '德秀贵人': '德秀',
+  '文昌贵人': '文昌',
+  '太极贵人': '太极',
+  '天德贵人': '天德',
+  '月德贵人': '月德',
+  '天厨贵人': '天厨',
+  '天官贵人': '天官',
+  '国印贵人': '国印',
+};
 
 const Dash: React.FC = () => <span className="text-[#b7a892]">—</span>;
 
@@ -54,7 +71,7 @@ const ROWS: GridRow[] = [
     render: (col) => (
       <span
         data-testid={`compact-stem-${col.key}`}
-        className="text-[22px] leading-7 font-bold"
+        className="text-[22px] leading-7 font-bold font-serif"
         style={{ color: getWuxingColor(col.stemWuxing) }}
       >
         {col.stem || '—'}
@@ -66,7 +83,7 @@ const ROWS: GridRow[] = [
     render: (col) => (
       <span
         data-testid={`compact-branch-${col.key}`}
-        className="text-[22px] leading-7 font-bold"
+        className="text-[22px] leading-7 font-bold font-serif"
         style={{ color: getWuxingColor(col.branchWuxing) }}
       >
         {col.branch || '—'}
@@ -146,31 +163,50 @@ const ROWS: GridRow[] = [
   },
 ];
 
-export const BaziCompactGrid: React.FC<BaziCompactGridProps> = ({ columns }) => {
+export const BaziCompactGrid: React.FC<BaziCompactGridProps> = ({
+  columns,
+  hideRows = [],
+  dataMinWidth = 56,
+  labelWidth = 38,
+  hideColumnSubtitle = false,
+}) => {
   const dataColCount = columns.length;
-  const dataMin = 56;
-  const labelWidth = 38;
-  const minWidth = labelWidth + dataColCount * dataMin;
+  const minWidth = labelWidth + dataColCount * dataMinWidth;
+  const isCompact = dataMinWidth < 40;
 
   const gridStyle: React.CSSProperties = {
-    gridTemplateColumns: `${labelWidth}px repeat(${dataColCount}, minmax(${dataMin}px, 1fr))`,
+    gridTemplateColumns: `${labelWidth}px repeat(${dataColCount}, minmax(${dataMinWidth}px, 1fr))`,
     minWidth: `${minWidth}px`,
   };
 
+  const visibleRows = ROWS.filter((row) => !hideRows.includes(row.label));
+
+  const useShortGods = dataColCount >= 7;
+  const processedColumns = useShortGods
+    ? columns.map((col) => ({
+        ...col,
+        gods: col.gods.map((name) => SHORT_GODS_MAP[name] ?? name),
+      }))
+    : columns;
+
   return (
     <div data-testid="bazi-compact-grid" className="overflow-x-auto -mx-1">
-      <div className="grid items-center bg-[#fffaf2] rounded-[18px] border border-[#ead9bf]" style={gridStyle}>
+      <div className="grid items-center bg-[var(--c-paper-50)] rounded-[18px] border border-[#ead9bf] overflow-hidden" style={gridStyle}>
         {/* 列头行:左空 + N 列标题 */}
-        <div className="sticky left-0 z-10 bg-[#f5ecdf] px-1.5 py-2 text-[10px] font-medium text-[#866c4e] border-b border-[#ead9bf]">
-          日期
+        <div
+          className="sticky left-0 z-10 bg-[#f5ecdf] py-2 text-[10px] font-medium text-[#866c4e] border-b border-[#f0e4cf] text-center"
+          style={{ paddingLeft: 0, paddingRight: 0 }}
+        >
+          <div className="leading-4 font-serif whitespace-nowrap">日期</div>
         </div>
-        {columns.map((col) => (
+        {processedColumns.map((col) => (
           <div
             key={`h-${col.key}`}
-            className="px-1 py-2 text-center text-[12px] font-semibold text-[#5a452f] border-b border-[#ead9bf]"
+            className="py-2 text-center text-[12px] font-semibold text-[#5a452f] border-b border-[#f0e4cf]"
+            style={{ paddingLeft: isCompact ? 0 : 4, paddingRight: isCompact ? 0 : 4 }}
           >
-            <div className="leading-4">{col.title}</div>
-            {col.subtitle && (
+            <div className="leading-4 font-serif">{col.title}</div>
+            {col.subtitle && !hideColumnSubtitle && (
               <div className="mt-0.5 text-[10px] font-normal leading-3 text-[#8f7758] line-clamp-2">
                 {col.subtitle}
               </div>
@@ -179,21 +215,22 @@ export const BaziCompactGrid: React.FC<BaziCompactGridProps> = ({ columns }) => 
         ))}
 
         {/* 数据行 */}
-        {ROWS.map((row, rowIndex) => (
+        {visibleRows.map((row, rowIndex) => (
           <React.Fragment key={`row-${row.label}`}>
             <div
-              className={`sticky left-0 z-10 bg-[#f5ecdf] px-1.5 py-2 text-[11px] font-medium text-[#866c4e] flex items-center justify-center ${
-                rowIndex < ROWS.length - 1 ? 'border-b border-[#f0e4cf]' : ''
+              className={`sticky left-0 z-10 bg-[#f5ecdf] px-1.5 py-2 text-[11px] font-medium text-[#866c4e] font-serif flex items-center justify-center h-full ${
+                rowIndex < visibleRows.length - 1 ? 'border-b border-[#f0e4cf]' : ''
               }`}
             >
               {row.label}
             </div>
-            {columns.map((col) => (
+            {processedColumns.map((col) => (
               <div
                 key={`${row.label}-${col.key}`}
-                className={`px-1 py-2 text-center flex items-center justify-center ${
-                  rowIndex < ROWS.length - 1 ? 'border-b border-[#f0e4cf]' : ''
+                className={`py-2 text-center flex items-center justify-center h-full ${
+                  rowIndex < visibleRows.length - 1 ? 'border-b border-[#f0e4cf]' : ''
                 }`}
+                style={{ paddingLeft: isCompact ? 0 : 4, paddingRight: isCompact ? 0 : 4 }}
               >
                 {row.render(col)}
               </div>

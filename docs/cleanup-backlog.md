@@ -691,6 +691,532 @@ const getWuxingColor = (wuxing: string) => {
 
 **后续**:batch 5 启动时本条目作为"业务函数体内 hex 兜底色"专项 scope 评估;同期处理"阴爻灰色 token 缺失";若评估为 (b) 路径,改造结束后单独立项与 design-system §10 lint debt 一并清理。
 
+## F005 renderMatrix + F006 BaziCompactGrid 米白纸面色板缺失语义 token(2026-05-05 batch 3 F006 探查发现)
+
+**时间**:2026-05-05(Phase 4 batch 3,F006 BaziCompactGrid 批前探查)
+
+**分类**:设计系统层面待迭代(参天 dashboard "米白纸面"子视觉系统未覆盖)
+
+**现象**:F006 BaziCompactGrid + F005 renderMatrix / renderSelectorRow / 'basic' tab / 'fortune' tab 使用「米白纸面 + 暗棕文字」色板,与 design-system §1.2 主语义层(围绕"墨黑底 + 米白字 + 绛红/黄铜点缀")**平行存在**,但 §1.2 / §1.4 未定义对应的米白纸面 / 暗棕文字语义 token。
+
+具体涉及的 hex(F006 探查全部 11 种,F005 内部 renderMatrix 等扩展更多):
+
+| 类别 | hex | F006 出现位置 |
+|------|-----|---------------|
+| 米白底色(已覆盖) | `#fffaf2` | L162 grid bg(本批已迁 `var(--c-paper-50)` 第 1 层引用) |
+| 米白纸面变体(未覆盖) | `#ead9bf` | L162/164/170 边框 |
+| | `#f5ecdf` | L164/185 sticky 标签列底 |
+| | `#f0e4cf` | L186/195 行分隔线 |
+| 暗棕文字系(未覆盖) | `#5f4a33` | 主文字(6 处:L47/86/97/101/105/109) |
+| | `#866c4e` | L164/185 标签文字 |
+| | `#5a452f` | L170 列头标题 |
+| | `#8b775e` | L88 藏干十神二级 |
+| | `#7a6243` | L120/138 神煞+关系文字 |
+| | `#8f7758` | L174 subtitle 二级描述 |
+| | `#b7a892` | L33 Dash 占位 |
+
+**当前状态**:本批仅 `#fffaf2` → `var(--c-paper-50)` 间接引用规范化(已覆盖部分),其余 11 处暗棕系 + 米白纸面变体 hex 全部保留 inline。F005 内 renderMatrix / renderSelectorRow 等同色板 hex 同样不动。
+
+**处置原则**:与 audit-batch-2 P2-2 "F004 getWuxingColor 默认色 hex 兜底" / "阴爻灰色 token 缺失" 同类 — 业务函数体内 hex / 视觉契约 hex / **设计系统未覆盖变体** → 不强行 token 化。本批严守"一次只动一批" + 不在 batch 3 引入设计系统层级新增 token 的紧耦合改动。
+
+**为何不在 batch 3 修复**:
+1. 设计系统 §1.2 语义层新增需要用户拍板(参考 batch 0 step (d) 中性灰阶 token 引入流程),不是 batch 3 scope
+2. 批量 token 化暗棕系会与 F005 内 renderMatrix / renderSelectorRow 等"参天 dashboard 米白纸面" 多文件耦合,远超 batch 3 的"F005 BaZiPage + F006 BaziCompactGrid 视觉重构 + token 迁移"边界
+3. §1.1 灰阶漂移容忍度规则(≤5)**不适用于纸面色板**(漂移检测专为暗黑底中性灰设计,纸面色系应有独立 token 体系)
+
+**建议方案**(未来设计系统二阶段迭代时):
+- design-system §1.1 第 1 层增加米白纸面色板原始色:
+  - `--c-paper-card-bg: #fffaf2`(已等价 `--c-paper-50`,可复用)
+  - `--c-paper-label-bg: #f5ecdf`(sticky 标签列底)
+  - `--c-paper-divider: #ead9bf`(米白边框主力)
+  - `--c-paper-divider-soft: #f0e4cf`(行分隔线)
+- design-system §1.1 第 1 层增加暗棕文字阶梯:
+  - `--c-bark-100: #b7a892`(占位 / 已禁用)
+  - `--c-bark-300: #8f7758`(三级描述)
+  - `--c-bark-400: #8b775e`(二级)
+  - `--c-bark-500: #866c4e`(标签 / 弱化)
+  - `--c-bark-600: #7a6243`(神煞 / 关系)
+  - `--c-bark-700: #5f4a33`(主文字)
+  - `--c-bark-800: #5a452f`(列头 / 标题)
+- design-system §1.2 语义层增加(纸面变体语义):
+  - `--color-paper-card-bg`、`--color-paper-card-label-bg`、`--color-paper-card-border` 等
+  - `--color-paper-card-text-primary`、`--color-paper-card-text-secondary` 等
+- design-system §1.4 增加对应 Tailwind utility(`paper-card` / `paper-label` / `bark-1`...`bark-8` 等)
+
+**处理批次建议**:
+- (a) **batch 5 设计系统独立迭代**期间一并处理(届时 design-system §1.4.1 等其他 token 整理也会做,统一一次性 commit)
+- (b) **延后到改造结束后的 design-system 二阶段优化**(若 batch 5 时间紧张)— F005 / F006 涉及 ~30 处使用,投入产出比中等
+
+**与其他 P2 的关系**:
+- 与 audit-batch-2 P2-2 "F004 getWuxingColor 默认色 hex 兜底" + "阴爻灰色 token 缺失" 是**同类问题**:都是设计系统语义 token 缺失导致的业务文件内 hex 直写
+- 与 batch 0 step (d) 引入的中性灰阶 token 逻辑同源,可视为"灰阶语义 token 第三批扩展(纸面变体)"
+- 优先级在三者中**最高**:涉及 F005 八字仪表盘是本工程最复杂页,使用频次最高(F006 11 处 hex + F005 内 renderMatrix 等扩展更多)
+
+**影响范围**:无运行时影响。本批 F006 实际改动 6 处 className(2 处加 font-serif 给天干/地支大字 + 3 处加 font-serif 给日期/列标题/行标签 + 1 处 `#fffaf2` 走 var())。其余 11 种暗棕系 / 米白纸面变体 hex 全部保留 inline,batch 3 commit 显式声明保留。
+
+**遗留风险**:
+- 如果未来引入主题切换 / 高对比模式 / 浅色主题反转,纸面色板硬编码无 token 难以批量调整(同 batch 2 阴爻灰风险)
+- design-system §10 改造单文件 checklist "颜色:其他硬编码 hex → `var(--color-*)` 或 Tailwind utility" 严格执行的话,本条目应在 batch 5 末批清理(灰阶/纸面色板迁移合规期内)
+- F005 renderMatrix / renderSelectorRow 等 batch 3 内同色板 hex 同样保留,batch 3 末 audit 检查 6(硬编码残留)需要把"米白纸面色板"列为允许保留类别(对照视觉契约 + 业务函数体兜底色之外的第三类豁免)
+
+**后续**:batch 3 末 audit 时本条目作为"米白纸面色板未覆盖"专项 scope 声明;batch 5 启动时与"阴爻灰色 token 缺失" + "F004 getWuxingColor 兜底色"同期评估;若评估为 (b) 路径,改造结束后单独立项与 design-system §10 lint debt 一并清理。
+
+## F005 / F006 大运流年/流月/流日布局参考问真八字风格视觉重构(天干地支竖排 + 十神角标 + 当前列高亮)(2026-05-05 batch 3 F006 实测提出)
+
+**时间**:2026-05-05(Phase 4 batch 3,F006 BaziCompactGrid 浏览器实测期间)
+
+**分类**:UI 增强候选(独立视觉结构重构,超 batch 3 scope)
+
+**意图限定(2026-05-05 审核者修订)**:本条目仅追踪**视觉结构重构**(竖排排版 + 十神角标 + 当前列高亮),不再涵盖"避免左右拖动 / 横滚消除"相关诉求 — 后者属于排版纪律(列宽自适应),已**纳入 batch 3 问题 4 修复 scope**(F006 列宽改为动态计算 + viewport-aware 自适应),与本条目独立。
+
+**现象**:F005 BaZiPage 大运 / 流年 / 流月 / 流日 tab 当前的视觉结构是横排矩阵(每柱一列、字段一行),用户提供的"问真八字"参考截图展示了一种**结构性不同**的视觉范式:
+- 天干地支**竖向堆叠**(单列单字,而非横排矩阵 rows × cols 形式)
+- **十神标注**用红字置于天干右上角(角标式标注,与天干文字"贴身"显示)
+- **起运年龄**显式标在每柱顶部(用户对照大运/当前年龄一目了然)
+- 干支用**配色背景块**(不只是文字色,加色块视觉强化五行 — 与现有 `getWuxingColor` inline color 形式不同)
+- **当前列高亮**(突出"当前所在大运 / 流年",参考视觉为 border + glow,本工程可考虑印章 / 浮雕等中式装饰)
+
+**当前状态**:本批 batch 3 已做 token 迁移 + font-serif + A 排版修复 + B hideRows + 问题 4 动态列宽消除横滚,**未触动视觉结构**。F006 BaziCompactGrid + F005 fortune tab 的 renderMatrix / renderSelectorRow 仍是横排矩阵展示。
+
+**处置原则**:
+1. 超 batch 3 scope — batch 3 边界是"纯 UI 改造 className/style 边界 + 不改 props 接口签名 + 不改业务逻辑 + 排版纪律修复(问题 4 含)"
+2. 属于"视觉结构重构 + 信息架构改造",**与排版纪律(列宽 / 横滚)分离**
+3. **本批已通过动态列宽消除横滚(问题 4 batch 3 修),独立 UI 增强批次仅做视觉结构重构** — 进入此独立批次时,横滚问题已不在范围,只聚焦"竖排 + 角标 + 高亮"等视觉范式切换
+4. 需要独立 design review:5-10 个新决策点
+   - 竖排排版的 grid template(rows 而非 cols)
+   - 十神角标位置 / 字号 / 红色具体色值(`#c41e3a` 主品牌还是 `#fbbf24` 黄金?)
+   - 起运年龄是否每柱独立标注 / 还是仅大运柱标注
+   - 配色背景块的色值与 design-system 五行 token(`--color-element-*`)的关系
+   - 当前列高亮的视觉权重(border / glow / 印章 / 等)
+   - 大运 / 流年 / 流月 / 流日 是否分别独立矩阵 vs 共用(当前共用 `renderMatrix(fortuneMatrixColumns, ...)`)
+5. 涉及 BaziCompactGrid 数据接口扩展(传入 yearLabel / decadeLabel / isActive 等新字段),需要重新对齐与 logic.ts 业务函数返回值的耦合(可能需要在 logic 层增加纯计算 helper,跨业务边界)
+
+**为何不在 batch 3 修复**:
+1. **scope 边界**:batch 3 = F005 BaZiPage + F006 BaziCompactGrid 视觉重构 + token 迁移 + 问题 4 排版纪律。**视觉结构重构**(竖排范式切换)不在改造范围内,严守"一次只动一批 + 不动业务逻辑"的批次纪律
+2. **视觉契约影响**:结构重构会影响 batch 0 视觉回归 baseline 5 张相关截图(mobile/bazi),必须在 baseline 重截前规划好节奏
+3. **业务保护红线**:十神角标 / 起运年龄 / 当前列识别可能需要 logic.ts 新增纯计算 helper(如 `findActiveDecade(chartData, currentYear)`),即便是 helper 层也是业务逻辑边界,需独立评估
+4. **下游耦合**:渲染层结构重构后,F005 内 renderMatrix(为 desktop `<table>`)与 F006(为 mobile)的视觉一致性会受影响,需要 desktop 也做对应重构,增加跨视口节奏
+
+**建议处理批次**:
+- (a) **UI 6 batch 闭环后单独立项**:作为 batch 5 完成 + 改造结束后的"问真八字风格重构"独立批次
+- (b) **batch 4/5 末追加项**:若 batch 4(周公/手相/人生K线)+ batch 5(通用 UI 组件)进度提前,可作为追加 scope,但仍是独立 commit `ui(post-batch-5): bazi fortune dashboard wenzhen-style refactor`
+- (c) **设计 review 先行**:不直接进 commit 节奏,先做 1-2 张静态 mockup 与"问真八字"截图对照,审核者 ack mockup 后再立项
+
+**参考资料**:用户提供的"问真八字"截图(交接文档中保存,batch 3 commit 时一并提交到 `docs/screenshots/wenzhen-bazi-reference-2026-05-05.png` 或类似路径,本批不强制落地路径,记此处)
+
+**与 batch 2 cleanup-backlog "F004 快速开始 chip 横滑跑马灯增强候选"的关系**:
+- 都是"功能增强 / UI 重构候选,非缺陷,超改造期 scope" 类条目
+- 两条都建议在 microinteraction / motion / 信息架构独立迭代时处理
+- 优先级评估:本条目影响**核心命盘交互**(大运流年是八字咨询的核心信息),优先级**高于** F004 chip 横滑增强
+
+**影响范围**:无运行时影响。本批 F006 实际改动仅 6 处 className(font-serif + paper-50)+ 后续补丁 A 排版修复 + 补丁 B hideRows prop。布局重构本条目登记后**不动**。
+
+**遗留风险**:
+- 大运流年信息密度问题影响 mobile 用户使用体验,长期不修可能导致用户在 mobile 直接放弃使用此 tab,转回 desktop
+- 改造结束后如不立项,可能进入"改造期间识别但永久搁置"的工程债漂移(参考 batch 0 step E 的 ESLint 100 errors / 5 warnings 状态)
+
+**后续**:
+- batch 3 commit 时 commit message 引用本条目,标记"已识别,超本批 scope 登记"
+- 改造结束后做"未完成增强项汇总"列表时,本条目纳入并按 (a)(b)(c) 路径之一推进
+- "问真八字"截图建议在 batch 3 末整理到 `docs/screenshots/` 目录,作为未来 design review 的输入
+
+## F005 大运流年 tab desktop table 行为与 mobile 不一致(刑冲合会 mobile 隐藏 desktop 仍显示)(2026-05-05 batch 3 F006 探查发现)
+
+**时间**:2026-05-05(Phase 4 batch 3,F006 BaziCompactGrid 探查 + 补丁 B 修法清单评估)
+
+**分类**:轻量行为分歧记录(无强制处理时机)
+
+**现象**:本批补丁 B(F006 hideRows + F005 大运流年 tab 透传 `hideRows: ['刑冲合会']`)只让 **mobile F006 BaziCompactGrid** 在大运流年 tab 隐藏「刑冲合会」行;F005 自有 desktop `<table>`(L1620-1755 `hidden md:block`)中的「刑冲合会」L1739-1754 **仍渲染**。
+
+**当前状态**:mobile / desktop 行为分歧:
+- **mobile** 大运流年 tab(< md):F006 渲染 9 行(主星/天干/地支/藏干/星运/自坐/空亡/纳音/神煞),**不渲染刑冲合会**
+- **desktop** 大运流年 tab(>= md):F005 `<table>` 渲染 10 行(同上 + **刑冲合会**)
+- 同 tab 在不同视口下信息量不一致
+
+**为何不在 batch 3 同步 desktop**:
+1. **本批 scope 是 mobile UI 改造**:F005-3 / G2 / G3 等 known-mobile-issues 都是 mobile 视口主导的改造方向,desktop 视觉契约延续 batch 0 baseline
+2. **desktop 视口空间充足**:`<table>` 在 desktop 视口可完整展示 10 行,信息密度问题主要在 mobile 视口
+3. **改 desktop 会扩 batch 3 scope**:F005 desktop `<table>` 在 L1620-1755 是独立 90+ 行渲染逻辑,改它需要在 `<table>` 的 tbody 内每个行渲染处加 `{!options?.hideRows?.includes(...) && (...)}` 条件,涉及 8+ 处行块条件判断,远超"批末整套验证"窗口
+
+**处置原则**:
+- 本批 mobile/desktop 行为分歧是**有意为之**的"分屏裁剪"决策(同 batch 0 G1/G2/G3 mobile 优先,降级展示原则)
+- 非缺陷;轻量分歧记录,无强制处理时机
+- 与 cleanup-backlog 已有"F005 / F006 大运流年/流月/流日布局参考问真八字风格重构"条目**关联**(同区域,同 tab,信息架构层面)
+
+**建议处理批次**:
+- (a) **未来 desktop 信息密度迭代时一并处理**:若 desktop 视口需要做信息密度优化(如 desktop 用户反馈 10 行太挤、刑冲合会在 desktop 也希望可隐藏),独立立项加 desktop `<table>` 的 hideRows 条件渲染
+- (b) **随"问真八字风格重构"独立 UI 增强批次一并设计**:布局重构时若决定 desktop 跟进 mobile 行为,在那个批次统一改 mobile + desktop 两侧
+- (c) **接受现状不修**:用户改造结束后实际使用反馈再决定;若无人提出 desktop 也想隐藏,接受现状作为"分屏裁剪"设计的一部分
+
+**为何选 (c) 优先**:
+- batch 1+2 改造经验显示,mobile/desktop 行为分歧在用户实测中**很少被察觉**(用户通常只用一种视口)
+- 改 desktop 涉及 `<table>` 8+ 处行块条件,投入产出比低
+- "问真八字风格重构"独立批次会重做整个大运流年 tab 视觉 + 信息架构,届时 desktop / mobile 行为会重新对齐,此分歧自然消除
+
+**与 cleanup-backlog "BottomNav 视觉契约 #FF9900 mobile/desktop 一致" 等其他类条目的对照**:
+- 本条目是**有意分歧**(mobile 隐藏刑冲合会 = 信息密度优化决策)
+- BottomNav 视觉契约是**全局一致**(`#FF9900` 在 mobile + desktop 同一激活态色)
+- 性质不同:本条目无视觉/语义不一致风险,只是 mobile 有更少信息行
+
+**影响范围**:本批 commit 显式声明保留。F005 desktop `<table>` 的「刑冲合会」L1739-1754 **0 改动**;mobile F006 通过 hideRows prop 隐藏。
+
+**遗留风险**:
+- 用户在 mobile / desktop 视口切换时可能短暂困惑("desktop 看到的刑冲合会,mobile 怎么没了")
+- 长期可能成为 UX 分歧投诉点;但当前用户群体使用偏好统计显示 mobile 主导,分歧概率低
+
+**后续**:
+- 改造结束后做"未完成项汇总"列表时,本条目作为(a)(b)(c) 路径之一,优先级**低于** "问真八字风格重构"
+- 若未来用户实测反馈"希望 desktop 也隐藏",再立项作 desktop `<table>` 的 hideRows 透传(改动量约 +10-15 行)
+
+## Tailwind 自定义 utility(brand 系)缺失 alpha modifier 支持(2026-05-06 batch 3 Step 2a M37/M39/M40 修法发现)
+
+**时间**:2026-05-06(Phase 4 batch 3,Step 2a F005 hero + form 输入区改造)
+
+**分类**:设计系统层面待迭代(token 格式与 Tailwind alpha modifier 兼容性)
+
+**现象**:Tailwind 的 alpha modifier(如 `bg-brand/30` / `focus:ring-brand/30` / `hover:shadow-brand/30`)要求底层 CSS 变量是 **RGB 三元组格式**(如 `--color-brand-rgb: 196 30 58`),才能动态合成 alpha:`rgb(var(--color-brand-rgb) / 0.3)`。当前 design-system §1.1 第 1 层 `--color-brand: #c41e3a` 是 hex 格式,不兼容。
+
+涉及位置:
+- **[M37] 主 CTA hover shadow**:原 `hover:shadow-[#FF9900]/30` 试图改为 `hover:shadow-brand/30` 失败 → 简化为 `hover:shadow-xl`(去 30% 发光)
+- **[M39] 姓名 input focus ring**:原 `focus:ring-[#FF9900]/30` 试图改为 `focus:ring-brand/30` 失败 → 保留 `focus:ring-[#FF9900]/30` hex 直写
+- **[M40] 问事 input focus ring**:同 [M39]
+- batch 0 step (b) 已识别此问题(见 cleanup-backlog "半透明叠加 (`bg-X/10` 等) 的迁移阻塞" 段),当时仅识别 `bg-brand-subtle` (12%) 一个预定义 layer-2 token,30% 缺失
+
+**当前状态**(本批 Step 2a 显式声明保留):
+- [M37] hover shadow:简化为 `hover:shadow-xl`(失去橙色发光,视觉变冷淡)。审核者已 ack 实测后用户判断是否退选橙色发光 / 绛红 alpha hex 直写 / 接受 shadow-xl
+- [M39][M40] focus ring:保留 `focus:ring-[#FF9900]/30` 旧橙 hex(brand-aux 系视觉契约,与 BottomNav 激活态橙色契约同源)
+
+**为何不在 batch 3 修复**:
+1. 修法需要 design-system §1.1 第 1 层新增 `--color-brand-rgb` / `--color-brand-aux-rgb` 等 RGB 三元变量 + §1.4 Tailwind config 改用 `rgb(var(--color-brand-rgb) / <alpha>)` 表达式,**改动 token 第 1 层 + Tailwind config**,远超 batch 3 scope
+2. 涉及全工程所有 brand 系 alpha modifier 用法(本批仅 3 处),需统一规划
+3. design-system token 第 1 层格式调整需要用户拍板(参考 batch 0 step (d) 中性灰阶 token 引入流程)
+
+**建议方案**(未来 design-system 二阶段迭代):
+- design-system §1.1 第 1 层新增 RGB 三元变量(并行 hex 变量):
+  ```css
+  --color-brand-rgb: 196 30 58;       /* #c41e3a */
+  --color-brand-active-rgb: 122 31 38; /* #7a1f26 */
+  --color-brand-hover-rgb: 214 54 79;  /* #d6364f */
+  --color-brand-aux-rgb: 255 153 0;    /* #ff9900 */
+  ```
+- design-system §1.4 Tailwind config 改用 modern alpha 格式:
+  ```js
+  'brand': 'rgb(var(--color-brand-rgb) / <alpha-value>)',
+  'brand-active': 'rgb(var(--color-brand-active-rgb) / <alpha-value>)',
+  ...
+  ```
+- 实现后:`bg-brand/30` `focus:ring-brand/30` `hover:shadow-brand/30` 等全部生效
+
+**处理批次建议**:
+- (a) **batch 5 通用 UI 组件期同步处理**(届时 SettingsModal / Markdown 等多处需要 alpha utility,统一迁移)
+- (b) **改造结束后 design-system 二阶段独立迭代**(若 batch 4/5 时间紧张)
+- (c) 本条目优先级**高于** "米白纸面色板缺失" / "暗棕色板缺失"(因为影响每个 batch hover/focus/shadow 等视觉契约)
+
+**与 batch 0 cleanup-backlog "半透明叠加 (`bg-X/10` 等) 的迁移阻塞" 关系**:同根问题,本条目为其延伸 + 具体使用场景实例。建议合并为同一专项处理。
+
+**影响范围**:本批 [M37] 主 CTA hover shadow 视觉降级(失去橙色发光)— 用户已 ack 实测后再决定是否退选橙色发光保留契约。其他 batch 改造期同模式问题随时可能复发,需统一治理。
+
+**遗留风险**:
+- 本批 [M37] hover shadow 视觉副作用 — 主 CTA hover 失去橙色发光,只剩黑阴影加深。如实测违和需退选保留 `hover:shadow-[#FF9900]/30` 或 `hover:shadow-[#c41e3a]/30` hex 直写
+- 后续 batch 4/5 任何 hover/focus/shadow brand alpha 都会撞此问题
+
+**后续**:
+- batch 5 启动时本条目作为通用 UI 组件改造的"预条件"评估;若评估推 batch 5 内做,会扩 batch 5 scope
+- 改造结束后做"未完成项汇总"时,本条目优先级 P0(影响视觉契约统一性)
+
+## button disabled bg 灰阶语义 token 缺失(2026-05-06 batch 3 Step 2a M37 修法发现)
+
+**时间**:2026-05-06(Phase 4 batch 3,Step 2a F005 主 CTA M37 修法)
+
+**分类**:设计系统语义 token 缺失
+
+**现象**:F005 主 CTA「开始八字推命」disabled 态当前 bg = `#444444` 灰。该 hex 与 `--c-gray-500` (#444444) 精确匹配,但 design-system §1.4 对应 Tailwind utility = `bg-divider-strong`,语义偏(divider-strong 是"强分隔线",不是"按钮 disabled 背景"语义)。
+
+涉及位置:
+- **[M37] 主 CTA disabled bg**:原 `bg-[#444444]`,本批保留 hex 直写(不用 `bg-divider-strong` 误用语义)
+- 全工程其他 button disabled bg(预估 batch 4/5 还有多处)
+
+**当前状态**(本批 Step 2a 显式声明保留):
+- [M37] disabled bg `#444444` 保留 hex 直写
+- [M37] disabled text `#888888` → `text-neutral-mid`(精确合并,语义"中度文字"OK 不偏)
+
+**为何不在 batch 3 修复**:
+1. 新增语义 token 需要 design-system §1.2 / §1.4 改动,远超 batch 3 scope
+2. 涉及全工程所有 button disabled bg 用法,需统一规划(本批仅 1 处主 CTA,但 batch 4/5 有更多按钮)
+3. design-system token 新增需要用户拍板(参考 batch 0 step (d) 中性灰阶 token 引入流程)
+
+**建议方案**(未来 design-system 二阶段迭代):
+- design-system §1.2 语义层新增:
+  ```css
+  --color-button-disabled-bg: var(--c-gray-500);   /* #444444 */
+  --color-button-disabled-text: var(--c-gray-400); /* #888888 */
+  ```
+- design-system §1.4 Tailwind config 新增 utility:
+  ```js
+  'button-disabled': 'var(--color-button-disabled-bg)',
+  'button-disabled-text': 'var(--color-button-disabled-text)',
+  ```
+- 或改名 `divider-strong` → 派生新名 `surface-disabled`(同底层 hex,新语义出口)
+
+**处理批次建议**:
+- (a) **batch 5 通用 UI 组件期同步处理**(届时统一 button disabled 语义)
+- (b) **改造结束后 design-system 二阶段独立迭代**
+
+**与 audit-batch-2 P2-2 "F004 getWuxingColor 默认色 hex 兜底" / "阴爻灰色 token 缺失" / "米白纸面色板缺失" 等条目关系**:同类设计系统语义 token 缺失,batch 5 / 改造结束后统一治理。
+
+**影响范围**:本批 [M37] 显式 hex 保留,无视觉/运行时影响。
+
+**遗留风险**:后续 batch 4/5 任何 button disabled bg 都会撞此问题,需要继续 hex 直写或退路。
+
+**后续**:batch 5 启动时本条目与"Tailwind alpha modifier 缺失"同期评估;若评估推 batch 5 内做,会扩 batch 5 scope。
+
+## design-system 缺失 light gray border token
+
+**时间**:2026-05-06 (Phase 4 batch 3 Step 2b M64 修法)
+
+**原因**:design-system 中 `--c-gray-300` (`#CCCCCC`) 等浅灰色变量只生成 `text-neutral-2` / `bg-*` utility,**未覆盖 `border-*` 系**。`border-divider` 系(`#333` / `#444`)是暗色调 dark theme 分隔线,与 light gray border 不匹配。F005 BaZiPage `border-[#CCCCCC]`(视频备用动画内环) token 化时无对应专用 border token。
+
+**处理**:M64 借用 `text-neutral-2`(指向 `--color-text-neutral-secondary` = `--c-gray-300` = `#CCCCCC`)作为 `border-neutral-2` 使用 —— Tailwind utility 系统自然支持文字变量在 border 位置使用,#CCCCCC **0 漂移精确命中**;但语义层是 text token 跨界用作 border,边界债登记此条。
+
+**影响范围**:
+- F005 BaZiPage L2814 1 处使用 `border-neutral-2`
+- 后续 batch 4/5 任何 light gray border 替换都会撞此问题,需继续借用 `border-neutral-2` 或 hex 直写
+
+**遗留风险**:
+- 跨 token 借用使 token 语义边界模糊,设计系统二阶段独立迭代时若改 `--color-text-neutral-secondary` 数值,会同时影响所有借用作 border 的处使用,需全局核查
+- Tailwind CDN 模式下 `var(...)` 在 colors 字段映射后任意 utility 均可使用,无机制阻止跨语义借用
+
+**建议**:design-system 二阶段补全 `border-neutral-*` / `border-paper-*` 等专用 border token,明确 light gray border 在工程内的语义槽位。
+
+**处理批次建议**:
+- 改造结束后 **design-system 二阶段独立迭代**
+
+**与同类条目关系**:与 audit-batch-2 P2 "F004 getWuxingColor 默认色 hex 兜底" / "阴爻灰色 token 缺失" / "米白纸面色板缺失" / "disabled bg 灰阶语义" 同类设计系统语义 token 缺失,统一治理。
+
+---
+
+## F005 dashboard chart 容器中度灰边缘漂移 token 缺失
+
+**时间**:2026-05-06 (Phase 4 batch 3 Step 2c 探查)
+
+**原因**:F005 BaZiPage dashboard chart 容器(L2818-2956)有 4 处中度灰边框 hex 漂移恰超 ≤5 严格阈值,无法合并到现有 token,本批保留 hex 直写:
+- L2841 `border-[#242424]` (hero 边框)
+- L2910 `border-[#242424]` (Navigation card 边框)
+- L2933 `border-[#242424]` (Action card 边框)
+- L2949 `border-[#303030]` ("选择大师" 按钮边框)
+
+**漂移**:
+- `#242424` vs `--color-surface-active` (`#2a2a2a`) = **6**(恰超 ≤5 严格阈值)
+- `#303030` vs `--color-surface-active` (`#2a2a2a`) = 6;vs `--color-divider-strong` (`#444444`) = 16
+- 两个 hex 都落在"surface-active 与 surface-deep 之间"的中度灰边缘地带,token 系统未覆盖
+
+**当前状态**:本批保留 4 处 hex 直写,M68-M77 token 替换已避开。
+
+**处理建议**:design-system 二阶段补 `--c-gray-650` 或 `--color-surface-elevated` (建议数值 `#242424` ~ `#2d2d2d`) 等中度灰边缘 token,明确"surface-active 与 surface-deep 之间"的语义槽位。
+
+**处理批次建议**:design-system 二阶段独立迭代
+
+**与同类条目关系**:与 "design-system 缺失 light gray border token"(2026-05-06 同期登记)同类设计系统 token 边缘空缺,统一治理。
+
+### 【追加 - Step 2d 范围 4 处中度灰边缘 hex】
+
+**时间**:2026-05-08 (Phase 4 batch 3 Step 2d 6 tab + AI 气泡 token 化)
+
+**追加范围**:M80/M84/M85 token 替换中,4 处 `border-[#242424]` 同样 Δ=6 vs surface-active,保留 hex 直写:
+- L1917 consult tab chat 滚动容器 `border-[#242424]`
+- L1972 consult tab composer 容器 `border-[#242424]`
+- L2308 annual tab structure card `border-[#242424]`
+- L2334 personality tab trait card `border-[#242424]`
+
+**合并影响范围**:这 4 处与已登记的 4 处(L2841/L2910/L2933 + L2949 #303030)合并,**Step 2d 后全 file 共 8 处中度灰边缘 hex 直写**(其中 7 处 `#242424` + 1 处 `#303030`)。
+
+**处置原则**:沿用已登记原则,保留 hex 直写。design-system 二阶段补 mid-gray-edge token 时一并替换。
+
+**根因(再次确认)**:dashboard 范围 + dashboard 范围外 4 个 dark tab(consult/annual/personality/deep)均使用 `#242424` 作"中度灰边缘"。这是设计稿统一选色,token 系统未覆盖此中间档,8 处都是同一 token 缺失的具象化。
+
+---
+
+## F005 dashboard Cantian Style 暖色调系统 token 缺失
+
+**时间**:2026-05-06 (Phase 4 batch 3 Step 2c 探查)
+
+**原因**:F005 BaZiPage dashboard chart 容器(L2818-2956)采用 "Cantian Style Dashboard" 视觉主题,使用 12 处暖色调 hex 形成统一的米白 / 黄铜 / 茶褐视觉语言。这些**不是普通灰阶**,是 intentional 主题色,与 design-system 当前以"中性灰阶 + 品牌绛红 + 五行色"为主轴的 token 体系**正交**。本批保留全部 12 处 hex,**不破坏主题完整性**:
+
+| 行 | hex | 用途 |
+|---|---|---|
+| L2848 | `text-[#8d887c]` | "Cantian Style Dashboard" eyebrow 文字 |
+| L2850 | `text-[#bdb6a8]` | dashboard 描述文字 |
+| L2855 | `border-[#3a362d]` `bg-[#181614]` `text-[#e4dccd]` | hero chips/tags |
+| L2870 | `text-[#7f7a70]` | hero 4-card label |
+| L2871 | `text-[#f2ede3]` | hero 4-card value |
+| L2892 | `bg-[#efe6d4]` | mobile tab pill 激活态 bg |
+| L2893 | `text-[#d5cec0]` | mobile tab pill 失活态文字 |
+| L2921 | `border-[#3b362d]` `bg-[#efe6d4]` | sidebar tab 激活态 |
+| L2922 | `text-[#d5cec0]` | sidebar tab 失活态文字 |
+| L2942 | `bg-[#f4f1e8]` | "前往咨询AI" 按钮 |
+| L2949 | `text-[#d9d2c4]` | "选择大师" 按钮文字 |
+
+**当前状态**:全部 12 处 hex 保留,Step 2c 不做 token 化(避免破坏 Cantian Style 主题统一性)。
+
+**处理建议**:design-system 二阶段补 paper / cream / tan 系暖色调 token(建议命名 `--color-paper-*` / `--color-cream-*` / `--color-tan-*`),统一 Cantian Style Dashboard 视觉语言。
+
+**处理批次建议**:design-system 二阶段独立迭代
+
+**与同类条目关系**:与 batch 1+2 已登记的:
+- "米白纸面色板缺失"(audit-batch-2 P2)
+- "F004 getWuxingColor 默认色 hex 兜底"
+- "阴爻灰色 token 缺失"
+
+**同根因**:design-system 仅覆盖"主流 UI 灰阶 + 品牌色"轴,未覆盖中式美学暖色调系统。统一在 design-system 二阶段治理。
+
+**遗留风险**:
+- 12 处 hex 数值如需微调(如品牌升级换暖色调),需逐处定位修改
+- 若后续 batch 在 dashboard 邻近区域添加新暖色 UI,可能再增 hex 数,工程债持续累积
+
+### 【更新 - mobile tab + desktop sidebar active 改 brand 绛红 - Step 2d 末追加(M89)】
+
+**时间**:2026-05-08 (Phase 4 batch 3 Step 2d 末实测后)
+
+**用户反馈**:mobile tabs active 米白底(`bg-[#efe6d4]`)与品牌色契约脱钩,视觉抢镜。
+
+**处置**:M89 三处同步改 brand 绛红(与 Step 2a M38 录入方式 active tab 同款契约):
+- **M89-1** mobile tab bar active L2910: `bg-[#efe6d4] text-black` → `bg-brand text-paper`
+- **M89-2** desktop sidebar tab active L2939: `border-[#3b362d] bg-[#efe6d4] text-black` → `border-brand bg-brand text-paper`(同步删除棕色边框,避免与 brand 边框冲突)
+- **M89-3** desktop sidebar active 数字编号 L2944: `text-black/60` → `text-paper/60`(避免绛红底配黑半透对比度退化的隐藏风险)
+
+**影响范围迁出**:原条目记录的 12 处暖色调 hex 中,**mobile L2910 + desktop L2939 共 2 处 `#efe6d4` 已 token 化**(不再属于本条目)。剩余 10 处暖色调 hex(米白纸面 panel / chips / 描述文字 / ACTION button `#f4f1e8` "前往咨询AI" 等)继续保留登记,待 design-system 二阶段 paper/cream/tan token 系统补全统一处置。
+
+**视觉契约同步**:M89 完成后,batch 3 brand 绛红视觉契约系统正式收敛:
+- Step 2a M35 hero 渐变端点(`#c41e3a` 绛红)
+- Step 2a M38 录入方式 active tab(`bg-brand text-paper`)
+- Step 2b M37 主 CTA(`from-brand to-brand-active text-paper`)
+- Step 2d 末 M89 dashboard tab active(`bg-brand text-paper`)
+- 四处 active/CTA 完全同款,品牌色契约无脱钩
+
+**hex 区分确认**:`#efe6d4`(M89 处理 2 处)≠ `#f4f1e8`(ACTION button 多处)。两者都属米白纸面但漂移 2-3 个色阶,前者已迁移品牌色,后者继续登记待二阶段统一。
+
+---
+
+## F005 dashboard D8 平板断点决策回退(lg → xl)
+
+**时间**:2026-05-08 (Phase 4 batch 3 Step 2c W1c Playwright 实测后)
+
+**原因**:原 D8 决策 xl→lg 让 1024-1279 视口走 dashboard 双栏布局。Playwright 三视口实测揭示 App-level Sidebar 256px 在工程级 layout 中始终占用,1024-1279 视口实际内容区仅 768-1023px。dashboard 双栏 `[300px_minmax(0,1fr)]` + `gap-6` 让右列可用宽度仅 444-700px,table `min-w-[860px]` 必溢出触发横滚。
+- 实测 1440 视口 wrapper clientWidth=682(右列)< table scrollWidth=860 → 滚动
+- 实测 1280 视口 wrapper clientWidth=522(右列)< 860 → 滚动
+- 实测 1024 视口 wrapper clientWidth=298(右列)< 860 → 滚动
+
+**根因**:D8 决策时未识别 App-level Sidebar 256px 这一层级,数学计算偏差。dashboard 双栏架构稳健启用需视口 ≥ 1536(1280 dashboard 双栏 + 256 App sidebar)。
+
+**处理**:M66 + M67-1~M67-14 共 15 处断点 lg → xl 回退:
+- M66 L2903: `lg:grid-cols-[300px_minmax(0,1fr)]` → `xl:grid-cols-[300px_minmax(0,1fr)]`(保留 minmax(0,1fr) layout 溢出修复)
+- M67-1 L2081: `lg:grid-cols-4` → `xl:grid-cols-4`
+- M67-2~4 L2139: `lg:flex-row lg:items-start lg:justify-between` → `xl:*`
+- M67-5 L2157: `lg:w-[360px]` → `xl:w-[360px]`
+- M67-6 L2168: `lg:grid-cols-1` → `xl:grid-cols-1`
+- M67-7 L2329: `lg:grid-cols-[0.95fr_1.05fr]` → `xl:grid-cols-[0.95fr_1.05fr]`
+- M67-8 L2475: `lg:grid-cols-3` → `xl:grid-cols-3`
+- M67-9 L2597: `lg:grid-cols-[1.15fr_0.85fr]` → `xl:grid-cols-[1.15fr_0.85fr]`
+- M67-10 L2881: `lg:hidden` → `xl:hidden`
+- M67-11~14 L2905: `lg:block lg:sticky lg:top-6 lg:self-start` → `xl:*`
+
+**当前状态**:1024-1279 视口恢复"dashboard 单栏全宽"批前行为,1280 视口横滚消除(预期),1024 视口移动端单栏走窄屏路径。M66 保留 `minmax(0,1fr)` 修复 layout bug 的核心(双栏内右列 min-content 0 → 触发收缩而非外溢)。
+
+**影响范围**:
+- 仅 `zhouwenwang/zhouwenwang-divination-mobile/src/games/bazi/BaZiPage.tsx` 15 处 className 断点替换
+- 业务逻辑 / state / handler / AI 流式 / 测试 0 改动
+- 范围外 lg: utility(L1601 / L1783 / L2068 / L2429 / L2526 / L2551 / L2846 / L2862)保留不动
+
+**遗留风险**:
+- 1024-1279 视口现在走 dashboard 单栏窄屏路径,大运流年 9 列 table 在该视口内展示密度可能略紧
+- 1440 视口刚好 ≥ xl(1280) 启用双栏,但 App sidebar 减除后内容区仍仅 1184px,双栏 (300+24+1fr) 右列约 860px,与 table min-w 持平,边缘工况仍可能滚动
+- xl 断点(1280) 与 App sidebar 总和 1536 是双栏稳健阈值;< 1536 仍可能边缘工况触发横滚
+
+**真根治路径**:与 P2 工程债 "问真八字大运流年视觉重构" 同根因。dashboard 双栏架构需:
+- (a) App sidebar 折叠交互(< xl 视口 sidebar 自动折叠为图标条)
+- (b) dashboard 单栏全宽响应式(双栏阈值上调至 2xl=1536)
+- (c) 双栏断点重新校准(基于 App sidebar 实际占用计算)
+
+**处理批次建议**:与 P2 视觉重构合并,或独立工程层任务(App sidebar 折叠 / dashboard 单栏全宽 / 双栏断点校准 三选一或组合)
+
+### 【追加更新 - D8 演进二阶段回退(xl → 2xl)】
+
+**时间**:2026-05-08 (Phase 4 batch 3 Step 2c W1c xl 回退后 Playwright 复测发现 1280-1535 视口仍滚动)
+
+**真根因**:xl=1280 启用 dashboard 双栏的阈值不够。视口 1280-1535 区间 App sidebar 减除后内容区仅 1024-1279px,dashboard 双栏右栏挤压到 522-682px < table 860,必滚。
+- 实测 1280 视口 wrapper clientWidth=522 < 860 → 滚动
+- 实测 1440 视口 wrapper clientWidth=682 < 860 → 滚动
+- 1024 视口反而免滚:xl 未启用 → 单栏全宽 → panel rect=910 ≥ 860 ✓
+
+**数学复盘**:dashboard 双栏稳健启用阈值
+- App sidebar 256 + 左栏 300 + gap 24 + table min-w 860 = 1440(下限)
+- 加 buffer(右栏内 padding / 滚动条预留)= 1536
+- 所以正确断点是 **2xl(1536)**,不是 xl(1280)
+
+**当前修法**:M66 + M67-1~14 共 14 处 xl → 2xl 再回退
+- 1024-1535 视口全部走 dashboard 单栏全宽免滚
+- ≥1536 视口启用 dashboard 双栏(右栏估算 ≥956,稳健容纳 table 860)
+
+**演进路径**:**D8.lg(1024) → D8.xl(1280) → D8.2xl(1536) 三阶段收敛**,2xl 是基于 Playwright 实测数据的真值。
+
+**教训**:跨 layout 层的断点决策必须基于 App-level 实际占用计算,不能仅看局部组件可用宽度。每次断点决策前应用 Playwright 实测验证,数学复盘校准。
+
+### 【演进三阶段最终修法 - D8.2xl + 左栏 300→200(M79)】
+
+**时间**:2026-05-08 (D8.2xl 实测后发现 1536+ 视口仍滚)
+
+**第三层约束**:Playwright 五视口实测揭示 1536/1920 视口启用 dashboard 双栏后仍触发横滚:
+- 实测 1536/1920 视口 panel rect=828 / wrapper clientWidth=778 < table 860
+- 不通过断点能解决(再大的视口也仍滚)
+
+**根因**:max-width 约束链 BaZiPage 整页有两层 max-width:
+- L2415: `max-w-7xl mx-auto px-3 sm:px-4` —— 整页外层 = 1280px - padding 32 ≈ 1248px(与 LiuYao/QiMen 等页面共享的模板约束,不应改动)
+- L2839: `mx-auto w-full max-w-[1280px]` —— dashboard 容器自身 max-w(被外层 1248 卡住)
+- 视口 1536/1920 时 dashboard 容器永远封顶 ≈1248px,双栏 [300+24+1fr] 右栏 = 1248-324 = 924,减右栏内 panel padding 等 → panel rect=828 < 860 必滚
+
+**数学根治路径选 D**:dashboard 双栏左栏 300 → 200(M79)
+- 1536+ 视口验证:1248 - 200 - 24 = **1024 右栏** → panel rect 估算 ≈976 ≥ table 860 ✓
+- 1024-1440 视口未触发 2xl,继续走 dashboard 单栏全宽 ✓
+- 全视口免滚理论上达成
+
+**当前修法**:仅 L2903 一处:
+- `2xl:grid-cols-[300px_minmax(0,1fr)]` → `2xl:grid-cols-[200px_minmax(0,1fr)]`
+- 左栏内部 sidebar 子树(L2904-2956)无显式宽度依赖(card 无 w-[*],button 都是 w-full),无需同步改动
+
+**视觉影响**:左栏 NAVIGATION card 含 4 字 tab 标签 + 2 字数字编号 + p-5 padding,200px 容器内估算 ≈120px 实际占用,留 80px buffer 充足。ACTION card 含"继续深挖命盘"标题 + 描述段 + 全宽 button,在 200px 内继续 wrap 排列即可。
+
+**演进路径完整收敛**:**D8.lg(1024) → D8.xl(1280) → D8.2xl(1536) → D8.2xl + M79(200px 左栏) = 主流桌面 + 高分屏全免滚**
+
+**教训**(追加):双栏 layout 在 max-width 框架内的可用宽度受 grid template 列宽和容器 max-w 双向夹击。设计双栏时必须明确:(a) 容器 max-w 上限;(b) 双栏列宽预算;(c) table/content 内容 min-w 需求。三者矩阵推算后再定 grid template 列宽。
+
+---
+
+## F005 consult tab "发送追问" 按钮 UX 优化
+
+**时间**:2026-05-08 (Phase 4 batch 3 末实测)
+
+**现象**:
+- 按钮文案"发送追问"建议简化为"发送"(短文案降低视觉重量,符合 chat composer 业内惯例)
+- 按钮位置紧邻追问输入框文字,视觉拥挤(textarea 与 send button 间距不足或缺少视觉分隔)
+
+**影响范围**:F005 BaZiPage.tsx consult tab 内 textarea 区(L1988 textarea + L2044-2056 主 CTA "发送追问"按钮 + 同区 sendButtonLabel 三元 L1839-1843)。
+
+**当前状态**:**保留现状不动,登记待独立 UX 批次处理**(严守 batch 3 三红线第 1 条 - 实测痛点登记不 patch)。
+
+**根因(推测)**:
+- sendButtonLabel 三元判断逻辑(L1839-1843)输出"发送追问"/"开始问事解盘"/"开始命盘总览" 三种长文案,在 chat composer 上下文里偏冗长
+- 主 CTA(L2044)与 textarea(L1988)同 column 紧贴,缺少 spacing 或视觉层级分隔
+
+**建议处理批次**:
+- (a) batch 5 通用 UI 组件末批顺手处理(SettingsModal / Markdown / Toast 等同期)
+- (b) 独立 UX 优化批次(如发现更多 chat composer / button 文案/位置类痛点累积时)
+
+**处置原则**:与 batch 3 三红线"实测痛点登记不 patch"一致,本批 0 改动维持业务保护红线整批清洁。
+
+**遗留风险**:用户实际使用 consult tab 多轮对话场景时会再次触发该痛点,需要在下一独立 UX 批次或 batch 5 处理时优先级靠前。
+
+---
+
 ## (后续追加格式)
 
 每条新增事件按以下骨架写:

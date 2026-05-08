@@ -305,6 +305,89 @@ git branch wip/batch-N-YYYYMMDD-HHMM   # 在当前 HEAD 留快照点,不切过�
 
 **与 4.2 中途质量门的关系**:质量门要求每文件 ack 后才进下一个,如果数学缓冲不足导致回炉,会撞中途质量门(用户在浏览器实测时再次发现裁剪),整批节奏拖延。**预留 ≥3px 缓冲是"一次到位"的修法稳健性原则,与质量门相辅相成**。
 
+#### 4.3.2 Tailwind CDN runtime JIT 限制(2026-05-08 batch 3 教训新增)
+
+**现象**:Tailwind CDN runtime JIT 模式下,**动态字符串拼接的 className 不会触发 utility 生成**(仅静态字面量被识别)。例如 `className={`px-${value}`}` 或动态构造的 `${condition ? 'class-a' : 'class-b'}` 即便最终值合法也可能不被编译,导致样式在浏览器中不生效。
+
+**例子**:F006 BaziCompactGrid 5 轮迭代中,⓱ 用动态 className 设置 cell padding(根据 `isCompact` 三元拼装),Tailwind CDN JIT 未识别 → 视觉缺失;㉘-fix 改用 inline `style={{ padding: ... }}` 替代,问题立即解决。
+
+**处置原则**:
+- 动态 / 条件式 className 不可靠时改用 **inline style** 替代
+- 静态字面量优先使用 Tailwind utility(JIT 识别保证)
+- 如必须使用条件 className,枚举所有可能值的**完整字面量**(让 JIT 静态扫描可见),禁止字符串模板拼接
+
+**适用范围**:Tailwind CDN runtime 模式 + 动态字符串构造 + JIT 编译期识别要求(本工程全 batch 适用,与 design-system §1 对齐)。
+
+#### 4.3.3 Playwright 自动测量诊断:视觉对不齐场景找 ground truth(2026-05-08 batch 3 教训新增)
+
+**现象**:layout / 视觉对不齐场景靠直觉数学计算容易**遗漏 App-level / 容器层级约束**,导致多轮回炉。**用 Playwright `page.evaluate` 测量 `boundingClientRect / scrollWidth / clientWidth / getComputedStyle` 才能揭示真根因**。
+
+**例子**:Step 2c W1c 阶段 D8 演进,凭直觉数学计算导致 4 阶段回炉(lg → xl → 2xl → 200px 左栏)。每阶段都用 Playwright 测量驱动决策:
+- D8.lg:Playwright 揭示右栏 panel rect=682(< table 860)→ 推翻直觉
+- D8.xl:5 视口实测发现 1280-1535 视口仍滚,1024 反而免
+- D8.2xl:实测发现 1536+ 视口 panel rect=828(max-w 约束链)
+- 最终 + M79 200px 左栏:5 视口(1024/1280/1440/1536/1920)全免滚 ✓
+
+**处置原则**:
+- layout / 视觉对不齐时**不要凭推测修法**,用 Playwright `page.evaluate` 测量 ground truth
+- 写临时 `tests/diag/*.spec.ts` 跑多视口测量,得到精确数据再决定修法
+- 测量后**立即删除临时脚本**(保留截图供视觉验收,git status 干净)
+
+**适用范围**:响应式断点决策 / 容器宽度数学 / 元素溢出排查 / dashboard 类多层级嵌套布局。
+
+#### 4.3.4 视觉对不齐先做数学诊断:box height + 换行 + line-height + 内层结构(2026-05-08 batch 3 教训新增)
+
+**现象**:cell padding 对齐 / table 行高 / sticky 元素布局对不齐时,简单调 `padding/margin` 多次回炉。**先做数学诊断列出"box height + 换行 + line-height + 内层 div"四要素**,才能找到根因。
+
+**例子**:F006 ㉝-㉞ 中日期 sticky cell 视觉对不齐,多次回炉:
+- ㉗:`alignSelf` hack(后被 ㉝ overrule,根因不在 align)
+- ㉘-fix:inline padding 替代(教训 4.3.2 适用,但仍未对齐)
+- 最终 ㉝:date sticky cell 内层加 `leading-4` div 才解决
+- 根因:line-height 影响 box height,需要**内层结构隔离**才能精确控制行高
+
+**处置原则**:
+- 视觉对不齐先列出"box height + 换行 + line-height + 内层 div"四要素数学
+- 再决定修法(可能是内层结构 / line-height / padding / inline 控制其一)
+- **不要"凭感觉"调 padding/margin** 期望对齐 — 大概率治标不治本
+
+**适用范围**:cell padding 对齐 / table 行高 / sticky 元素布局 / 多行文本视觉等高 / 嵌套 flex/grid 子项视觉错位。
+
+#### 4.3.5 跨语义 utility 复用判断:装饰类合并 vs 业务语义类保留(2026-05-08 batch 3 教训新增)
+
+**现象**:≤5 漂移合并阈值在 batch 3 处置中暴露边界 — **同表面装饰类合并合理(如 surface-active / surface-hover / divider 等中性灰),跨业务语义类应保留 hex**(如喜用神暖色 / 过三关冷蓝 / textarea focus 黄铜 / user 气泡冷蓝 / assistant 气泡黄铜)。
+
+**例子**:
+- **M77 hover hex 保留**:`hover:bg-[#1d1d1d]` 与 M77 处置一致 — hover 视觉契约 batch 1+2 已建立,token 化会破坏跨批契约
+- **M81 user 气泡 token 化**:user 气泡灰系合并到 `surface-hover/active`(同表面装饰类)
+- **M81 assistant 气泡保留**:`bg-[#151311]` 暖色 — Cantian Style 主题完整性(跨业务语义)
+- **M89-3 对比度保护**:active 数字色 `text-paper/60` 替代 `text-black/60`(绛红底配黑半透对比度退化)
+
+**处置原则**:
+- 合并到 token 前判断"装饰类(可合并)vs 业务语义类(保留 hex)"
+- **装饰类**:同表面 / 同层级 / 中性灰白,无业务可识别性 → 合并 token
+- **业务语义类**:主题色 / 状态色 / 业务可识别色(如阴爻灰 / 五行色 / 大师业务色 / Cantian 暖色 / 喜用神/过三关功能色)→ 保留 hex
+- 保留 hex 时**同步登记 cleanup-backlog**,待 design-system 二阶段 token 系统补全统一处置
+
+**适用范围**:所有 hex → token 化决策(每批 token 化高频触发)。
+
+#### 4.3.6 Layout 改造前 Playwright 全栈测:三层约束链(2026-05-08 batch 3 教训新增)
+
+**现象**:layout 改造前若仅看局部组件可用宽度,会**遗漏 App-level 约束链**(App-level Sidebar + 外层 max-w + 内层 grid template + panel padding)。**必须先用 Playwright 测量全栈数据再决定修法**,避免逐层发现引发多轮回炉。
+
+**例子**:D8 4 阶段回炉的根因 = 之前 layout 数学只算到 dashboard 内部双栏,没识别**三层约束链**:
+- App-level Sidebar `256px`(`Sidebar.tsx` 始终占用,所有视口)
+- 外层 BaZiPage `max-w-7xl` = `1280px`(整页框架,与 LiuYao/QiMen 共享模板)
+- dashboard 容器 `max-w-[1280px]`(被外层 padding 卡到 ~1248px)
+- 双栏 `[300px_minmax(0,1fr)]` + `gap-6` → 右栏估算 ~924,实测 panel rect=828(panel padding 减去 ~96)
+- 最终 M79 双栏左栏 300→200px + Playwright 5 视口实测才达成全免滚
+
+**处置原则**:
+- layout 改造前必先用 Playwright 测量"**App sidebar / 外层 max-w / 容器 max-w / 内部 grid template / panel padding**"五层全栈数据
+- 数学复盘:列出每层级宽度收紧量,推算最终可用宽度,与内容 min-w 比对
+- **多视口实测验证**(1024 / 1280 / 1440 / 1536 / 1920),含主流桌面 + 高分屏
+
+**适用范围**:所有响应式 layout 改造(特别是大屏 dashboard 类页面 / 双栏布局 / 嵌套容器嵌套场景)。
+
 #### 4.4 批末:视觉回归 + 重截 baseline
 
 batch N main commit 之后、push 之前,按顺序:

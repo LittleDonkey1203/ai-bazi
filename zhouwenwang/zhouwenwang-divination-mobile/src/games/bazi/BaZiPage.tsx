@@ -1568,6 +1568,10 @@ const BaZiPage = () => {
         eyebrow?: string;
         title?: string;
         note?: string;
+        hideRows?: string[];
+        dataMinWidth?: number;
+        labelWidth?: number;
+        hideColumnSubtitle?: boolean;
       },
     ) => {
       const compact = options?.compact ?? false;
@@ -1575,8 +1579,8 @@ const BaZiPage = () => {
         ? 'rounded-[28px] border border-[#e4d6bf] bg-[#fffaf2] p-5 shadow-[0_12px_30px_rgba(54,38,19,0.05)]'
         : 'rounded-[32px] border border-[#eadbc4] bg-[#fffaf2] p-6 shadow-[0_18px_45px_rgba(54,38,19,0.06)]';
       const tableClass = compact
-        ? 'min-w-[1120px] w-full border-separate border-spacing-y-[6px] text-[13px]'
-        : 'min-w-[1080px] w-full border-separate border-spacing-y-2 text-sm';
+        ? 'min-w-[860px] w-full border-separate border-spacing-y-[6px] text-[13px]'
+        : 'min-w-[860px] w-full border-separate border-spacing-y-2 text-sm';
       const headerCellClass = compact
         ? 'rounded-[14px] bg-[#efe4d3] px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8e7758]'
         : 'rounded-[16px] bg-[#efe4d3] px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.24em] text-[#8e7758]';
@@ -1609,7 +1613,13 @@ const BaZiPage = () => {
           data-testid="bazi-matrix-mobile"
           className={`md:hidden ${compact ? 'mt-4' : 'mt-5'}`}
         >
-          <BaziCompactGrid columns={columns} />
+          <BaziCompactGrid
+            columns={columns}
+            hideRows={options?.hideRows}
+            dataMinWidth={options?.dataMinWidth}
+            labelWidth={options?.labelWidth}
+            hideColumnSubtitle={options?.hideColumnSubtitle}
+          />
         </div>
 
         {/* 桌面端:原 table */}
@@ -1845,11 +1855,14 @@ const BaZiPage = () => {
 
       return (
         <div className="space-y-5">
-          <div className="rounded-[28px] border border-[#2a2a2a] bg-[#131313] p-6">
+          <div className="rounded-[28px] border border-surface-active bg-night-2 p-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
                 <p className="text-sm uppercase tracking-[0.32em] text-[#7c7c7c]">AI Master Chat</p>
-                <h3 className="mt-2 text-2xl font-semibold text-white">
+                <h3
+                  className="mt-2 text-2xl font-bold font-serif bg-clip-text text-transparent"
+                  style={{ backgroundImage: 'linear-gradient(135deg, #f5f0e3 0%, #d4a03e 60%, #c41e3a 100%)' }}
+                >
                   {question.trim() ? '问事会话' : '命盘会话'}
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-[#9f9f9f]">
@@ -1858,7 +1871,7 @@ const BaZiPage = () => {
               </div>
 
               <div className="flex flex-col items-start gap-3 md:items-end">
-                <div className="rounded-full border border-[#2f2f2f] bg-[#191919] px-4 py-2 text-xs text-[#c9c9c9]">
+                <div className="rounded-full border border-divider bg-surface-hover px-4 py-2 text-xs text-[#c9c9c9]">
                   {statusLabel}
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -1867,7 +1880,7 @@ const BaZiPage = () => {
                     disabled={isAnalyzing || !selectedMaster}
                     className={`rounded-full px-6 py-3 text-sm font-semibold transition-all duration-300 ${
                       isAnalyzing || !selectedMaster
-                        ? 'cursor-not-allowed bg-[#2d2d2d] text-[#777777]'
+                        ? 'cursor-not-allowed bg-surface-active text-[#777777]'
                         : 'bg-[#f4f1e8] text-black hover:bg-white'
                     }`}
                     whileHover={!isAnalyzing && selectedMaster ? { scale: 1.02 } : {}}
@@ -1880,8 +1893,8 @@ const BaZiPage = () => {
                     disabled={isAnalyzing || !chatSession || chatMessages.length === 0}
                     className={`rounded-full border px-5 py-3 text-sm font-semibold transition ${
                       isAnalyzing || !chatSession || chatMessages.length === 0
-                        ? 'cursor-not-allowed border-[#2d2d2d] bg-[#161616] text-[#666666]'
-                        : 'border-[#353535] bg-[#171717] text-[#d8d1c3] hover:bg-[#1d1d1d]'
+                        ? 'cursor-not-allowed border-surface-active bg-surface-hover text-[#666666]'
+                        : 'border-divider bg-surface-hover text-[#d8d1c3] hover:bg-[#1d1d1d]'
                     }`}
                   >
                     清空会话
@@ -1898,13 +1911,13 @@ const BaZiPage = () => {
               `当前大运 ${currentFortune?.干支 || '待推算'}`,
               `会话 ${chatMessages.length} 条消息`,
             ].map((item) => (
-              <div key={item} className="rounded-[22px] border border-[#262626] bg-[#141414] px-5 py-4 text-sm text-[#dad4c4]">
+              <div key={item} className="rounded-[22px] border border-surface-active bg-surface-deep px-5 py-4 text-sm text-[#dad4c4]">
                 {item}
               </div>
             ))}
           </div>
 
-          <div className="rounded-[30px] border border-[#242424] bg-[#101010] p-6">
+          <div className="rounded-[30px] border border-[#242424] bg-surface-deep p-6">
             {chatMessages.length > 0 || streamingReply ? (
               <div ref={analysisRef} className="space-y-4">
                 {chatMessages.map((message) => {
@@ -1915,7 +1928,7 @@ const BaZiPage = () => {
                       className={`rounded-[24px] border px-5 py-4 ${
                         isAssistant
                           ? 'border-[#2f2c26] bg-[#151311]'
-                          : 'border-[#272727] bg-[#161616]'
+                          : 'border-surface-active bg-surface-hover'
                       }`}
                     >
                       <div className="mb-3 flex items-center justify-between gap-3 text-xs">
@@ -1949,7 +1962,7 @@ const BaZiPage = () => {
                 )}
               </div>
             ) : (
-              <div className="flex min-h-[320px] flex-col items-center justify-center rounded-[24px] border border-dashed border-[#333333] bg-[#141414] px-6 text-center">
+              <div className="flex min-h-[320px] flex-col items-center justify-center rounded-[24px] border border-dashed border-divider bg-surface-deep px-6 text-center">
                 <p className="text-sm uppercase tracking-[0.3em] text-[#7e7e7e]">Conversation Ready</p>
                 <h4 className="mt-3 text-2xl font-semibold text-white">先发起第一轮命盘咨询</h4>
                 <p className="mt-3 max-w-xl text-sm leading-7 text-[#9c9c9c]">
@@ -1959,7 +1972,7 @@ const BaZiPage = () => {
             )}
           </div>
 
-          <div className="rounded-[30px] border border-[#242424] bg-[#101010] p-6">
+          <div className="rounded-[30px] border border-[#242424] bg-surface-deep p-6">
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
@@ -1975,11 +1988,11 @@ const BaZiPage = () => {
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 placeholder={chatMessages.length > 0 ? '继续输入你的追问，例如：那感情和婚姻具体怎么看？' : '输入你的首轮问题，留空则默认先做命盘总览'}
-                className="min-h-[140px] w-full rounded-[24px] border border-[#2c2c2c] bg-[#141414] px-5 py-4 text-sm leading-7 text-white outline-none transition focus:border-[#b88944]"
+                className="min-h-[140px] w-full rounded-[24px] border border-surface-active bg-surface-deep px-5 py-4 text-sm leading-7 text-white outline-none transition focus:border-[#b88944]"
                 disabled={isAnalyzing}
               />
 
-              <div className="rounded-[24px] border border-[#252525] bg-[#121212] px-4 py-4">
+              <div className="rounded-[24px] border border-surface-active bg-surface-deep px-4 py-4">
                 <p className="text-sm uppercase tracking-[0.28em] text-[#7b7b7b]">Special Actions</p>
                 <h4 className="mt-2 text-lg font-semibold text-white">专用分析入口</h4>
                 <p className="mt-2 text-sm leading-6 text-[#919191]">
@@ -2011,7 +2024,7 @@ const BaZiPage = () => {
                 </div>
               </div>
 
-              <div className="rounded-[24px] border border-[#252525] bg-[#121212] px-4 py-4">
+              <div className="rounded-[24px] border border-surface-active bg-surface-deep px-4 py-4">
                 <p className="text-sm uppercase tracking-[0.28em] text-[#7b7b7b]">Quick Start</p>
                 <h4 className="mt-2 text-lg font-semibold text-white">常用追问</h4>
                 <div className="mt-4 flex flex-wrap gap-2">
@@ -2019,7 +2032,7 @@ const BaZiPage = () => {
                     <button
                       key={item}
                       onClick={() => setChatInput(item)}
-                      className="rounded-full border border-[#303030] bg-[#171717] px-3 py-2 text-xs text-[#d9d2c6] transition hover:bg-[#1d1d1d]"
+                      className="rounded-full border border-divider bg-surface-hover px-3 py-2 text-xs text-[#d9d2c6] transition hover:bg-[#1d1d1d]"
                     >
                       {item}
                     </button>
@@ -2036,7 +2049,7 @@ const BaZiPage = () => {
                   disabled={isAnalyzing || !selectedMaster}
                   className={`rounded-full px-6 py-3 text-sm font-semibold transition-all duration-300 ${
                     isAnalyzing || !selectedMaster
-                      ? 'cursor-not-allowed bg-[#2d2d2d] text-[#777777]'
+                      ? 'cursor-not-allowed bg-surface-active text-[#777777]'
                       : 'bg-[#f4f1e8] text-black hover:bg-white'
                   }`}
                   whileHover={!isAnalyzing && selectedMaster ? { scale: 1.02 } : {}}
@@ -2057,7 +2070,7 @@ const BaZiPage = () => {
           <div className="rounded-[32px] border border-[#eadbc4] bg-[#f7f1e5] p-6 shadow-[0_22px_60px_rgba(54,38,19,0.08)]">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.32em] text-[#9f8c72]">MCP Structured Chart</p>
+                <p className="text-xs tracking-[0.32em] text-accent font-serif">原局总览</p>
                 <h3 className="mt-2 text-3xl font-semibold text-[#4f3924]">八字原盘信息</h3>
                 <p className="mt-2 max-w-3xl text-sm leading-7 text-[#7b6753]">
                   这一页只保留原盘字段。神煞和刑冲合会已经收进四柱矩阵，不再单独拆出卡片。
@@ -2068,7 +2081,7 @@ const BaZiPage = () => {
               </div>
             </div>
 
-            <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-5 grid gap-3 grid-cols-2 2xl:grid-cols-4">
               {basicInfoCards.map((item) => (
                 <div key={item.label} className="rounded-[20px] border border-[#eadfcf] bg-[#fffaf2] px-4 py-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-[#a18f79]">{item.label}</p>
@@ -2126,7 +2139,7 @@ const BaZiPage = () => {
       return (
         <div className="space-y-5 text-[#5f4a33]">
           <div className="overflow-hidden rounded-[30px] border border-[#e6d8c2] bg-[linear-gradient(180deg,#fcf8ef_0%,#f4ead8_100%)] p-5 shadow-[0_18px_40px_rgba(54,38,19,0.05)]">
-            <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+            <div className="flex flex-col gap-5 2xl:flex-row 2xl:items-start 2xl:justify-between">
               <div className="max-w-3xl">
                 <p className="text-xs uppercase tracking-[0.34em] text-[#a08b70]">Fortune Cycle Dashboard</p>
                 <h3 className="mt-2 text-[28px] font-semibold tracking-tight text-[#4f3924]">大运流年</h3>
@@ -2144,18 +2157,18 @@ const BaZiPage = () => {
                 </div>
               </div>
 
-              <div className="min-w-0 xl:w-[360px]">
+              <div className="min-w-0 2xl:w-[360px]">
                 <div className="rounded-[22px] border border-[#deceb7] bg-white/75 p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-[11px] uppercase tracking-[0.24em] text-[#a08b70]">Current Focus</p>
+                      <p className="text-[11px] tracking-[0.24em] text-accent font-serif">应期之机</p>
                       <p className="mt-2 text-base font-semibold text-[#5a432c]">{currentFlowTrail[selectedFlowCount - 1]?.value || currentFlowTrail[0].value}</p>
                     </div>
                     <div className="rounded-full border border-[#dbc5a0] bg-[#fbedd2] px-3 py-1.5 text-[11px] font-medium text-[#8c6729]">
                       已展开 {selectedFlowCount}/5
                     </div>
                   </div>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+                  <div className="mt-4 grid gap-3 grid-cols-2 sm:grid-cols-3 2xl:grid-cols-1">
                     {[
                       { label: '当前大运', value: currentFortune?.干支 || '待识别' },
                       { label: '起运年龄', value: `${chartData.decadeFortune.起运年龄} 岁` },
@@ -2177,6 +2190,10 @@ const BaZiPage = () => {
             eyebrow: 'Dynamic Time Matrix',
             title: '流转矩阵',
             note: '原局与所选时序共用一张矩阵，便于直接对照',
+            hideRows: ['刑冲合会'],
+            labelWidth: 28,
+            dataMinWidth: Math.max(34, Math.floor((343 - 28 - 3) / fortuneMatrixColumns.length)),
+            hideColumnSubtitle: true,
           })}
 
           <div className="space-y-4">
@@ -2267,9 +2284,14 @@ const BaZiPage = () => {
     if (dashboardTab === 'annual') {
       return (
         <div className="space-y-5">
-          <div className="rounded-[30px] border border-[#252525] bg-[#121212] p-6">
+          <div className="rounded-[30px] border border-surface-active bg-surface-deep p-6">
             <p className="text-sm uppercase tracking-[0.3em] text-[#7c7c7c]">Annual Focus</p>
-            <h3 className="mt-2 text-2xl font-semibold text-white">2026 年度报告</h3>
+            <h3
+              className="mt-2 text-2xl font-bold font-serif bg-clip-text text-transparent"
+              style={{ backgroundImage: 'linear-gradient(135deg, #f5f0e3 0%, #d4a03e 60%, #c41e3a 100%)' }}
+            >
+              2026 年度报告
+            </h3>
             <p className="mt-2 text-sm leading-6 text-[#9d9d9d]">
               先以当前命盘和大运定位年度主题。后续如要更接近参天形态，再单独拆年度报告生成链路。
             </p>
@@ -2281,17 +2303,17 @@ const BaZiPage = () => {
               `起运节奏：${chartData.decadeFortune.起运年龄}岁起运`,
               `核心命轴：${chartData.dayMaster}日主 / ${chartData.mingGong}命宫`,
             ].map((item) => (
-              <div key={item} className="rounded-[24px] border border-[#262626] bg-[#141414] p-5 text-sm leading-6 text-[#e0dbcf]">
+              <div key={item} className="rounded-[24px] border border-surface-active bg-surface-deep p-5 text-sm leading-6 text-[#e0dbcf]">
                 {item}
               </div>
             ))}
           </div>
 
-          <div className="rounded-[30px] border border-[#252525] bg-[#121212] p-6">
+          <div className="rounded-[30px] border border-surface-active bg-surface-deep p-6">
             <h4 className="text-lg font-semibold text-white">建议的年度报告结构</h4>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               {['年度主题判断', '事业与财务节奏', '关系与情感侧重点', '风险与避忌窗口', '可把握的阶段机会', '适合继续追问的具体问题'].map((item) => (
-                <div key={item} className="rounded-[18px] border border-[#242424] bg-[#171717] px-4 py-3 text-sm text-[#d9d4ca]">
+                <div key={item} className="rounded-[18px] border border-[#242424] bg-surface-hover px-4 py-3 text-sm text-[#d9d4ca]">
                   {item}
                 </div>
               ))}
@@ -2304,27 +2326,32 @@ const BaZiPage = () => {
     if (dashboardTab === 'personality') {
       return (
         <div className="space-y-5">
-          <div className="rounded-[30px] border border-[#252525] bg-[#121212] p-6">
+          <div className="rounded-[30px] border border-surface-active bg-surface-deep p-6">
             <p className="text-sm uppercase tracking-[0.3em] text-[#7c7c7c]">Personality</p>
-            <h3 className="mt-2 text-2xl font-semibold text-white">个性报告</h3>
+            <h3
+              className="mt-2 text-2xl font-bold font-serif bg-clip-text text-transparent"
+              style={{ backgroundImage: 'linear-gradient(135deg, #f5f0e3 0%, #d4a03e 60%, #c41e3a 100%)' }}
+            >
+              个性报告
+            </h3>
             <p className="mt-2 text-sm leading-6 text-[#9d9d9d]">
               当前先基于日主、五行强弱和已有命理要点展示个性侧重点，后续再单独拆成完整 persona 报告。
             </p>
           </div>
 
-          <div className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
-            <div className="rounded-[30px] border border-[#252525] bg-[#121212] p-6">
+          <div className="grid gap-5 2xl:grid-cols-[0.95fr_1.05fr]">
+            <div className="rounded-[30px] border border-surface-active bg-surface-deep p-6">
               <h4 className="text-lg font-semibold text-white">性格特征</h4>
               <div className="mt-4 space-y-3">
                 {chartData.personalityTraits.map((item) => (
-                  <div key={item} className="rounded-[18px] border border-[#242424] bg-[#171717] px-4 py-3 text-sm leading-6 text-[#dbd6cb]">
+                  <div key={item} className="rounded-[18px] border border-[#242424] bg-surface-hover px-4 py-3 text-sm leading-6 text-[#dbd6cb]">
                     {item}
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="rounded-[30px] border border-[#252525] bg-[#121212] p-6">
+            <div className="rounded-[30px] border border-surface-active bg-surface-deep p-6">
               <h4 className="text-lg font-semibold text-white">命盘画像</h4>
               <div className="mt-4 grid gap-3 md:grid-cols-2">
                 {[
@@ -2335,14 +2362,14 @@ const BaZiPage = () => {
                   `命宫：${chartData.mingGong}`,
                   `身宫：${chartData.shenGong}`,
                 ].map((item) => (
-                  <div key={item} className="rounded-[18px] bg-[#171717] px-4 py-3 text-sm text-[#d8d2c7]">
+                  <div key={item} className="rounded-[18px] bg-surface-hover px-4 py-3 text-sm text-[#d8d2c7]">
                     {item}
                   </div>
                 ))}
               </div>
               <div className="mt-5 flex flex-wrap gap-2">
                 {chartData.keyPoints.map((item) => (
-                  <span key={item} className="rounded-full border border-[#2d2d2d] bg-[#191919] px-3 py-2 text-xs text-[#cfc8b9]">
+                  <span key={item} className="rounded-full border border-surface-active bg-surface-hover px-3 py-2 text-xs text-[#cfc8b9]">
                     {item}
                   </span>
                 ))}
@@ -2355,15 +2382,20 @@ const BaZiPage = () => {
 
     return (
       <div className="space-y-5">
-        <div className="rounded-[30px] border border-[#252525] bg-[#121212] p-6">
+        <div className="rounded-[30px] border border-surface-active bg-surface-deep p-6">
           <p className="text-sm uppercase tracking-[0.3em] text-[#7c7c7c]">Deep Reading</p>
-          <h3 className="mt-2 text-2xl font-semibold text-white">深度报告</h3>
+          <h3
+            className="mt-2 text-2xl font-bold font-serif bg-clip-text text-transparent"
+            style={{ backgroundImage: 'linear-gradient(135deg, #f5f0e3 0%, #d4a03e 60%, #c41e3a 100%)' }}
+          >
+            深度报告
+          </h3>
           <p className="mt-2 text-sm leading-6 text-[#9d9d9d]">
             当前先复用现有 AI 解读通道承载深度报告展示，后续再拆成独立的报告生成任务和多章节模板。
           </p>
         </div>
 
-        <div className="rounded-[30px] border border-[#252525] bg-[#111111] p-6">
+        <div className="rounded-[30px] border border-surface-active bg-surface-deep p-6">
           {aiAnalysis ? (
             <div ref={analysisRef}>
               <StreamingMarkdown
@@ -2373,7 +2405,7 @@ const BaZiPage = () => {
               />
             </div>
           ) : (
-            <div className="flex min-h-[300px] flex-col items-center justify-center rounded-[24px] border border-dashed border-[#333333] bg-[#151515] px-6 text-center">
+            <div className="flex min-h-[300px] flex-col items-center justify-center rounded-[24px] border border-dashed border-divider bg-surface-deep px-6 text-center">
               <h4 className="text-2xl font-semibold text-white">深度报告尚未生成</h4>
               <p className="mt-3 max-w-xl text-sm leading-7 text-[#9b9b9b]">
                 先在“咨询AI”页生成首轮解读，后面再把输出拆成参天那种更完整的多章节报告。
@@ -2401,14 +2433,17 @@ const BaZiPage = () => {
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-6 md:py-12">
         {/* 页面标题 */}
         <motion.div variants={itemVariants} className="text-center mb-2">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 md:mb-4 bg-gradient-to-r from-[#EEEEEE] via-[#CCCCCC] to-[#FF9900] bg-clip-text text-transparent">八字推命</h1>
-          <p className="text-base md:text-xl text-[#CCCCCC] max-w-3xl mx-auto leading-relaxed">承古圣贤智慧，析命理玄机，知己知命方能改运</p>
+          <h1
+            className="text-3xl sm:text-4xl md:text-5xl font-bold font-serif mb-3 md:mb-4 bg-clip-text text-transparent"
+            style={{ backgroundImage: 'linear-gradient(135deg, #f5f0e3 0%, #d4a03e 60%, #c41e3a 100%)' }}
+          >八字推命</h1>
+          <p className="text-base md:text-xl text-neutral-2 max-w-3xl mx-auto leading-relaxed">承古圣贤智慧，析命理玄机，知己知命方能改运</p>
         </motion.div>
 
         <div className="space-y-6 md:space-y-8">
           {/* 信息输入区域 */}
           <motion.div className="space-y-4 md:space-y-6 p-0 md:p-8" variants={itemVariants}>
-            <div className="mx-auto w-full max-w-5xl rounded-[20px] md:rounded-[28px] border border-[#2b2b2b] bg-[#121212] p-4 md:p-6">
+            <div className="mx-auto w-full max-w-5xl rounded-[20px] md:rounded-[28px] border border-surface-active bg-night-2 p-4 md:p-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <p className="text-xs uppercase tracking-[0.34em] text-[#8e8e8e]">Case Manager</p>
@@ -2422,7 +2457,7 @@ const BaZiPage = () => {
                     <button
                       onClick={() => handleSaveCase()}
                       disabled={isGenerating}
-                      className="rounded-full bg-[#f4f1e8] px-5 py-3 text-sm font-semibold text-black transition hover:bg-white disabled:cursor-not-allowed disabled:bg-[#3b3b3b] disabled:text-[#8c8c8c]"
+                      className="rounded-full bg-[#f4f1e8] px-5 py-3 text-sm font-semibold text-black transition hover:bg-white disabled:cursor-not-allowed disabled:bg-[#3b3b3b] disabled:text-neutral-mid"
                     >
                       更新当前命例
                     </button>
@@ -2430,7 +2465,7 @@ const BaZiPage = () => {
                     <button
                       onClick={() => handleSaveCase()}
                       disabled={isGenerating}
-                      className="rounded-full bg-[#f4f1e8] px-5 py-3 text-sm font-semibold text-black transition hover:bg-white disabled:cursor-not-allowed disabled:bg-[#3b3b3b] disabled:text-[#8c8c8c]"
+                      className="rounded-full bg-[#f4f1e8] px-5 py-3 text-sm font-semibold text-black transition hover:bg-white disabled:cursor-not-allowed disabled:bg-[#3b3b3b] disabled:text-neutral-mid"
                     >
                       保存为命例
                     </button>
@@ -2439,7 +2474,7 @@ const BaZiPage = () => {
                     <button
                       onClick={() => handleSaveCase({ forceNew: true })}
                       disabled={isGenerating}
-                      className="rounded-full border border-[#4d3a1b] bg-[#20170d] px-5 py-3 text-sm font-semibold text-[#f1c782] transition hover:bg-[#291e11] disabled:cursor-not-allowed disabled:border-[#3b3b3b] disabled:bg-[#181818] disabled:text-[#7d7d7d]"
+                      className="rounded-full border border-[#4d3a1b] bg-[#20170d] px-5 py-3 text-sm font-semibold text-[#f1c782] transition hover:bg-[#291e11] disabled:cursor-not-allowed disabled:border-[#3b3b3b] disabled:bg-surface-hover disabled:text-[#7d7d7d]"
                     >
                       另存为新命例
                     </button>
@@ -2447,7 +2482,7 @@ const BaZiPage = () => {
                   <button
                     onClick={handleCreateNewCase}
                     disabled={isGenerating}
-                    className="rounded-full border border-[#333333] bg-[#181818] px-5 py-3 text-sm font-semibold text-[#ded6c8] transition hover:bg-[#1f1f1f] disabled:cursor-not-allowed disabled:text-[#7d7d7d]"
+                    className="rounded-full border border-divider bg-surface-hover px-5 py-3 text-sm font-semibold text-[#ded6c8] transition hover:bg-[#1f1f1f] disabled:cursor-not-allowed disabled:text-[#7d7d7d]"
                   >
                     新建命例
                   </button>
@@ -2455,14 +2490,14 @@ const BaZiPage = () => {
               </div>
 
               {savedCases.length > 0 ? (
-                <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <div className="mt-6 grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
                   {savedCases.map((record) => (
                     <div
                       key={record.id}
                       className={`rounded-[22px] border px-4 py-4 transition ${
                         activeCaseId === record.id
                           ? 'border-[#b88944] bg-[#191612]'
-                          : 'border-[#272727] bg-[#161616]'
+                          : 'border-surface-active bg-surface-deep'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -2484,7 +2519,7 @@ const BaZiPage = () => {
                       <div className="mt-4 flex gap-2">
                         <button
                           onClick={() => handleLoadCase(record)}
-                          className="rounded-full bg-[#222222] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#2b2b2b]"
+                          className="rounded-full bg-surface-sheet px-4 py-2 text-xs font-semibold text-white transition hover:bg-surface-active"
                         >
                           载入
                         </button>
@@ -2499,13 +2534,13 @@ const BaZiPage = () => {
                   ))}
                 </div>
               ) : (
-                <div className="mt-6 rounded-[22px] border border-dashed border-[#333333] bg-[#151515] px-5 py-5 text-sm leading-7 text-[#8f8f8f]">
+                <div className="mt-6 rounded-[22px] border border-dashed border-divider bg-surface-hover px-5 py-5 text-sm leading-7 text-[#8f8f8f]">
                   还没有保存命例。录入好基础信息后，可以先保存，后面直接载入继续起盘。
                 </div>
               )}
             </div>
 
-            <div className="mx-auto w-full max-w-5xl rounded-[20px] md:rounded-[28px] border border-[#2b2b2b] bg-[#111111] p-4 md:p-6">
+            <div className="mx-auto w-full max-w-5xl rounded-[20px] md:rounded-[28px] border border-surface-active bg-surface-deep p-4 md:p-6">
               <div className="grid gap-5 lg:grid-cols-2">
                 <div>
                   <label className="text-sm font-medium tracking-[0.2em] text-[#b8b0a2]">* 姓名</label>
@@ -2513,7 +2548,7 @@ const BaZiPage = () => {
                     type="text"
                     value={birthInfo.name}
                     onChange={handleNameChange}
-                    className="mt-3 w-full rounded-2xl border-2 border-[#333333] bg-[#1a1a1a] px-5 py-4 text-lg font-medium text-white outline-none transition focus:border-[#FF9900] focus:ring-2 focus:ring-[#FF9900]/30 placeholder:text-[#888888]"
+                    className="mt-3 w-full rounded-2xl border-2 border-divider bg-surface-hover px-5 py-4 text-lg font-medium text-white outline-none transition focus:border-brand focus:ring-2 focus:ring-[#FF9900]/30 placeholder:text-neutral-mid"
                     placeholder="请输入命主姓名"
                     disabled={isGenerating}
                   />
@@ -2525,7 +2560,7 @@ const BaZiPage = () => {
                     value={question}
                     onChange={(e) => setQuestion(e.target.value)}
                     placeholder="有具体想问的事情吗？"
-                    className="mt-3 w-full rounded-2xl border-2 border-[#333333] bg-[#1a1a1a] px-5 py-4 text-lg font-medium text-white outline-none transition focus:border-[#FF9900] focus:ring-2 focus:ring-[#FF9900]/30 placeholder:text-[#888888]"
+                    className="mt-3 w-full rounded-2xl border-2 border-divider bg-surface-hover px-5 py-4 text-lg font-medium text-white outline-none transition focus:border-brand focus:ring-2 focus:ring-[#FF9900]/30 placeholder:text-neutral-mid"
                     disabled={isGenerating}
                   />
                 </div>
@@ -2543,7 +2578,7 @@ const BaZiPage = () => {
                         className={`rounded-full px-5 py-3 text-sm font-semibold transition ${
                           birthInfo.gender === gender
                             ? 'bg-[#f4f1e8] text-black'
-                            : 'border border-[#333333] bg-[#1a1a1a] text-[#d3cbbb] hover:bg-[#202020]'
+                            : 'border border-divider bg-surface-hover text-[#d3cbbb] hover:bg-[#202020]'
                         }`}
                       >
                         {gender}
@@ -2566,8 +2601,8 @@ const BaZiPage = () => {
                         disabled={isGenerating}
                         className={`rounded-full px-4 py-3 text-sm font-semibold transition ${
                           inputMode === mode.id
-                            ? 'bg-[#FF9900] text-black'
-                            : 'border border-[#333333] bg-[#1a1a1a] text-[#d3cbbb] hover:bg-[#202020]'
+                            ? 'bg-brand text-paper'
+                            : 'border border-divider bg-surface-hover text-[#d3cbbb] hover:bg-[#202020]'
                         }`}
                       >
                         {mode.label}
@@ -2577,8 +2612,8 @@ const BaZiPage = () => {
                 </div>
               </div>
 
-              <div className="mt-6 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-                <div className="rounded-[24px] border border-[#272727] bg-[#151515] p-5">
+              <div className="mt-6 grid gap-6 2xl:grid-cols-[1.15fr_0.85fr]">
+                <div className="rounded-[24px] border border-surface-active bg-surface-hover p-5">
                   {inputMode === 'solar' && (
                     <div>
                       <p className="text-sm uppercase tracking-[0.28em] text-[#8a8a8a]">Solar Birth</p>
@@ -2587,7 +2622,7 @@ const BaZiPage = () => {
                         type="datetime-local"
                         value={formatDateTimeForInput(selectedBirthTime)}
                         onChange={handleBirthTimeChange}
-                        className="mt-5 w-full rounded-2xl border border-[#333333] bg-black px-4 py-3 text-base text-white outline-none transition focus:border-[#FF9900] [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:invert"
+                        className="mt-5 w-full rounded-2xl border border-divider bg-black px-4 py-3 text-base text-white outline-none transition focus:border-brand [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:invert"
                         style={{
                           colorScheme: 'dark',
                           WebkitTextFillColor: 'white',
@@ -2616,7 +2651,7 @@ const BaZiPage = () => {
                               value={lunarInput[item.key]}
                               onChange={(e) => handleLunarInputChange(item.key, e.target.value)}
                               placeholder={item.placeholder}
-                              className="mt-2 w-full rounded-2xl border border-[#333333] bg-[#1a1a1a] px-4 py-3 text-white outline-none transition focus:border-[#FF9900]"
+                              className="mt-2 w-full rounded-2xl border border-divider bg-surface-hover px-4 py-3 text-white outline-none transition focus:border-brand"
                               disabled={isGenerating}
                             />
                           </div>
@@ -2646,7 +2681,7 @@ const BaZiPage = () => {
                               value={pillarInput[item.key]}
                               onChange={(e) => handlePillarInputChange(item.key, e.target.value)}
                               placeholder={item.placeholder}
-                              className="mt-2 w-full rounded-2xl border border-[#333333] bg-[#1a1a1a] px-4 py-3 text-white outline-none transition focus:border-[#FF9900]"
+                              className="mt-2 w-full rounded-2xl border border-divider bg-surface-hover px-4 py-3 text-white outline-none transition focus:border-brand"
                               disabled={isGenerating}
                             />
                           </div>
@@ -2657,7 +2692,7 @@ const BaZiPage = () => {
                         <button
                           onClick={handleReversePillarLookup}
                           disabled={isGenerating}
-                          className="rounded-full bg-[#f4f1e8] px-5 py-3 text-sm font-semibold text-black transition hover:bg-white disabled:cursor-not-allowed disabled:bg-[#3b3b3b] disabled:text-[#8c8c8c]"
+                          className="rounded-full bg-[#f4f1e8] px-5 py-3 text-sm font-semibold text-black transition hover:bg-white disabled:cursor-not-allowed disabled:bg-[#3b3b3b] disabled:text-neutral-mid"
                         >
                           反查候选阳历时间
                         </button>
@@ -2671,7 +2706,7 @@ const BaZiPage = () => {
                         <select
                           value={selectedPillarCandidateIso}
                           onChange={(e) => setSelectedPillarCandidateIso(e.target.value)}
-                          className="mt-2 w-full rounded-2xl border border-[#333333] bg-[#1a1a1a] px-4 py-3 text-white outline-none transition focus:border-[#FF9900]"
+                          className="mt-2 w-full rounded-2xl border border-divider bg-surface-hover px-4 py-3 text-white outline-none transition focus:border-brand"
                           disabled={isGenerating || pillarCandidates.length === 0}
                         >
                           <option value="">请选择候选阳历时间</option>
@@ -2686,21 +2721,21 @@ const BaZiPage = () => {
                   )}
                 </div>
 
-                <div className="rounded-[24px] border border-[#272727] bg-[#151515] p-5">
+                <div className="rounded-[24px] border border-surface-active bg-surface-hover p-5">
                   <p className="text-sm uppercase tracking-[0.28em] text-[#8a8a8a]">Input Preview</p>
                   <h4 className="mt-3 text-xl font-semibold text-white">录入预览</h4>
 
                   {inputPreview ? (
                     <div className="mt-5 space-y-4">
-                      <div className="rounded-[18px] bg-[#1b1b1b] px-4 py-4">
+                      <div className="rounded-[18px] bg-surface-hover px-4 py-4">
                         <p className="text-xs uppercase tracking-[0.24em] text-[#9b9b9b]">阳历</p>
                         <p className="mt-2 text-sm leading-7 text-white">{inputPreview.solarText}</p>
                       </div>
-                      <div className="rounded-[18px] bg-[#1b1b1b] px-4 py-4">
+                      <div className="rounded-[18px] bg-surface-hover px-4 py-4">
                         <p className="text-xs uppercase tracking-[0.24em] text-[#9b9b9b]">农历</p>
                         <p className="mt-2 text-sm leading-7 text-white">{inputPreview.lunarText}</p>
                       </div>
-                      <div className="rounded-[18px] bg-[#1b1b1b] px-4 py-4">
+                      <div className="rounded-[18px] bg-surface-hover px-4 py-4">
                         <p className="text-xs uppercase tracking-[0.24em] text-[#9b9b9b]">四柱</p>
                         <p className="mt-2 text-sm leading-7 text-white">{inputPreview.baziText}</p>
                       </div>
@@ -2709,12 +2744,12 @@ const BaZiPage = () => {
                       )}
                     </div>
                   ) : (
-                    <div className="mt-5 rounded-[18px] border border-dashed border-[#333333] bg-[#131313] px-4 py-5 text-sm leading-7 text-[#8f8f8f]">
+                    <div className="mt-5 rounded-[18px] border border-dashed border-divider bg-surface-deep px-4 py-5 text-sm leading-7 text-[#8f8f8f]">
                       录入完整后，这里会即时显示阳历、农历和四柱预览，方便确认命例信息是否正确。
                     </div>
                   )}
 
-                  <div className="mt-5 rounded-[18px] border border-[#2b2b2b] bg-[#121212] px-4 py-4">
+                  <div className="mt-5 rounded-[18px] border border-surface-active bg-night-2 px-4 py-4">
                     <p className="text-xs uppercase tracking-[0.24em] text-[#9b9b9b]">当前模式</p>
                     <p className="mt-2 text-sm text-white">{getInputModeLabel(inputMode)}</p>
                     {inputMode === 'pillars' && selectedPillarCandidateIso && (
@@ -2734,8 +2769,8 @@ const BaZiPage = () => {
                 disabled={isGenerating || !birthInfo.name.trim()}
                 className={`px-12 py-4 rounded-xl font-bold text-xl transition-all duration-300 shadow-lg flex items-center justify-center ${
                   isGenerating || !birthInfo.name.trim()
-                    ? 'bg-[#444444] text-[#888888] cursor-not-allowed'
-                    : 'bg-gradient-to-r from-[#FF9900] to-[#E68A00] text-black hover:from-[#E68A00] hover:to-[#CC7700] hover:shadow-xl hover:shadow-[#FF9900]/30'
+                    ? 'bg-[#444444] text-neutral-mid cursor-not-allowed'
+                    : 'bg-gradient-to-r from-brand to-brand-active text-paper hover:from-brand-hover hover:to-brand hover:shadow-xl'
                 }`}
                 whileHover={!isGenerating && birthInfo.name.trim() ? { scale: 1.05, y: -2 } : {}}
                 whileTap={!isGenerating && birthInfo.name.trim() ? { scale: 0.98 } : {}}
@@ -2766,7 +2801,7 @@ const BaZiPage = () => {
                   
                   {/* 起盘动画区域 */}
                   <div className="flex justify-center">
-                    <div className="bg-black flex items-center justify-center relative overflow-hidden rounded-xl" style={{ width: '560px', height: '315px' }}>
+                    <div className="bg-black flex items-center justify-center relative overflow-hidden rounded-xl w-full max-w-[560px] aspect-[16/9]">
                       {/* 实际使用MP4视频 */}
                       <video 
                         autoPlay 
@@ -2774,7 +2809,6 @@ const BaZiPage = () => {
                         playsInline
                         preload="metadata"
                         className="w-full h-full object-cover rounded-xl"
-                        style={{ width: '560px', height: '315px' }}
                         onEnded={handleVideoEnded}
                         onError={(e) => {
                           console.log('八字视频加载失败，显示备用动画');
@@ -2789,12 +2823,12 @@ const BaZiPage = () => {
                         {/* 如果视频加载失败，显示备用动画 */}
                         <div className="relative">
                           <motion.div
-                            className="w-16 h-16 border-4 border-[#FF9900] border-t-transparent rounded-full"
+                            className="w-16 h-16 border-4 border-brand border-t-transparent rounded-full"
                             animate={{ rotate: 360 }}
                             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                           />
                           <motion.div
-                            className="absolute inset-4 border-2 border-[#CCCCCC] border-b-transparent rounded-full"
+                            className="absolute inset-4 border-2 border-neutral-2 border-b-transparent rounded-full"
                             animate={{ rotate: -360 }}
                             transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
                           />
@@ -2803,7 +2837,7 @@ const BaZiPage = () => {
                             animate={{ scale: [1, 1.2, 1] }}
                             transition={{ duration: 2, repeat: Infinity }}
                           >
-                            <span className="text-[#FF9900] text-2xl font-bold">命</span>
+                            <span className="text-brand text-2xl font-bold">命</span>
                           </motion.div>
                         </div>
                       </video>
@@ -2850,7 +2884,7 @@ const BaZiPage = () => {
                         { label: '当前大运', value: currentFortune?.干支 || '待识别' },
                         { label: '命宫 / 身宫', value: `${chartData.mingGong} / ${chartData.shenGong}` },
                       ].map((item) => (
-                        <div key={item.label} className="rounded-[16px] md:rounded-[22px] border border-[#2a2a2a] bg-[#121212]/90 px-3 py-3 md:px-4 md:py-4">
+                        <div key={item.label} className="rounded-[16px] md:rounded-[22px] border border-surface-active bg-[#121212]/90 px-3 py-3 md:px-4 md:py-4">
                           <p className="text-[10px] md:text-xs uppercase tracking-[0.22em] md:tracking-[0.28em] text-[#7f7a70]">{item.label}</p>
                           <p className="mt-2 md:mt-3 text-xs md:text-sm leading-5 md:leading-6 text-[#f2ede3]">{item.value}</p>
                         </div>
@@ -2862,7 +2896,7 @@ const BaZiPage = () => {
                 {/* 移动端:横向滚动的 dashboard tab pills */}
                 <div
                   data-testid="bazi-dashboard-tabs-mobile"
-                  className="xl:hidden -mx-3 sm:mx-0 overflow-x-auto"
+                  className="2xl:hidden -mx-3 sm:mx-0 overflow-x-auto"
                 >
                   <div className="flex gap-2 px-3 sm:px-0 pb-1">
                     {dashboardTabs.map((tab) => {
@@ -2873,8 +2907,8 @@ const BaZiPage = () => {
                           onClick={() => setDashboardTab(tab.id)}
                           className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition ${
                             isActive
-                              ? 'bg-[#efe6d4] text-black'
-                              : 'border border-[#2d2d2d] bg-[#171717] text-[#d5cec0]'
+                              ? 'bg-brand text-paper'
+                              : 'border border-surface-active bg-surface-hover text-[#d5cec0]'
                           }`}
                         >
                           {tab.label}
@@ -2884,14 +2918,14 @@ const BaZiPage = () => {
                   </div>
                 </div>
 
-                <div className="grid gap-6 xl:grid-cols-[300px_1fr]">
+                <div className="grid gap-6 2xl:grid-cols-[200px_minmax(0,1fr)]">
                   <motion.div
-                    className="hidden xl:block space-y-5 xl:sticky xl:top-6 xl:self-start"
+                    className="hidden 2xl:block space-y-5 2xl:sticky 2xl:top-6 2xl:self-start"
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.12 }}
                   >
-                    <div className="rounded-[32px] border border-[#242424] bg-[#101010] p-5">
+                    <div className="rounded-[32px] border border-[#242424] bg-surface-deep p-5">
                       <p className="text-xs uppercase tracking-[0.34em] text-[#7e7e7e]">Navigation</p>
                       <div className="mt-4 space-y-2">
                         {dashboardTabs.map((tab) => {
@@ -2902,19 +2936,19 @@ const BaZiPage = () => {
                               onClick={() => setDashboardTab(tab.id)}
                               className={`flex w-full items-center justify-between rounded-[20px] px-4 py-3 text-left text-sm font-medium transition ${
                                 isActive
-                                  ? 'border border-[#3b362d] bg-[#efe6d4] text-black'
-                                  : 'border border-transparent bg-[#171717] text-[#d5cec0] hover:border-[#2d2d2d] hover:bg-[#1b1b1b]'
+                                  ? 'border border-brand bg-brand text-paper'
+                                  : 'border border-transparent bg-surface-hover text-[#d5cec0] hover:border-surface-active hover:bg-surface-hover'
                               }`}
                             >
                               <span>{tab.label}</span>
-                              <span className={`text-xs ${isActive ? 'text-black/60' : 'text-[#7d7d7d]'}`}>0{dashboardTabs.findIndex((item) => item.id === tab.id) + 1}</span>
+                              <span className={`text-xs ${isActive ? 'text-paper/60' : 'text-[#7d7d7d]'}`}>0{dashboardTabs.findIndex((item) => item.id === tab.id) + 1}</span>
                             </button>
                           );
                         })}
                       </div>
                     </div>
 
-                    <div className="rounded-[32px] border border-[#242424] bg-[#121212] p-5">
+                    <div className="rounded-[32px] border border-[#242424] bg-surface-deep p-5">
                       <p className="text-xs uppercase tracking-[0.34em] text-[#7e7e7e]">Action</p>
                       <h3 className="mt-3 text-xl font-semibold text-white">继续深挖命盘</h3>
                       <p className="mt-3 text-sm leading-7 text-[#9b9b9b]">
@@ -2930,7 +2964,7 @@ const BaZiPage = () => {
                         {!selectedMaster && (
                           <button
                             onClick={() => navigate('/settings')}
-                            className="w-full rounded-full border border-[#303030] bg-[#181818] px-5 py-3 text-sm font-semibold text-[#d9d2c4] transition hover:bg-[#1d1d1d]"
+                            className="w-full rounded-full border border-[#303030] bg-surface-hover px-5 py-3 text-sm font-semibold text-[#d9d2c4] transition hover:bg-[#1d1d1d]"
                           >
                             选择大师
                           </button>
