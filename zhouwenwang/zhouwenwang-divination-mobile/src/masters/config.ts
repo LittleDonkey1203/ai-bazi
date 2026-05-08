@@ -9,8 +9,9 @@
  * 如果为空，则需要用户在设置中配置
  */
 export const API_CONFIG = {
-  // Gemini API密钥 - 可以在这里预配置，留空则需要用户在设置中配置
-  GEMINI_API_KEY: '' as string, // 在这里填入您的Gemini API密钥，例如：'AIzaSyC...'
+  // Gemini API密钥 - 优先从 import.meta.env.VITE_GEMINI_API_KEY 读取（.env.local）
+  // 留空则需要用户在 SettingsModal UI 中配置（存 localStorage）
+  GEMINI_API_KEY: (import.meta.env.VITE_GEMINI_API_KEY?.trim() || '') as string,
 };
 
 /**
@@ -29,10 +30,11 @@ export const GEMINI_CONFIG = {
   
   // API 端点配置
   ENDPOINTS: {
-    // API基础URL
-    BASE_URL: 'https://generativelanguage.googleapis.com/v1beta/models',
-    // 模型列表端点（用于验证API密钥）
-    MODELS_LIST: 'https://generativelanguage.googleapis.com/v1beta/models'
+    // API基础URL - 优先从 import.meta.env.VITE_GEMINI_BASE_URL 读取（.env.local）
+    // 留空则使用 Google 官方 endpoint（向后兼容）
+    BASE_URL: import.meta.env.VITE_GEMINI_BASE_URL?.trim() || 'https://generativelanguage.googleapis.com/v1beta/models',
+    // 模型列表端点（用于验证API密钥）- 与 BASE_URL 同源
+    MODELS_LIST: import.meta.env.VITE_GEMINI_BASE_URL?.trim() || 'https://generativelanguage.googleapis.com/v1beta/models'
   },
   
   // 生成配置
