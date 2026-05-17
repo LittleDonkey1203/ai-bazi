@@ -391,6 +391,63 @@ git branch wip/batch-N-YYYYMMDD-HHMM   # 在当前 HEAD 留快照点,不切过�
 
 **适用范围**:所有响应式 layout 改造(特别是大屏 dashboard 类页面 / 双栏布局 / 嵌套容器嵌套场景)。
 
+#### 4.3.7 失效 utility 大面积下游症状的扩散控制
+
+**触发场景**:Step 修法前 grep 发现某文件含 N 倍于段 scope 的失效 utility(如自定义 `brand-gray-*` 系列因 Tailwind config 缺失全部不渲染)。
+
+**典型案例**:batch 4 Step 2a Block 1,F007 PalmistryPage 段 scope 仅 6 处 brand 残留,但 grep 发现全文 20 处 `text-brand-gray-300` / `bg-brand-gray-900` 类失效 utility(属 P0 工程债下游症状)。
+
+**决策**:
+- ❌ 不全文修复(违反三红线第一条 scope 蔓延)
+- ❌ 不逐处 patch(治标不治本,应用层逐处修是低杠杆操作)
+- ✅ **仅修段内目标,其余全部登记 backlog 不本批扩散**
+- ✅ **配套动作**:Edit 前先 grep 失效 utility 清单(前置审计),避免 Edit 中途撞见再决策
+
+**理由**:
+- 失效 utility 是框架级 P0 工程债的下游症状,应用层逐处修是治标
+- 段内逐处修 = scope 失控,从"段范围"变成"文件全清扫"
+- backlog 登记保持视觉缺口在已知状态(保持 batch 3 之前的状态,未恶化)
+- 等框架级 P0 修复(如 Tailwind config 补全)后批量回归测试 + 一次性修复
+
+**配套实践**:
+- 每个 Block 开 Edit 前先 grep 失效 utility(前置审计模式)
+- 失效 utility 清单合并到现有同源 backlog 章节(避免章节膨胀)
+- commit message 明确"段内 N 处修复,文件内 X 处保留登记 backlog"
+
+#### 4.3.8 DOM computed style 优于 PNG 视觉判读
+
+**触发场景**:视觉验证时,CC 判读 PNG 截图与用户肉眼实测结果**冲突**。
+
+**典型案例**:batch 4 Step 2c-pre Block 5,CC 在 Playwright 移动端 baseline 截图中判定"zhougong/lifekline desktop hero 标题白色",但用户桌面浏览器肉眼实测 hero 是绛红渐变。事后查 DOM computed style 证实:hero 是 `linear-gradient(135deg, #f5f0e3 0%, #d4a03e 60%, #c41e3a 100%)` 渐变,**米白起始色 #f5f0e3 在黑底上低对比度被 CC 视觉判读为白色**。
+
+**决策**:
+- ✅ **DOM > PNG**:computed style 是 CSS rendered ground truth,视觉判读是间接观察
+- ✅ **冲突时以 DOM 为准**:computed style 字符串匹配比 PNG 视觉判读可靠 100 倍
+
+**实现模式**:
+```javascript
+// 用 Playwright evaluate 拿 DOM computed style
+const bgImage = await h1.evaluate(el => getComputedStyle(el).backgroundImage);
+const color = await h1.evaluate(el => getComputedStyle(el).color);
+const bgClip = await h1.evaluate(el => getComputedStyle(el).webkitBackgroundClip);
+expect(bgImage).toContain('rgb(196, 30, 58)');  // 期望 hex 出现在 computed style
+```
+
+**适用范围**:
+- 渐变颜色验证(PNG 压缩损失渐变细节)
+- text-transparent + bg-clip-text 类 trick(视觉判读不可靠)
+- token 化 Δ=0 验证(不该有视觉变化的场景,避免假阳性)
+- font-family / font-weight / line-height 等不易肉眼判定的 CSS 属性
+
+**不适用范围**:
+- 布局类问题(溢出 / flex 行为 / 响应式断点)—— 仍需 PNG + 手动测量
+- 用户主观视觉感受("按钮太大" / "颜色不协调")—— 需要人眼参与
+
+**配套实践**:
+- Playwright spec 写 evaluate 语句获取 computed style + expect 字符串匹配
+- 临时验证用 spec 文件验证完即删(不进 commit)
+- 业务红线验证优先用 computed style 而不是 PNG 判读
+
 #### 4.4 批末:视觉回归 + 重截 baseline
 
 batch N main commit 之后、push 之前,按顺序:
