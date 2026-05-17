@@ -267,10 +267,15 @@ const PalmistryPage: React.FC = () => {
             className="text-center mb-2"
             variants={itemVariants}
           >
-            <h1 className="text-4xl font-bold text-white mb-4">
+            <h1
+              className="text-4xl md:text-5xl font-bold font-serif mb-4 bg-clip-text text-transparent"
+              style={{
+                backgroundImage: 'linear-gradient(135deg, #f5f0e3 0%, #d4a03e 60%, #c41e3a 100%)',
+              }}
+            >
               手相分析
             </h1>
-            <p className="text-brand-gray-300 text-lg">
+            <p className="text-xl text-neutral-2 max-w-3xl mx-auto leading-relaxed">
               掌中有乾坤，上传手相图片探寻命运轨迹
             </p>
           </motion.div>
@@ -299,9 +304,9 @@ const PalmistryPage: React.FC = () => {
                   onDrop={handleDrop}
                   className={`
                     relative border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all duration-300
-                    ${dragOver 
-                      ? 'border-brand-orange-500 bg-brand-orange-500/10' 
-                      : 'border-[#333333] hover:border-brand-gray-400 hover:bg-brand-gray-900/50'
+                    ${dragOver
+                      ? 'border-brand bg-brand/10'
+                      : 'border-divider hover:border-brand-gray-400 hover:bg-brand-gray-900/50'
                     }
                   `}
                 >
@@ -322,7 +327,7 @@ const PalmistryPage: React.FC = () => {
                   {isLoading && (
                     <div className="absolute inset-0 bg-black/70 rounded-xl flex items-center justify-center">
                       <div className="flex items-center space-x-3">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-brand-orange-500"></div>
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-brand"></div>
                         <span className="text-white">处理图片中...</span>
                       </div>
                     </div>
@@ -335,7 +340,7 @@ const PalmistryPage: React.FC = () => {
                     <div style={{ width: '300px', maxWidth: '100%' }}>
                       {/* 图片预览 */}
                       <motion.div 
-                        className="bg-brand-gray-900 border border-[#333333] rounded-xl p-[1rem]"
+                        className="bg-brand-gray-900 border border-divider rounded-xl p-[1rem]"
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.2 }}
@@ -344,7 +349,7 @@ const PalmistryPage: React.FC = () => {
                           <h3 className="text-white font-semibold text-lg">手相图片</h3>
                           <button
                             onClick={handleClearImage}
-                            className="text-[#FF9900] hover:text-[#E68A00] transition-colors font-medium"
+                            className="text-brand hover:text-brand-active transition-colors font-medium"
                           >
                             重新选择
                           </button>
@@ -379,8 +384,8 @@ const PalmistryPage: React.FC = () => {
                   className={`
                     px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 shadow-lg
                     ${canStartAnalysis
-                      ? 'bg-gradient-to-r from-[#FF9900] to-[#E68A00] text-black hover:from-[#E68A00] hover:to-[#CC7700] hover:shadow-xl hover:shadow-[#FF9900]/30'
-                      : 'bg-[#444444] text-[#888888] cursor-not-allowed'
+                      ? 'bg-gradient-to-r from-brand to-brand-active text-black hover:shadow-xl'
+                      : 'bg-[#444444] text-neutral-mid cursor-not-allowed'
                     }
                   `}
                   whileHover={canStartAnalysis ? { scale: 1.05, y: -2 } : {}}
@@ -420,9 +425,9 @@ const PalmistryPage: React.FC = () => {
             >
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-brand-gray-900/50 border border-[#333333] rounded-xl p-6">
+                <div className="bg-brand-gray-900/50 border border-divider rounded-xl p-6">
                   <div className="flex items-center mb-4">
-                    <div className="w-3 h-3 bg-[#FF9900] rounded-full mr-3"></div>
+                    <div className="w-3 h-3 bg-brand rounded-full mr-3"></div>
                     <h3 className="text-white font-semibold text-lg">生命线</h3>
                   </div>
                   <p className="text-brand-gray-300">
@@ -430,9 +435,9 @@ const PalmistryPage: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="bg-brand-gray-900/50 border border-[#333333] rounded-xl p-6">
+                <div className="bg-brand-gray-900/50 border border-divider rounded-xl p-6">
                   <div className="flex items-center mb-4">
-                    <div className="w-3 h-3 bg-[#FF9900] rounded-full mr-3"></div>
+                    <div className="w-3 h-3 bg-brand rounded-full mr-3"></div>
                     <h3 className="text-white font-semibold text-lg">智慧线</h3>
                   </div>
                   <p className="text-brand-gray-300">
@@ -440,9 +445,9 @@ const PalmistryPage: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="bg-brand-gray-900/50 border border-[#333333] rounded-xl p-6">
+                <div className="bg-brand-gray-900/50 border border-divider rounded-xl p-6">
                   <div className="flex items-center mb-4">
-                    <div className="w-3 h-3 bg-[#FF9900] rounded-full mr-3"></div>
+                    <div className="w-3 h-3 bg-brand rounded-full mr-3"></div>
                     <h3 className="text-white font-semibold text-lg">感情线</h3>
                   </div>
                   <p className="text-brand-gray-300">
@@ -450,9 +455,9 @@ const PalmistryPage: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="bg-brand-gray-900/50 border border-[#333333] rounded-xl p-6">
+                <div className="bg-brand-gray-900/50 border border-divider rounded-xl p-6">
                   <div className="flex items-center mb-4">
-                    <div className="w-3 h-3 bg-[#FF9900] rounded-full mr-3"></div>
+                    <div className="w-3 h-3 bg-brand rounded-full mr-3"></div>
                     <h3 className="text-white font-semibold text-lg">事业线</h3>
                   </div>
                   <p className="text-brand-gray-300">
@@ -479,16 +484,15 @@ const PalmistryPage: React.FC = () => {
                   
                   {/* 分析动画区域 */}
                   <div className="flex justify-center">
-                    <div className="bg-black flex items-center justify-center relative overflow-hidden rounded-xl" style={{ width: '560px', height: '315px' }}>
+                    <div className="bg-black flex items-center justify-center relative overflow-hidden rounded-xl w-full max-w-[560px] aspect-video">
                       {/* 使用MP4视频作为加载动画 */}
-                      <video 
-                        autoPlay 
-                        muted 
-                        loop 
+                      <video
+                        autoPlay
+                        muted
+                        loop
                         playsInline
                         preload="metadata"
                         className="w-full h-full object-cover rounded-xl"
-                        style={{ width: '560px', height: '315px' }}
                         onError={(e) => {
                           console.log('手相视频加载失败，显示备用动画');
                           const video = e.target as HTMLVideoElement;
@@ -502,7 +506,7 @@ const PalmistryPage: React.FC = () => {
                         {/* 如果视频加载失败，显示备用动画 */}
                         <div className="relative">
                           <motion.div
-                            className="w-16 h-16 border-4 border-[#FF9900] border-t-transparent rounded-full"
+                            className="w-16 h-16 border-4 border-brand border-t-transparent rounded-full"
                             animate={{ rotate: 360 }}
                             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                           />
@@ -516,7 +520,7 @@ const PalmistryPage: React.FC = () => {
                             animate={{ scale: [1, 1.2, 1] }}
                             transition={{ duration: 2, repeat: Infinity }}
                           >
-                            <span className="text-[#FF9900] text-2xl font-bold">相</span>
+                            <span className="text-brand text-2xl font-bold">相</span>
                           </motion.div>
                         </div>
                       </video>

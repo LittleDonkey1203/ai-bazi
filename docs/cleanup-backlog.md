@@ -1301,6 +1301,149 @@ const getWuxingColor = (wuxing: string) => {
 
 ---
 
+## ZhouGongPage textarea focus ring 完全未实现
+
+- **时间**:batch 4 scope 探查 + Step 2a Block 4 登记(2026-05-10)
+- **现象**:F008 ZhouGongPage line 188 textarea 仅有 `focus:border-brand`,**完全没有 focus:ring**。光标聚焦时无可视环。
+- **与 P0 已知工程债的同源辨析**:与 line 871「Tailwind 自定义 utility(brand 系)缺失 alpha modifier 支持」属同源框架级问题,但**症状不同**:
+  - line 871 那条:其他 input/textarea 用 `ring-2 ring-[#FF9900]/30` 旁路实现,因 alpha modifier 工程债**渲染失效**(声明存在,渲染为空)
+  - 本条:F008 ZhouGongPage textarea **从未声明 ring**,声明本身缺失(连旁路实现都没有)
+- **根因**:早期开发未统一 input ring 设计规范,F008 textarea 与其他 input 实现不一致
+- **处理**:batch 4 不本批 patch(与 P0 alpha modifier 工程债联动修复,避免重复返工)
+- **影响范围**:F008 ZhouGongPage textarea 单点(line 188);其他 input/textarea(F007 / F009)用 ring-2 ring-[#FF9900]/30 或业务绿 ring 占位
+- **遗留风险**:键盘用户 textarea 聚焦无视觉反馈(a11y 缺陷);batch 4 brand 迁移后 textarea focus 仅显示绛红 border,与 F009 业务绿 ring 视觉不一致
+- **后续**:与 P0 alpha modifier 工程债合并到 ring 系统化重构(预计 batch 5 通用 UI 组件批或独立 a11y 批),本批仅登记
+
+---
+
+## 业务语义白名单(batch 4 首次系统化)
+
+batch 4 scope 探查首次系统识别「跨业务语义保留」需求:以下 hex / Tailwind palette 是业务铁律,**永久保留不参与 brand 迁移、不参与灰阶 token 化合并**。后续 batch 5+ 如发现新的业务语义色,追加到本章节。
+
+### F009 LifeKlinePage 业务绿三阶梯 + 4 统计卡 palette
+
+- **业务绿三阶梯**(K 线主题色,与 K 线图涨跌色 #22c55e 同源,用户 batch 4 Step 2a-pre 决策锁定保留):
+  - `#22C55E`(主色):line 270 姓名 input focus border + ring、line 295 性别 radio、line 312 年份 select focus border + ring、line 332 主 CTA 起色、line 360 Sparkles 图标
+  - `#16A34A`(hover/active):line 332 主 CTA 终色 + hover from
+  - `#15803D`(hover 终色):line 332 主 CTA hover to
+- **4 统计卡 Tailwind palette**(业务语义铁律):
+  - 平均运势分:bg-blue-500/20 text-blue-400
+  - 人生巅峰:bg-green-500/20 text-green-400
+  - 人生低谷:bg-red-500/20 text-red-400
+  - 波折程度:bg-purple-500/20 text-purple-400
+- **保留范围**:以上 hex 和 palette 类**全部保留**,brand 迁移和灰阶 token 化均不触碰
+- **hero h1 例外**:line 244 hero 渐变末色已迁绛红 #c41e3a(Step 2a Block 3 / M109 落地,用户决策:视觉头部统一品牌 + 功能区保留业务语义)
+
+### F010 KlineChart 金融图表涨跌色铁律
+
+- **涨跌色铁律**(K 线图金融语义,全球金融图表通用):
+  - `#22c55e`:line 58 / 201 涨色(绿涨,注意**小写 c** 与 F009 大写 C 不同源 —— F010 是 Recharts 自定义 shape 内联色,不参与 Tailwind class)
+  - `#ef4444`:line 58 / 201 跌色(红跌)
+- **Tooltip 涨跌徽章 Tailwind palette**:
+  - 涨:bg-green-500/20 text-green-400
+  - 跌:bg-red-500/20 text-red-400
+- **保留范围**:以上 hex 和 palette 类**全部保留**,brand 迁移和灰阶 token 化均不触碰
+
+### F011 LifeKlineMarkdown K 线绿主题三阶梯
+
+- **markdown 主题色三阶梯**(K 线流年报告内容渲染色,业务语义统一):
+  - `#22C55E`(主色,8 处使用):h1 / h2 / strong / table th / li bullet / code 行内 / link / hr 中色
+  - `#34D399`(次色,3 处):h3 / em / link hover
+  - `#6EE7B7`(弱色,1 处):h4
+- **保留范围**:以上 hex 和 markdown components 主题色**全部保留**,brand 迁移和灰阶 token 化均不触碰
+- **关联**:与 F009 LifeKlinePage hero 区分(hero 已迁绛红),但 AI 分析 markdown 卡内的 markdown 渲染保留业务绿 —— 上层容器是品牌色、内容主体是业务色,混合方案设计意图
+
+---
+
+## F008 ZhouGongPage textarea inline style backgroundColor 与 className 双声明
+
+- **时间**:batch 4 Step 2b 段 A 替换中识别(2026-05-10)
+- **现象**:F008 ZhouGongPage line 188-194 textarea 同时声明 `className="bg-[#222222] ..."`(段 A 已迁 `bg-surface-sheet`)和 `style={{ backgroundColor: '#222222', ... }}`。inline style 优先级高于 className,**实际渲染由 inline style `#222222` 决定**,本批 className → token 的语义意图被 inline style 屏蔽。
+- **段 A 处理**:本段仅替换 className `bg-[#222222]` → `bg-surface-sheet`(15 处批替换之一),inline style line 193 `backgroundColor: '#222222'` 保持原样不动(用户决策 A 选项:本段不扩展 inline style 处理)
+- **风险**:如未来有人移除 inline style 而忘记同步 className,渲染会回退到 token 值(应该一致,但失去优先级保护);若未来 token 值变化(如 design-system v2 改 surface-sheet 数值),inline style 仍硬编码 #222222 → 视觉与其他 sheet 表面不一致
+- **根因(推测)**:textarea 元素在 index.css line 352-356 有全局 `input, select, textarea { background-color: #222222 !important; }` 规则,作者用 inline style 强化覆盖该规则,但同时也写了 className(双声明)
+- **后续**:Step 2c/2d 末批或独立 input ring 系统化重构时合并处理 —— 同时清理 inline style + 全局 !important 规则,只留 className token 单源真相
+- **关联**:cleanup-backlog line 871「Tailwind 自定义 utility(brand 系)缺失 alpha modifier 支持」+ Step 2a M102「textarea focus ring 完全未实现」—— 三条同源「textarea 样式系统化债务」,合并修复时机为 batch 5 通用 UI 组件批
+
+---
+
+## F010 KlineChart Recharts ReferenceLine stroke 跨形式 hex(SVG prop 不接受 className)
+
+- **时间**:batch 4 Step 2b 段 A 替换中识别(2026-05-10)
+- **现象**:F010 KlineChart line 189 `<ReferenceLine key={i} x={d.age} stroke="#2a2a2a" />` —— Recharts 大运分割线的 `stroke` prop 是 SVG 属性,只接受字符串 hex / RGBA / CSS color,**不接受 Tailwind class**。段 A 仅替换 `bg-[#xxx]` className,SVG prop 不在范围。
+- **段 A 处理**:line 189 `stroke="#2a2a2a"` 保持原样不动(用户决策 A 选项:本段不扩展 SVG prop 处理)
+- **token 化路径**(供后续段参考):改 `stroke="var(--color-surface-active)"` 引用 CSS variable;Recharts 接受 CSS var() 字符串,运行时 SVG 会解析为 token 当前值
+- **影响范围**:F010 KlineChart 单点 line 189;其他 SVG 类 hex(line 58 `'#22c55e'` / `'#ef4444'` 等业务白名单 M117)是涨跌色铁律,不参与 token 化
+- **遗留风险**:大运分割线视觉与其他 surface-active 表面不一致(token 改值时 SVG 不跟随)
+- **后续**:Step 2c 灰阶 token 化二阶段或独立 SVG/Recharts 主题统一批处理(全工程 Recharts/lucide-react/react-katex 等组件库的 stroke/fill prop 系统迁移)
+- **关联**:cleanup-backlog line 1009「中度灰边缘 token 缺失」是同类「Tailwind class 之外的灰阶引用」议题,但症状不同(那条是 token 系统缺口,本条是 token 系统已覆盖但 SVG prop 引用方式跨形式)
+- **段 B 追加(2026-05-10 batch 4 Step 2b 段 B)**:divider 系替换中又发现 F010 同类 SVG prop 跨形式 hex 2 处:
+  - line 164 `<CartesianGrid ... stroke="#333333" />` —— 网格线,与 `border-divider` (`#333333`) 同源,SVG prop 不接受 className,本段保留;token 化路径 `stroke="var(--color-divider)"`
+  - line 185 `<ReferenceLine y={60} stroke="#444444" strokeDasharray="3 3" />` —— 60 分及格线,与 `border-divider-strong` (`#444444`) 同源,本段保留;token 化路径 `stroke="var(--color-divider-strong)"`
+  - 与原 line 189 stroke="#2a2a2a" 合并 = F010 KlineChart 共 3 处 SVG stroke 跨形式 hex,统一登记到本条目下,后续批一次性迁移
+
+- **段 C 追加(2026-05-10 batch 4 Step 2b 段 C neutral 系)**:F007 + F008 视频 fallback 装饰位 className 形式跨形式 hex 2 处(非 SVG prop,而是 Tailwind className 但 prefix 不属于 neutral 系语义):
+  - F007 PalmistryPage.tsx line 515 `<motion.div className="absolute inset-4 border-2 border-[#CCCCCC] border-b-transparent rounded-full" ... />` —— 视频加载失败时的内层环边,使用 `border-[#CCCCCC]` (与 `text-neutral-2` 同源 hex 但 border prefix);本段未替换,理由:`text-neutral-2` 是文字色 token 不应用作 border;若强行用 `border-neutral-2` 需先在 design-system 注册 border-neutral utility(token 系统未覆盖 neutral 系 border 语义)
+  - F008 ZhouGongPage.tsx line 325 `<motion.div className="absolute w-2 h-2 bg-[#CCCCCC] rounded-full" ... />` —— 视频加载失败时环绕的 8 个小星星 dot,使用 `bg-[#CCCCCC]`(与 `text-neutral-2` 同源 hex 但 bg prefix);本段未替换,同上理由
+- **关联**:两处都是「视频加载失败」时的装饰位,正常播放视频时**不可见**,实际使用频率极低;若用户需要视觉一致,后续可统一改为 `text-neutral-2` 同源的 border/bg utility(需 design-system 扩展 neutral 系 border/bg 注册)
+- **后续**:与 line 1009「中度灰边缘 token 缺失」、本条段 A/段 B 跨形式 SVG hex 一并在「token 系统覆盖 prefix 边界扩展」批中统一处理
+
+---
+
+## F007 / F008 / F009 disabled 按钮 bg 灰阶跨形式 hex(段 B 识别)
+
+- **时间**:batch 4 Step 2b 段 B 替换中识别(2026-05-10)
+- **现象**:三个 .tsx 文件的主 CTA disabled 状态使用 `bg-[#444444] text-[#888888] cursor-not-allowed` 字符串组合,其中 `bg-[#444444]` 与 divider-strong token 同源 hex,但**语义不是分隔线而是 disabled 按钮背景**。段 B 仅替换 `border-[#xxx]` 形式,disabled bg 不在范围。
+- **段 B 处理**:三处 `bg-[#444444]` 全部保留不动:
+  - F007 PalmistryPage line 388:主 CTA disabled bg
+  - F008 ZhouGongPage line 203:主 CTA disabled bg
+  - F009 LifeKlinePage line 331:主 CTA disabled bg(注意 F009 disabled 不是业务绿白名单 M112 范围,M112 锁定 active 态绿色三阶梯 + radio + Sparkles + 4 统计卡 palette,disabled 共用同一灰阶 hex 与其他页一致)
+- **token 化阻塞**:cleanup-backlog line 927「button disabled bg 灰阶语义 token 缺失(2026-05-06 batch 3 Step 2a M37 修法发现)」已登记此为 P 级工程债 —— **divider-strong (`#444444`) 是分隔线语义,不能复用为 disabled bg 语义**,需要新增 `bg-button-disabled` / `--color-button-disabled-bg` token,本条与 line 927 同源
+- **影响范围**:三处主 CTA disabled bg + 同行 `text-[#888888]` 配对(text-[#888888] 是 neutral-mid 同源 hex,但语义是 disabled 文字,与 line 927 同源逻辑)
+- **遗留风险**:全工程 button disabled 状态视觉与分隔线视觉耦合,任何一方 token 调整另一方需同步检查
+- **后续**:与 line 927 P 级工程债合并,新增 button disabled 语义 token 后批量迁移
+- **关联**:line 927(原始登记)+ 段 B 本条(batch 4 范围补充确认)+ BaZiPage line 2772 已用 `text-neutral-mid` 替代 disabled 灰文字(说明 BaZi 页已部分迁移,但 bg-[#444444] 仍未 token 化)
+
+---
+
+## batch 4 Step 2c 段 PX 推迟记录（4 项响应式优化延后批）
+
+batch 4 Step 2c 段 P0 完成 3 项移动端致命修复（M105 textarea+CTA 横排 / M96+M106 视频 560×315 硬编码）。剩余 4 项响应式优化经 Playwright baseline 截图实测后降级或推迟，不在本批 patch，等 batch 5+ 处理。
+
+### M113 LifeKlinePage 姓名 input w-48 固定宽
+
+- **原 scope**：line 270 input w-48=192px，担心移动端单薄
+- **Step 2c-pre 实测**：mobile 375 视口下 label 96 + gap 16 + input 192 = 304px ≤ 311px 可用宽，**不溢出**
+- **推迟理由**：视觉略空但 UX 可接受，从 P2 降级到 P3
+- **后续**：与其他 P3 input 撑满优化一起批处理（如 batch 5 form 系统化优化）
+
+### M114 LifeKlinePage K 线图 height + 4 统计卡间距
+
+- **原 scope**：K 线图 height={500} 硬编码，4 统计卡 mobile 间距优化
+- **Step 2c-pre 实测**：K 线图在 `analysisComplete && klineData.length>0` conditional 内，默认页不可见，Playwright baseline 截图无法验证修法效果
+- **4 统计卡现状**：已是 grid-cols-1 md:grid-cols-4 mobile 单列纵排，无需修
+- **K 线 height 问题**：500px 在 375 视口占 ~60% 高度，柱条过细但属体验问题
+- **推迟理由**：缺 visual baseline + 需 useBreakpoint hook 调用（涉及业务 hook 白名单）
+- **后续**：batch 5+ K 线图响应式专项
+
+### M119 KlineChart 标题+图例 flex 横排
+
+- **原 scope**：line 144 `flex justify-between items-center`，标题+图例在 mobile 263px 可用宽下溢出 ~53px
+- **Step 2c-pre 实测**：K 线图触发后才显示，默认 baseline 无法覆盖
+- **修法预案**：`flex flex-col gap-2 md:flex-row md:justify-between md:items-center` + legend flex-wrap
+- **推迟理由**：缺 visual baseline，凭代码盲改 Recharts 布局风险中等
+- **后续**：与 M114 / M120 一起做 K 线图响应式专项批
+
+### M120 KlineChart Tooltip 无外层 max-w
+
+- **原 scope**：CustomTooltip line 23 外层 div 无 max-w，title 行+grid 撑到 ~280px+，mobile 浮层可能贴边/被裁切
+- **Step 2c-pre 实测**：Tooltip 需 hover K 线柱触发，默认 baseline 无法覆盖
+- **修法预案**：外层加 max-w-[260px] sm:max-w-[300px] + title text-sm leading-tight whitespace-normal
+- **推迟理由**：同 M119 缺 visual baseline
+- **后续**：与 M114 / M119 一起做 K 线图响应式专项批
+
+---
+
 ## (后续追加格式)
 
 每条新增事件按以下骨架写:

@@ -163,10 +163,15 @@ const ZhouGongPage = () => {
           className="text-center mb-2"
           variants={itemVariants}
         >
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-[#EEEEEE] via-[#CCCCCC] to-[#FF9900] bg-clip-text text-transparent">
+          <h1
+            className="text-4xl md:text-5xl font-bold font-serif mb-4 bg-clip-text text-transparent"
+            style={{
+              backgroundImage: 'linear-gradient(135deg, #f5f0e3 0%, #d4a03e 60%, #c41e3a 100%)',
+            }}
+          >
             周公解梦
           </h1>
-          <p className="text-xl text-[#CCCCCC] max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl text-neutral-2 max-w-3xl mx-auto leading-relaxed">
             承古圣贤智慧，解析梦境奥秘，窥探潜意识深处的神秘信息
           </p>
         </motion.div>
@@ -175,12 +180,12 @@ const ZhouGongPage = () => {
           {/* 梦境描述输入区域 */}
           <motion.div variants={itemVariants}>
             {/* 输入框和按钮水平排列 - 居中 */}
-            <div className="flex justify-center items-center gap-4 mb-8">
+            <div className="flex flex-col md:flex-row justify-center items-stretch md:items-center gap-4 mb-8 px-4 md:px-0">
               <motion.textarea
                 value={dreamDescription}
                 onChange={(e) => setDreamDescription(e.target.value)}
                 placeholder="请详细描述您的梦境..."
-                className="w-[400px] h-[100px] px-6 py-3 bg-[#222222] border-2 border-[#333333] rounded-xl !text-white !text-lg !font-bold placeholder:!text-[#888888] focus:border-[#FF9900] focus:outline-none transition-all duration-300 resize-none"
+                className="w-full md:w-[400px] h-[100px] px-6 py-3 bg-surface-sheet border-2 border-divider rounded-xl !text-white !text-lg !font-bold placeholder:!text-neutral-mid focus:border-brand focus:outline-none transition-all duration-300 resize-none"
                 style={{ 
                   color: 'white',
                   fontSize: '16px',
@@ -193,10 +198,10 @@ const ZhouGongPage = () => {
               <motion.button 
                 onClick={() => performDreamAnalysis()}
                 disabled={!canStartAnalysis}
-                className={`px-8 py-3 h-[46px] rounded-xl font-bold text-lg transition-all duration-300 shadow-lg whitespace-nowrap flex items-center justify-center ${
+                className={`w-full md:w-auto px-8 py-3 h-[46px] rounded-xl font-bold text-lg transition-all duration-300 shadow-lg whitespace-nowrap flex items-center justify-center ${
                   !canStartAnalysis
-                    ? 'bg-[#444444] text-[#888888] cursor-not-allowed'
-                    : 'bg-gradient-to-r from-[#FF9900] to-[#E68A00] text-black hover:from-[#E68A00] hover:to-[#CC7700] hover:shadow-xl hover:shadow-[#FF9900]/30'
+                    ? 'bg-[#444444] text-neutral-mid cursor-not-allowed'
+                    : 'bg-gradient-to-r from-brand to-brand-active text-black hover:shadow-xl'
                 }`}
                 whileHover={canStartAnalysis ? { scale: 1.05, y: -2 } : {}}
                 whileTap={canStartAnalysis ? { scale: 0.98 } : {}}
@@ -220,7 +225,7 @@ const ZhouGongPage = () => {
                   <motion.span
                     key={index}
                     onClick={() => !analyzing && quickStart(quickDream)}
-                    className={`px-4 py-2 text-[#CCCCCC] text-sm cursor-pointer hover:text-[#FF9900] transition-all duration-300 ${
+                    className={`px-4 py-2 text-neutral-2 text-sm cursor-pointer hover:text-brand transition-all duration-300 ${
                       analyzing ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                     whileHover={!analyzing ? { scale: 1.05, y: -2 } : {}}
@@ -240,7 +245,7 @@ const ZhouGongPage = () => {
               <div className="flex justify-center mt-4">
                 <motion.button 
                   onClick={() => navigate('/settings')}
-                  className="bg-gradient-to-r from-[#FF9900] to-[#E68A00] text-black px-6 py-3 rounded-xl font-bold text-sm hover:from-[#E68A00] hover:to-[#CC7700] transition-all duration-300 shadow-lg hover:shadow-[#FF9900]/30"
+                  className="bg-gradient-to-r from-brand to-brand-active text-black px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -264,7 +269,7 @@ const ZhouGongPage = () => {
                   
                   {/* 解梦动画区域 */}
                   <div className="flex justify-center">
-                    <div className="bg-black flex items-center justify-center relative overflow-hidden rounded-xl" style={{ width: '560px', height: '315px' }}>
+                    <div className="bg-black flex items-center justify-center relative overflow-hidden rounded-xl w-full max-w-[560px] aspect-video">
                       {/* 使用解梦视频 */}
                       <video 
                         autoPlay 
@@ -273,9 +278,7 @@ const ZhouGongPage = () => {
                         playsInline
                         preload="metadata"
                         className="w-full h-full object-cover rounded-xl"
-                        style={{ 
-                          width: '560px', 
-                          height: '315px',
+                        style={{
                           display: videoLoaded ? 'block' : 'none'
                         }}
                         onError={(e) => {
@@ -294,7 +297,7 @@ const ZhouGongPage = () => {
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="relative">
                             <motion.div
-                              className="w-20 h-20 border-4 border-[#FF9900] rounded-full flex items-center justify-center"
+                              className="w-20 h-20 border-4 border-brand rounded-full flex items-center justify-center"
                               animate={{ 
                                 rotate: 360,
                                 scale: [1, 1.1, 1]
@@ -305,7 +308,7 @@ const ZhouGongPage = () => {
                               }}
                             >
                               <motion.div
-                                className="text-[#FF9900] text-3xl font-bold"
+                                className="text-brand text-3xl font-bold"
                                 animate={{ opacity: [0.5, 1, 0.5] }}
                                 transition={{ duration: 1.5, repeat: Infinity }}
                               >

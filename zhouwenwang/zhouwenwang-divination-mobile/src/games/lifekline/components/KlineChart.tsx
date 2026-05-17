@@ -24,7 +24,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     const isRising = data.close > data.open;
     
     return (
-      <div className="bg-[#1a1a1a] backdrop-blur-sm p-4 rounded-lg shadow-xl border border-[#333333] text-sm">
+      <div className="bg-surface-hover backdrop-blur-sm p-4 rounded-lg shadow-xl border border-divider text-sm">
         <div className="flex items-center justify-between mb-2">
           <span className="font-bold text-lg text-white">{data.year} {data.yearGanZhi}年 ({data.age}岁)</span>
           <span className={`px-2 py-0.5 rounded text-xs font-bold ${
@@ -33,14 +33,14 @@ const CustomTooltip = ({ active, payload, label }: any) => {
             {data.summary} {isRising ? '▲' : '▼'}
           </span>
         </div>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-1 mb-3 text-[#CCCCCC]">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-1 mb-3 text-neutral-2">
           <div>大运: <span className="font-medium text-white">{data.daYun}</span></div>
           <div>开盘: <span className="font-medium text-white">{data.open}</span></div>
           <div>收盘: <span className={`font-medium ${isRising ? 'text-green-400' : 'text-red-400'}`}>{data.close}</span></div>
           <div>最高: <span className="font-medium text-white">{data.high}</span></div>
           <div>最低: <span className="font-medium text-white">{data.low}</span></div>
         </div>
-        <div className="text-xs text-[#888888] border-t border-[#333333] pt-2 mt-1 max-w-[240px]">
+        <div className="text-xs text-neutral-mid border-t border-divider pt-2 mt-1 max-w-[240px]">
           {data.wuxingAnalysis}
         </div>
       </div>
@@ -140,17 +140,17 @@ export const KlineChart: React.FC<KlineChartProps> = ({ data, height = 500 }) =>
   }));
 
   return (
-    <div className="w-full bg-[#1a1a1a] border border-[#333333] rounded-xl shadow-sm p-6">
+    <div className="w-full bg-surface-hover border border-divider rounded-xl shadow-sm p-6">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-xl font-bold text-white">人生流年大运K线图</h3>
         <div className="flex items-center space-x-4 text-sm">
           <div className="flex items-center">
             <span className="w-3 h-3 bg-green-500 rounded-sm mr-2"></span>
-            <span className="text-[#CCCCCC]">吉运 (涨)</span>
+            <span className="text-neutral-2">吉运 (涨)</span>
           </div>
           <div className="flex items-center">
             <span className="w-3 h-3 bg-red-500 rounded-sm mr-2"></span>
-            <span className="text-[#CCCCCC]">凶运 (跌)</span>
+            <span className="text-neutral-2">凶运 (跌)</span>
           </div>
         </div>
       </div>
@@ -207,7 +207,7 @@ export const KlineChart: React.FC<KlineChartProps> = ({ data, height = 500 }) =>
         </ResponsiveContainer>
       </div>
       
-      <div className="mt-4 flex justify-between text-xs text-[#888888] px-4">
+      <div className="mt-4 flex justify-between text-xs text-neutral-mid px-4">
         {/* 在底部显示对应的大运，每10年显示一次 */}
         {processedData.filter((d, i) => i === 0 || d.age % 10 === 0).map((d, i) => (
            <div key={i} style={{ width: '10%' }} className="text-center">
